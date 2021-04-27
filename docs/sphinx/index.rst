@@ -1,0 +1,62 @@
+.. figure:: images/logo_4.svg
+   :width: 80%
+   :align: center
+
+.. toctree::
+   :maxdepth: 3
+   :numbered:
+   :hidden:
+   
+   functionalities
+   connecting your own model
+   installation
+   tutorial
+   auto_examples/index
+   stochastic design space
+   optimization
+   uncertainty quantification
+   energy system models
+   methods
+   API
+   contribution
+   bibliography
+   glossary
+
+Introduction
+============
+
+The Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems (RHEIA) framework provides 
+multi-objective optimization (deterministic and stochastic) and uncertainty quantification algorithms. 
+These algorithms can be applied on hydrogen-based energy systems, which are included in RHEIA.
+In addition, RHEIA allows to connect your own models to the algorithms as well.
+
+A brief overview on the features of RHEIA is provided in :ref:`lab:functionalities`,
+followed by a detailed illustration on how to connect your own model (Python based, open source or closed source) in :ref:`lab:connectingyourownmodel`.
+If these features comply with your need, the installation procedure and package dependencies are illustrated in :ref:`installationlabel`. 
+As a first step, the :ref:`lab:tutorial` provides an initiation of using the framework on a hydrogen-based energy system. 
+Additional examples are illustrated in :ref:`lab:examples`. 
+The models are characterized by a design space, which defines the design variables, and a stochastic space when parameter uncertainty is considered.
+Those spaces are defined in two files, which are elaborated in :ref:`lab:stochasticdesignspace`.
+The guides to perform the deterministic design optimization, robust design optimization and uncertainty quantification are present in :ref:`lab:optimization` and 
+:ref:`lab:uncertaintyquantification`, respectively.
+The hydrogen-based energy system models are described in :ref:`lab:energysystemmodels`, including the uncertainty characterization of the techno-economic and environmental parameters, a script to evaluate the performance of specific designs and a method to get the climate data and demand data for your location of interest. The documentation concludes with brief details on the optimization and uncertainty quantification algorithms (:ref:`lab:methods`), the :ref:`lab:APIref` and the details on how to contribute to the framework (:ref:`lab:contribution`).
+
+
+Support
+=======
+
+Contact us
+rheia.framework@gmail.com
+
+License
+=======
+
+The project is licensed under `MIT license <https://github.com/DCoppitters/RHEIA/blob/master/LICENSE>`_. 
+
+
+Indices and tables
+==================
+
+:ref:`genindex`
+:ref:`modindex`
+:ref:`search`

@@ -1,0 +1,13 @@
+                          name      First-order Sobol indices      Total-order Sobol indices  
+                   capex_pemel                       0.539638                       0.539638  
+                      int_rate                       0.202488                       0.202488  
+                     u_sol_irr                       0.078002                       0.078002  
+                    opex_pemel                       0.074908                       0.074908  
+                     infl_rate                       0.058290                       0.058290  
+                    life_pemel                       0.032022                       0.032022  
+                      capex_pv                       0.011041                       0.011041  
+                     opex_dcdc                       0.002419                       0.002419  
+                    capex_dcdc                       0.000784                       0.000784  
+                       u_t_amb                       0.000384                       0.000384  
+                       opex_pv                       0.000023                       0.000023  
+                    repl_pemel                       0.000001                       0.000001  

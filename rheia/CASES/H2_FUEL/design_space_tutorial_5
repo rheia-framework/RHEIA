@@ -1,0 +1,15 @@
+n_dcdc_pv par 4.296432 
+n_pemel par 1.281632 
+n_pv        par  5
+u_sol_irr   par  1
+u_t_amb     par  0
+capex_pv    par  475
+opex_pv     par  17.5
+capex_pemel par  1750
+opex_pemel  par  0.04
+life_pemel  par  80000
+repl_pemel  par  0.175
+capex_dcdc  par  150
+opex_dcdc   par  0.03
+int_rate    par  0.06
+infl_rate   par  0.02

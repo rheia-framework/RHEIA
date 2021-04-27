@@ -1,0 +1,5 @@
+elec_demand absolute Uniform 1
+COP absolute Uniform 0.5
+eff_H2 absolute Uniform 0.05
+CHP_eff_el absolute Uniform 0.05
+CHP_eff_th absolute Uniform 0.05

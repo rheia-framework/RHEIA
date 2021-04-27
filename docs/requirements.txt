@@ -1,0 +1,12 @@
+sphinxcontrib.bibtex
+sphinx_gallery
+matplotlib
+pandas
+numpy
+pvlib
+
+--index-url https://test.pypi.org/simple/
+--extra-index-url https://pypi.org/simple
+--pre
+ppb
+rheia-vub

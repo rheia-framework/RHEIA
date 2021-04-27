@@ -1,0 +1,28 @@
+n_pv var 1e-8 50
+n_pemel var 1e-8 10
+n_pemfc var 1e-8 10
+n_tank var 1e-8 1000
+u_sol_irr par  1
+u_t_amb par  0
+u_load_elec par 1
+elec_cost par 71.5
+elec_cost_profit par 20
+elec_cost_ratio par 0.3
+capex_pv par  475
+opex_pv par  17.5
+capex_tank par  12.4
+opex_tank par  0.015
+capex_pemel par  1750
+opex_pemel par  0.04
+life_pemel par  80000
+repl_pemel par  0.175
+capex_pemfc par  1950
+opex_pemfc par  0.09
+life_pemfc par  25000
+repl_pemfc par  0.275
+capex_dcdc par  150
+opex_dcdc par  0.03
+capex_dcac par  425
+opex_dcac par  0.03
+int_rate par  0.06
+infl_rate par  0.02

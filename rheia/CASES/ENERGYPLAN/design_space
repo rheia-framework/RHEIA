@@ -1,0 +1,5 @@
+elec_demand par 34.3
+COP par 3
+eff_H2 par 0.65
+CHP_eff_el par 0.41
+CHP_eff_th par 0.5
