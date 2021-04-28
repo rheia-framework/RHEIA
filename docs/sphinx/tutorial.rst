@@ -37,7 +37,7 @@ To perform a deterministic design optimization, the following optimization dicti
 
 In the dictionary, the case folder name :py:data:`'H2_FUEL'` is provided, followed by the optimization type :py:data:`'DET'` and the weigths for both objectives, 
 i.e. minimization for the first returned objective :py:data:`lcoh` and maximization for the second returned objective :py:data:`m_h2`. 
-A computational budget of 2000 model evaluations is selected as stopping criterium and the number of available physical cores are used
+A computational budget of 2000 model evaluations is selected as stopping criterion and the number of available physical cores are used
 to parallelize the evaluations. The population contains 20 samples and the population and fitness values for each generation 
 are saved in the folder :py:data:`'run_1'`. 
 As Latin Hypercube Sampling is selected for the characterization of the population and the NSGA-II characteristics are equal to

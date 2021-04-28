@@ -115,8 +115,8 @@ Additional details on defining the value for the population size is illustrated 
 'stop': ('BUDGET', comp_budget)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The stopping criterium for the optimization is defined by the computational budget, i.e. the number of model evaluations. 
-This is a common engineering stopping criterium, which is defined based on the time available
+The stopping criterion for the optimization is defined by the computational budget, i.e. the number of model evaluations. 
+This is a common engineering stopping criterion, which is defined based on the time available
 to perform the optimization. To illustrate, when the system model takes 10 seconds to evaluate and 4 cores are available for parallel processing, 
 the computational budget for a deterministic design optimization procedure of 1 hour is equal to 1440.
 The allocation of this computational budget through the integer :py:data:`comp_budget` is illustrated below::
