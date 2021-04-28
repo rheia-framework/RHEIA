@@ -248,7 +248,7 @@ The code is similar than for the deterministic design optimization procedure. Th
 
 Again, a population of 20 samples is selected. 
 With 72 model evaluations required per design sample, a computational budget of 72000 is selected to reach at least 50 generations.
-**The results for the tutorial are provided in :file:`RESULTS\\PV_ELEC\\ROB\\run_tutorial`.**
+**The results for the tutorial are provided in** :file:`RESULTS\\PV_ELEC\\ROB\\run_tutorial`.
 Similar to the deterministic design optimization, the optimization results can be plotted as follows (note that :py:data:`eval_type` has changed into :py:data:`'ROB'`):
 
 .. code-block:: python
