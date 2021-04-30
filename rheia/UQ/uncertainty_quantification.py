@@ -82,7 +82,7 @@ def set_design_samples(var_dict, n_samples):
     return samples
 
 
-def write_design_space(case, iteration, var_dict, sample):
+def write_design_space(case, iteration, var_dict, sample, ds = 'design_space'):
     """
     A new design space file is created. In this file,
     the model parameters are copied from the original file,
@@ -102,6 +102,8 @@ def write_design_space(case, iteration, var_dict, sample):
         A dictionary which includes the design variables and their bounds.
     sample : array
         The design sample out of the collection of generated design samples.
+    ds : string, optional
+        The design_space filename. The default is 'design_space'.
 
     """
 
@@ -120,8 +122,7 @@ def write_design_space(case, iteration, var_dict, sample):
                 os.pardir)),
         'CASES',
         case,
-        'design_space_%i' %
-        iteration,
+        '%s_%i' % (ds, iteration)
     )
 
     # write the new design_space file if it does not exist already
