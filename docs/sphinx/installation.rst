@@ -19,12 +19,12 @@ Installing RHEIA
 RHEIA is available on PyPi, and can be downloaded via the `pip <https://pip.pypa.io/en/stable/>`_ package manager.
 The following command installs the most recent version of RHEIA and the package dependencies::
 
-	pip install rheia
+	pip install -i https://test.pypi.org/simple/ rheia-vub
 	
 Specific from a Jupyter Kernel::
 
 	import sys
-	!{sys.executable} -m pip install rheia
+	!{sys.executable} -m pip install -i https://test.pypi.org/simple/ rheia-vub
 	
 
 Package dependencies
