@@ -813,6 +813,7 @@ class Evaluation:
                 n_dcdc_pem[t] = p_pemel
                 n_compr[t] = p_compr
 
+                # check if PEM capacity can cover the demand
                 if check:
                     return False
 
@@ -832,13 +833,11 @@ class Evaluation:
                     else:
                         # if the compressor and dispensation demand cannot be
                         # covered, buy remaining demand from the grid
-                        # (compressor and dispensation are AC-powered)
                         e_grid_buy = abs(net_p_2)
 
                 else:
                     # if PEM, compressor and dispensation cannot be covered by
                     # PV energy, buy required electricity from the grid
-                    # only power for PEM has to pass through AC-DC conversion
                     p_to_buy = abs(net_p_1) + p_compr + p_disp
                     e_grid_buy = p_to_buy
                     n_dcac[t] = abs(net_p_1)
