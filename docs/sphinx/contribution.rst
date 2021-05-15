@@ -8,8 +8,8 @@ To be completed.
 Contribute
 ----------
 
-- Issue Tracker: https://github.com/DCoppitters/RHEIA/issues
-- Source Code: https://github.com/DCoppitters/RHEIA
+- Issue Tracker: https://github.com/rheia-framework/RHEIA/issues
+- Source Code: https://github.com/rheia-framework/RHEIA
 
 
 how to contribute
