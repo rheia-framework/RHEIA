@@ -4,7 +4,7 @@ Connecting your own model
 =========================
 
 The design optimization and uncertainty quantification algorithms are introduced on hydrogen-based energy systems. 
-However, these algorithms can be applied on any system model. Therefore, RHEIA allows to evaluate and connect your own model. 
+However, RHEIA algorithms can be applied on any system model, thus allowing to evaluate and connect your own model. 
 In this section, first, the Python wrapper is described, which connects the system model with the optimization and uncertainty quantification algorithms.
 Thereafter, the connection of a Python-based model and a closed-source model is described.
 
@@ -13,10 +13,10 @@ Thereafter, the connection of a Python-based model and a closed-source model is 
 Python wrapper
 --------------
 
-The Python wrapper module :py:mod:`case_description` enables to connect the system model to the uncertainty quantification and optimization algorithm.
+The Python wrapper module :py:mod:`case_description` enables to connect the system model to the uncertainty quantification and optimization algorithms.
 The module includes two functions: :py:func:`set_params()` and :py:func:`evaluate()`.
 
-In :py:func:`set_params()`, data can be imported before the model evaluations commence. 
+In :py:func:`set_params()`, data is recommended be imported before the model evaluations commence. 
 In this way, the computational cost of importing data is spent only once,
 before the evaluation loop.
 To illustrate, importing data from 3 data files (e.g. :file:`datafile_1.csv`, :file:`datafile_2.csv`, :file:`datafile_3.csv`) 
@@ -82,7 +82,7 @@ The volume :math:`V` and deflection :math:`d` are defined as:
 :math:`d = F L \left( \dfrac{2}{A_1 E_1} + \dfrac{2 \sqrt{2}}{A_2 E_2} - \dfrac{2 \sqrt{2}}{A_3 E_3} + \dfrac{2}{A_4} \right)`
 
 Where :math:`F,~L,~E,~A` are the exerted force, length, Young's modulus and cross-sectional area, respectively. 
-The cross-sectional areas are designed between the following bounds:
+The cross-sectional areas are designed respecting the following bounds:
 
 - :math:`A_1 \in [1,3] ~\mathrm{cm}^2`
 - :math:`A_2 \in [\sqrt{2},3] ~\mathrm{cm}^2`
@@ -121,7 +121,7 @@ Connecting the case to the framework
 
 To connect the model to the optimization and uncertainty quantification framework, a specific folder for the model
 should be created in the general :file:`CASES` folder. In the :file:`CASES` folder, a reference folder :file:`CASES\\REF` is present, which includes the necessary
-files to characterize and connect a system model. 
+files to characterize and connect a new system model. 
 Make a copy of the :file:`REF` folder, paste it in the :file:`CASES` folder and rename it, e.g. into :file:`FOUR_BAR_TRUSS`.
 Hence, a new case folder is present: :file:`CASES\\FOUR_BAR_TRUSS`.
 This folder includes :file:`design_space`, :file:`stochastic_space` and :py:mod:`case_description`.
@@ -232,7 +232,7 @@ EnergyPLAN closed-source model
 
 `EnergyPLAN <https://www.energyplan.eu/>`_ is a software that evaluates national energy system operation. 
 It is used by industry, researchers and policy-makers worldwide. 
-The software includes the electricity, heating, cooling, industry and transport sector to characterize, among others, the primary energy consumption and CO2 emission.
+The software includes the electricity, heating, cooling, industry and transport sector to characterize, among others, the primary energy consumption and CO2 emissions.
 Generally, the software is used through a user-friendly user interface, but it can be called through an external command as well.
 When calling EnergyPLAN through an external command, the input parameters are provided and the outputs are written in external text files.
 
@@ -346,7 +346,7 @@ The :py:func:`run_energyplan()` function is evaluated in :py:func:`evaluate()`, 
 
 The enumerate object :py:data:`x` contains the sample to be evaluated and the index of the sample in the list of samples.
 
-Run an uncertainty quantification
+Run uncertainty quantification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With the characterization complete for uncertainty quantification, the algorithm can be initiated with:
