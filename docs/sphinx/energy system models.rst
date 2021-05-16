@@ -4,8 +4,8 @@ Details on the energy system models
 ===================================
 
 Hydrogen can be used as an energy carrier in several contexts. Among others,
-power-to-power (reproduce electricity in fuel cell or gas turbine), power-to-mobility (hydrogen cars, buses, trucks,...) and 
-power-to-fuel (production of hydrogen, ammonia, methanol,...) are typical valorization pathways. 
+power-to-power (reproduce electricity in fuel cell or gas turbine), power-to-mobility (hydrogen cars, buses, trucks etc.) and 
+power-to-fuel (production of hydrogen, ammonia, methanol etc.) are typical valorization pathways. 
 For each valorization pathway, an energy system model is presented in this section. 
 
 ..
@@ -16,18 +16,18 @@ For each valorization pathway, an energy system model is presented in this secti
 Power-to-fuel
 -------------
 
-In the power-to-fuel model, a photovoltaic array is coupled to an electrolyzer stack through a DC-DC converter with Maximum Power Point Tracking.
+In the power-to-fuel model, a photovoltaic array is coupled to an electrolyzer stack through a DC-DC converter with Maximum Power Point Tracking (MPPT).
 The electricity produced by the photovoltaic array is used to convert water into hydrogen and oxygen.
 
 .. figure:: images/PV_ELEC_SCHEME.svg
    :width: 80%
    :align: center
 
-   The photovoltaic array is connected to the electrolyzer stack through a DC-DC converter with Maximum Power Point Tracking.
+   The photovoltaic array is connected to the electrolyzer stack through a DC-DC converter with MPPT.
    
 The photovoltaic array model and electrolyzer array model are adopted from the PVlib Python package :cite:`pvlib` and from Saeed et al. :cite:`Saeed2015`, respectively.
 The DC-DC converter operates at 100% electrical efficiency and the lifetime of the electrolyzer array is determined based on the number of operating hours during the evaluated year.
-For each system design, the Levelized Cost Of Hydrogen (LCOH) and the produced hydrogen :math:`\dot{m}_{\mathrm{H}_2}` are considered the main performance indicators.
+For each system design, the Levelized Cost Of Hydrogen (LCOH) and the produced hydrogen, :math:`\dot{m}_{\mathrm{H}_2}`, are considered the main performance indicators.
 The produced hydrogen is equal to the sum of the hourly produced hydrogen:
 
 :math:`\dot{m}_{\mathrm{H}_2} = \sum_{i=1}^{8760} \dot{m}_{\mathrm{H}_2,i}`.
@@ -65,7 +65,7 @@ The following table lists the uncertainty characterization of the specific param
    * - parameter
      - distribution
      - unit
-     - ref.
+     - reference
 	 
    * - :math:`\mathrm{u\_sol\_irr}`
      - :math:`\mathcal{U}(90,110)` 
@@ -225,7 +225,7 @@ the Self-Sufficiency Ratio (SSR) is quantified as a secondary performance indica
 :math:`\mathrm{SSR} = 1 - \dfrac{\sum_{i=0}^{8760} P_\mathrm{grid}}{\sum_{i=0}^{8760} P_\mathrm{demand}}`,
 
 where :math:`\sum_{i=0}^{8760} P_\mathrm{grid}` is the demand covered by the grid. 
-In addition to these performance indicators, additional model outputs are present, such as the amoun of grid electricity sold and bought.
+In addition to these performance indicators, additional model outputs are present, such as the amount of grid electricity sold and bought.
 To select other model outputs as optimization objectives, we refer to :ref:`lab:wrapper`. 
 
 To optimize these performance indicators, the capacity of the photovoltaic array (:math:`\mathrm{n\_pv}`, :math:`\mathrm{kW}_\mathrm{p}`), electrolyzer array (:math:`\mathrm{n\_pemel}`, :math:`\mathrm{kW}`),
@@ -244,7 +244,7 @@ The characterization of the grid electricity price depends on the wholesale elec
 made by the distributor on this wholesale electricity price (:math:`\mathrm{elec\_cost\_profit}`) and the fraction of the retail electricity price that
 is represented by the wholesale electricity price (:math:`\mathrm{elec\_cost\_ratio}`). To illustrate, when :math:`\mathrm{elec\_cost\_ratio}` corresponds
 to 30%, then the final price for buying electricity from the grid depends for 30% on the wholesale electricity price and the profit made on this price, and for
-70% on other factors, e.g. distribution costs, taxes. The uncertainty on these three parameters follows from an evolving energy mix, market conditions and
+70% on other factors, e.g. distribution costs and taxes. The uncertainty on these three parameters follows from the evolving energy mix, market conditions and
 political decisions.
 The capital expenditures (CAPEX) on the photovoltaic array (:math:`\mathrm{capex\_pv}`), the hydrogen storage tank (:math:`\mathrm{capex\_tank}`),
 the DC-DC converters (:math:`\mathrm{capex\_dcdc}`), the DC-AC inverter (:math:`\mathrm{capex\_dcac}`) and the CAPEX and 
@@ -252,7 +252,7 @@ replacement cost of the electrolyzer array (:math:`\mathrm{capex\_pemel}` and :m
 and fuel cell array (:math:`\mathrm{capex\_pemfc}` and :math:`\mathrm{repl\_pemfc}`, respectively)
 can be considered uncertain due to the significant timeframe between the design stage and investment stage and the evolving market conditions.
 Due to commissioning and maintenance quality, the operating expenditures on the photovoltaic array (:math:`\mathrm{opex\_pv}`), 
-DC-DC converter (:math:`\mathrm{opex\_dcdc}`), DC-AC inverter (:math:`\mathrm{opex\_dcac}`), electrolyzer array (:math:`\mathrm{opex\_pemel}`), 
+DC-DC converter (:math:`\mathrm{opex\_dcdc}`), DC-AC inverter (:math:`\mathrm{opex\_dcac}`), electrolyzer array (:math:`\mathrm{opex\_pemel}`),
 hydrogen storage tank (:math:`\mathrm{opex\_tank}`) and fuel cell array (:math:`\mathrm{opex\_pemfc}`) can be considered uncertain.
 The interest rate (:math:`\mathrm{int\_rate}`) and inflation rate (:math:`\mathrm{infl\_rate}`) are considered uncertain based on the unknown finance type and unknown evolution of the inflation
 over the system lifetime, respectively. Finally, the lifetime of the electrolyzer array and fuel cell array (:math:`\mathrm{life\_pemel}` and :math:`\mathrm{life\_pemfc}`, respectively) are 
@@ -278,7 +278,7 @@ The following table lists the uncertainty characterization of the specific param
    * - parameter
      - distribution
      - unit
-     - ref.
+     - reference
 	 
    * - :math:`\mathrm{u\_sol\_irr}`
      - :math:`\mathcal{U}(90,110)` 
@@ -458,7 +458,7 @@ The mobility demand corresponds to a bus depot. The bus fleet at this depot can 
 hydrogen-fueled buses (i.e.\ powered by a hydrogen fuel cell), diesel-fueled buses or a mix of both. To determine the
 period in which these buses are fueled, the European daily bus refuelling profile is adopted :cite:`arya`.
 The energy consumption for both bus types is determined based on the energy consumption per unit of distance covered.
-To fuel the hydrogen-fueled buses, an on-site, grid-connected hydrogen refueling station is considered. In this
+To fuel the hydrogen-fueled buses, an on-site, grid-connected, hydrogen refueling station is considered. In this
 hydrogen refueling station, a photovoltaic array is connected to a DC bus bar through a DC-DC converter with Maximum Power Point Tracking.
 The hydrogen is generated, compressed and stored in a Proton Exchange Membrane electrolyzer array, compressor and storage tank, respectively.
 Before dispensation, the hydrogen is cooled down in a cooling unit.      
@@ -507,7 +507,7 @@ the GHG emissions from grid electricity consumption :math:`\mathrm{GHG}_\mathrm{
 
 :math:`\mathrm{CI} = \dfrac{{\mathrm{GHG}}_\mathrm{comp,a} + \mathrm{GHG}_\mathrm{grid,a} + \mathrm{GHG}_\mathrm{diesel,a}}{D}`.
 
-In addition to these performance indicators, additional model outputs are present, such as the amoun of grid electricity sold and bought.
+In addition to these performance indicators, additional model outputs are present, such as the amount of grid electricity sold and bought.
 To select other model outputs as optimization objectives, we refer to :ref:`lab:wrapper`. 
 
 To optimize these performance indicators, the capacity of the photovoltaic array (:math:`\mathrm{n\_pv}`, :math:`\mathrm{kW}_\mathrm{p}`), electrolyzer array (:math:`\mathrm{n\_pemel}`, :math:`\mathrm{kW}`),
@@ -542,7 +542,7 @@ The following table lists the uncertainty characterization of the specific param
    * - parameter
      - distribution
      - unit
-     - ref.
+     - reference
 	 
    * - :math:`\mathrm{u\_sol\_irr}`
      - :math:`\mathcal{U}(90,110)` 
@@ -678,7 +678,7 @@ If the value is different (or subjected to uncertainty), all hourly solar irradi
 The characterization of the energy demand in :file:`design_space` is similar. This enables the user to scale the typical demand profiles for a specific location
 based on the number of demands (e.g. a community of 500 dwellings).
 
-The locations with climate and demand data present in RHEIA:
+The locations with climate and demand data currently present in RHEIA:
 
 .. list-table:: Climate data and energy demand data 
    :widths: 40 40 40 40
