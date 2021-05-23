@@ -17,7 +17,7 @@ To run the uncertainty quantification, first the uncertainty quantification modu
 
     import rheia.UQ.uncertainty_quantification as rheia_uq
 
-To characterize the uncertainty quantification, the following dictionary with parameters related to the case and uncertainty quantification should be completed::
+To characterize the uncertainty quantification, the following dictionary with parameters related to the case and uncertainty quantification should be defined::
 
     dict_uq = {'case':                  case_name,
                'pol order':             pol_order,
@@ -65,7 +65,7 @@ The polynomial order is characterized by an integer, e.g. for a polynomial order
 'objective names': obj_names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A PCE is constructed for only 1 quantity of interest. However, the statistical moments for several model outputs can be of interest.
+A PCE class-object is constructed for only 1 quantity of interest. However, the statistical moments for several model outputs can be of interest.
 To avoid that for each model output, a new set of model evaluations needs to be performed, different model outputs can be stored for each model evaluation.
 The names of the different model outputs can be provided in the list :py:data:`'objective_names'`. 
 These names are chosen freely by the user, formatted in a string.
