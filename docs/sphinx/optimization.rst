@@ -1,13 +1,13 @@
 .. _lab:optimization:
 
-Run an optimization
+Running optimization tasks in RHEIA
 ====================
 
-The deterministic design optimization procedure optimizes multiple objectives by controlling the design variables. 
-The robust design optimization procedure optimizes the mean and minimizes the standard deviation of quantities of interest by controlling the design variables. 
-The multi-objective optimization algorithm is Nondominating Sorting Genetic Algorithm (NSGA-II). More information on NSGA-II is available in :ref:`lab:ssnsga2`.
+The deterministic design optimization procedure optimizes model outputs of interest by searching a finite design space as it is constructed by selected model input parameters, also known as design variables. 
+The robust design optimization works under the same principle. The fundamental change is focused on the probabilistic treatment of the model input parameters (i.e. definition and propagation of uncertainties), which dictate the optimization of mean and minimization of the standard deviation of the considered model outpus.
+The multi-objective optimization algorithm used in RHEIA is Nondominating Sorting Genetic Algorithm (NSGA-II). More information on NSGA-II is available in :ref:`lab:ssnsga2`.
 The design variables and model parameters are characterized in the :file:`design_space` file.
-For robust design optimization, the uncertainty on the respective design variables and model parameters is characterized in the :file:`stochastic_space` file.
+As per robust design optimization, the uncertainty on the respective design variables and model parameters is characterized in the :file:`stochastic_space` file.
 More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively. 
 The system model evaluations are coupled with the optimization algorithm in :py:mod:`case_description.`.
 More information on this Python wrapper is discussed in :ref:`lab:wrapper`. 
@@ -15,14 +15,14 @@ More information on this Python wrapper is discussed in :ref:`lab:wrapper`.
 
 .. _lab:ssrundetopt:
 
-Run a deterministic design optimization
+Run deterministic design optimization
 ---------------------------------------
 
 To run a deterministic design optimization, first the optimization module should be imported::
 
     import rheia.OPT.optimization as rheia_opt
 
-To characterize a deterministic design optimization, the following dictionary should be completed::
+To characterize and configure a deterministic design optimization, the following Python dictionary should be completed::
 
     dict_opt = {'case':                case_name,
                 'objectives':          {opt_type: weights}, 
@@ -59,7 +59,7 @@ If one of these items is not provided, the code will return an error.
 ~~~~~~~~~~~~~~~~~
 
 The string :py:data:`case_name` corresponds to the name of the case. 
-This name should be equal to the name of the folder that comprises the case, which situates in the folder that contains the cases (i.e. :file:`CASES`). 
+This name should be equal to the name of the folder that enclosures all the case files, which situates in the folder that contains the cases (i.e. :file:`CASES`). 
 To illustrate, if the optimization case is defined in :file:`CASES\\CASE_1`, 
 the dictionary includes the following item::
 
@@ -71,7 +71,7 @@ the dictionary includes the following item::
 In the item with :py:data:`'objectives'` key, the optimization type and the weigths for the objectives are specified. 
 Two optimization types are available: deterministic design optimization (:py:data:`'DET'`) and robust design optimization (:py:data:`'ROB'`).
 The weights are defined in a tuple and determine if the objective is either maximized or minimized.
-When minimization of an objective is desired, the weigth corresponds to -1. 
+When minimization of an objective is desired, the weight corresponds to -1. 
 Instead, when maximization is desired, the weight corresponds to 1. 
 For deterministic design optimization (:py:data:`'DET'`), the order of the weights corresponds to the order of the model outputs
 returned by the method :py:meth:`evaluate()` (see :ref:`lab:wrapper`).  
@@ -85,7 +85,7 @@ Alternatively, maximizing the first objective and minimizing the second and thir
 	
 In the robust design optimization approach, the mean and standard deviation for each quantity of interest is optimized.
 For each quantity of interest, the weight for the mean and standard deviation should be provided.
-Hence, the weights with even index correspond to the mean, while the weigths with odd index correspond to the standard deviation.
+Hence, the weights with even index correspond to the mean, while the weights with odd index correspond to the standard deviation.
 To illustrate, when the mean should be maximized and the standard deviation minimized for two quantities of interest, the dictionary item reads::
 
 	'objectives': {'ROB': (1, -1, 1, -1)}
@@ -94,7 +94,7 @@ Instead, when only one quantity of interest is desired, for which both the mean 
 
 	'objectives': {'ROB': (-1, -1)}
 	
-Note that for robust design optimization, the number of wheights should be equal to two times the number of quantities of interest (i.e. the mean and standard deviation for each
+Note that for robust design optimization, the number of weights should be equal to two times the number of quantities of interest (i.e. the mean and standard deviation for each
 quantity of interest is an objective). Therefore, make sure that the number of quantities of interest defined (see :ref:`lab:secobjofint`) matches the number of weights defined.
 
 'population size': n_pop
@@ -118,7 +118,7 @@ Additional details on defining the value for the population size is illustrated 
 The stopping criterion for the optimization is defined by the computational budget, i.e. the number of model evaluations. 
 This is a common engineering stopping criterion, which is defined based on the time available
 to perform the optimization. To illustrate, when the system model takes 10 seconds to evaluate and 4 cores are available for parallel processing, 
-the computational budget for a deterministic design optimization procedure of 1 hour is equal to 1440.
+the computational budget for a deterministic design optimization procedure of 1 hour is equal to 1440. 
 The allocation of this computational budget through the integer :py:data:`comp_budget` is illustrated below::
 
 	'stop': ('BUDGET', 1440)
@@ -236,7 +236,7 @@ After importing multiprocessing, the item can be defined by::
 Example of a dictionary for deterministic design optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When combining the examples in the previous section, a configurated optimization dictionary with the necessary items looks as follows:
+When combining the examples in the previous section, a fully-defined optimization dictionary with the necessary items looks as follows:
 
 .. code-block:: python
    :linenos:
@@ -284,7 +284,7 @@ For robust design optimization, like for deterministic design optimization, firs
     import rheia.OPT.optimization as rheia_opt
 
 To characterize the robust design optimization, the following dictionary with parameters related to the case, optimization 
-and uncertainty quantification should be completed::
+and uncertainty quantification should be provided::
 
     dict_opt = {'case':                  case_name,
                 'objectives':            {opt_type: weights}, 
@@ -326,7 +326,7 @@ The polynomial order is characterized by an integer, e.g. for a polynomial order
 
 	'pol order': 2
 	
-Determining the appropriate polynomial order is case-specific. A method to determine the order is presented in the next section :ref:`lab:detpolorder`.
+Determining the appropriate polynomial order is strongly case-specific. A method to determine the order is presented in the next section :ref:`lab:detpolorder`.
 
 'objective names': [obj_names]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -347,7 +347,7 @@ If the model returns 3 outputs, the list can be constructed as::
 Despite that several outputs can be returned for each model evaluation, not all outputs might be of interest for the robust design optimization.
 The quantities of interest should be provided in the list :py:data:`obj_of_interest`. These names should be present in the list of all the objective names.
 To illustrate, for a robust design optimization with the mean and standard deviation of :py:data:`'output_2'` and :py:data:`'output_3'` as objectives, 
-the item in the dictionary is configurated as::
+the item in the dictionary is configured as::
 
 	'objective of interest': ['output_2','output_3']
 
@@ -462,7 +462,7 @@ Then, for each design sample in the array :py:data:`X`, a :file:`design_space` f
 For each :file:`design_space` file, the PCE is constructed through the characterization of the uncertainty quantification dictionary. 
 For more information on the characterization of this dictionary, we refer to :ref:`lab:uncertaintyquantification`.
 The uncertainty quantification dictionary and the specific :file:`design_space` file is then provided to the :py:func:`run_uq` function.
-This results in a PCE for each design sample, with a corresponding LOO error. That LOO error is stored in the :file:`RESULTS` folder.
+This results in a PCE for each design sample, with a corresponding Leave-One-Out (LOO) error. That LOO error is stored in the :file:`RESULTS` folder.
 Considering the specific dictionary determined above, the results for the different design samples are stored in :file:`\\RESULTS\\case_name\\UQ`::
 
     RESULTS 
