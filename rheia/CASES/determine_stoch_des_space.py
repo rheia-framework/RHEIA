@@ -276,7 +276,7 @@ def check_dictionary(run_dict, uq_bool=False):
         except BaseException:
             raise KeyError(
                 '"%s" is missing in the input dictionary.' %
-                key)
+                requirements[-1])
 
         if not isinstance(run_dict['objective of interest'], list):
             raise TypeError(
