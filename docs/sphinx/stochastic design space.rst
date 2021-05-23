@@ -109,8 +109,9 @@ The following distributions are available:
 - Gaussian
 
 The meaning of deviation at the end of the line depends on the distribution. When a Uniform distribution is considered,
-the deviation refers to the absolute (or relative) difference between the upper bound of the Uniform distribution and the mean: for :math:`\mathcal{U}(a,b)`, :math:`deviation = (b-a)/2`).
+the deviation refers to the absolute (or relative) difference between the upper bound of the Uniform distribution and the mean: for :math:`\mathcal{U}(a,b)`, :math:`deviation = (b-a)/2`). 
 When a Gaussian distribution is considered, the value corresponds to the standard deviation: :math:`\mathcal{N}(mean,deviation)`.
+Keep always in mind that the mean value of the design variables is the deterministic value assigned by the optimizer in each iteration. In the case of model fixed parameter the mean value corresponds to the fixed value as it is assigned in the model definition.
 
 An example of a configured uncertain parameter `par_2`, characterized by a Uniform distribution with a :math:`\pm 1` deviation from the mean value::
 
@@ -118,12 +119,12 @@ An example of a configured uncertain parameter `par_2`, characterized by a Unifo
 
 Note that it is not required to allocate an uncertainty to every design variable and model parameter defined in :file:`design_space`.
 In other words, when a parameter (or variable) is defined in :file:`design_space`, but not in :file:`stochastic_space`, the parameter (or variable) is considered deterministic. 
-Moreover, the order of appearance of parameters and variables in :file:`design_space` should not be kept in :file:`stochastic_space`.
+Moreover, it is not necessary to keep the same order of appearance of parameters and variables in :file:`design_space` :file:`stochastic_space` files.
 
 Example of stochastic_space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In summary, a :file:`stochastic_space` file corresponding to the illustrative :file:`design_space` example file in :ref:`lab:ssexampleds` might look like this::
+In summary, a :file:`stochastic_space` file corresponding to the illustrative :file:`design_space` example file in :ref:`lab:ssexampleds` looks like this::
 
 	par_1        relative Gaussian 0.5
 	par_2        absolute Uniform  1
