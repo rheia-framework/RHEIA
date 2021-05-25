@@ -19,21 +19,21 @@ Detailed information on characterizing the design variables is available in :ref
 To perform a deterministic design optimization, the following optimization dictionary has to be filled and passed as an argument to the :py:func:`run_opt` function. 
 
 .. code-block:: python
-   :linenos:
+  :linenos:
 
-   import rheia.OPT.optimization as rheia_opt
-   import multiprocessing as mp
+  import rheia.OPT.optimization as rheia_opt
+  import multiprocessing as mp
 
-   dict_opt = {'case':                'H2_FUEL',
-               'objectives':          {'DET': (-1, 1)}, 
-               'stop':                ('BUDGET', 2000),
-               'n jobs':              int(mp.cpu_count() / 2), 
-               'population size':     20,
-               'results dir':         'run_1',
-               }
+  dict_opt = {'case':                'H2_FUEL',
+              'objectives':          {'DET': (-1, 1)}, 
+              'stop':                ('BUDGET', 2000),
+              'n jobs':              int(mp.cpu_count() / 2), 
+              'population size':     20,
+              'results dir':         'run_1',
+              }
 
-   if __name__ == '__main__':
-       rheia_opt.run_opt(dict_opt)
+  if __name__ == '__main__':
+      rheia_opt.run_opt(dict_opt)
 
 In the dictionary, the case folder name :py:data:`'H2_FUEL'` is provided, followed by the optimization type :py:data:`'DET'` and the weigths for both objectives, 
 i.e. minimization for the first returned objective :py:data:`lcoh` and maximization for the second returned objective :py:data:`m_h2`. 
