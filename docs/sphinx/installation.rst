@@ -3,7 +3,7 @@
 Installation
 ============
 
-RHEIA is a Python package. The following sections provide information on how to install Python, followed by the installation guide of RHEIA
+RHEIA in its entirety is a Python package.. The following sections provide information on how to install Python, followed by the installation guide of RHEIA
 and the package dependencies for performing deterministic design optimization, robust design optimization and uncertainty quantification.
 
 Installing Python
@@ -34,7 +34,7 @@ The RHEIA features require the installation of several packages.
 
 To evaluate the hydrogen-based energy system models:
 
-- Included in Anaconda:
+- Included in Anaconda native installation:
    - Matplotlib
    - NumPy
    - Pandas 
@@ -43,7 +43,7 @@ To evaluate the hydrogen-based energy system models:
    
 To perform uncertainty quantification:
 
-- Included in Anaconda:
+- Included in Anaconda native installation:
    - NumPy
    - SciPy
 - Other packages:
@@ -51,7 +51,7 @@ To perform uncertainty quantification:
 
 To perform deterministic design optimization:
 
-- Included in Anaconda:
+- Included in Anaconda native installation:
    - NumPy
 - Other packages:
    - pyDOE
@@ -59,12 +59,14 @@ To perform deterministic design optimization:
 
 To perform robust design optimization:
 
-- Included in Anaconda:
+- Included in Anaconda native installation:
    - NumPy
    - SciPy
 - Other packages:
    - pyDOE
    - DEAP
+
+In case Anaconda is used, keep in mind that the packages excluded from the Anaconda native installation can be installed in the activated Anaconda environment either by the conda library or through the classic pip library.
 
 Import what you need
 --------------------
