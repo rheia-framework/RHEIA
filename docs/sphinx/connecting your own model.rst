@@ -188,7 +188,7 @@ Once the characterization and coupling of the case is completed,
 the optimization dictionary can be completed to perform the design optimization. 
 To illustrate, for a deterministic design optimization:
 
-.. code-block:: python
+.. code-block::
    :linenos:
 
    import rheia.OPT.optimization as rheia_opt

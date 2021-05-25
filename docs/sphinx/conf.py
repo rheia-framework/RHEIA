@@ -94,7 +94,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 
-#html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_rtd_theme"
 
 #html_theme = 'default'
 
