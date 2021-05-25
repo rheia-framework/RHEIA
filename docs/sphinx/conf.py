@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = u'rheia'
-copyright = u'2020, Diederik Coppitters, Panagiotis Tsirikoglou'
+copyright = u'2021, Diederik Coppitters, Panagiotis Tsirikoglou'
 author = u'Diederik Coppitters, Panagiotis Tsirikoglou'
 
 # The short X.Y version
@@ -94,7 +94,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 
-html_theme = "sphinx_rtd_theme"
+#html_theme = "sphinx_rtd_theme"
 
 #html_theme = 'default'
 
