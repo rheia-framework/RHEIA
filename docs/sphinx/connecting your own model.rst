@@ -191,16 +191,16 @@ To illustrate, for a deterministic design optimization:
 .. code-block:: python
    :linenos:
 
-    import rheia.OPT.optimization as rheia_opt
+   import rheia.OPT.optimization as rheia_opt
 
-    dict_opt = {'case':                'FOUR_BAR_TRUSS',
-                'objectives':          {'DET': (-1, -1)}, 
-                'stop':                ('BUDGET', 9000),
-                'population size':     30,
-                'results dir':         'run_1',
-               }
+   dict_opt = {'case':                'FOUR_BAR_TRUSS',
+               'objectives':          {'DET': (-1, -1)}, 
+               'stop':                ('BUDGET', 9000),
+               'population size':     30,
+               'results dir':         'run_1',
+              }
     
-    rheia_opt.run_opt(dict_opt)
+   rheia_opt.run_opt(dict_opt)
 
 In this dictionary, a deterministic design optimization is specified, for which both objectives should be minimized. The computational budget is set at 9000,
 which leads to at least 300 generations with a population size of 30. The number of jobs, crossover probability, mutation probability, eta, starting population
