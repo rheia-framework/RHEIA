@@ -3,8 +3,8 @@
 Tutorial
 ========
 
-In this tutorial, the deterministic design optimization, robust design optimization and uncertainty quantification procedure
-is applied on a photovoltaic-electrolyzer system. 
+In this tutorial, the capabilities of the implemented deterministic design optimization, robust design optimization and uncertainty quantification procedures
+are demonstrated on a photovoltaic-electrolyzer system. 
 The system model evaluates the levelized cost of hydrogen and hydrogen production of a photovoltaic array coupled to an electrolyzer stack. 
 This coupling is realised through DC-DC converters. Additional details on the system operation are presented in :ref:`lab:pvelectrolyzermodel`.
 
@@ -16,7 +16,7 @@ can be designed such that the Levelized Cost Of Hydrogen (:math:`\mathrm{LCOH}`)
 The bounds for the design variables and the values for the model parameters can be adjusted in :file:`CASES\\H2_FUEL\\design_space`.
 Detailed information on characterizing the design variables is available in :ref:`lab:ssdesignspace`.
 
-To perform a deterministic design optimization, the following optimization dictionary has to be characterized and passed as an argument to the :py:func:`run_opt` function. 
+To perform a deterministic design optimization, the following optimization dictionary has to be filled and passed as an argument to the :py:func:`run_opt` function. 
 
 .. code-block:: python
    :linenos:
@@ -207,7 +207,7 @@ For a polynomial order of 2, the stochastic parameters with a negligible Sobol' 
 
 A threshold for the Sobol' index is set at 1/12 (= 1/number of uncertain parameters).
 5 out of 12 stochastic parameters have a maximum Sobol' index below the threshold, 
-which indicates that these parameters can be considered deterministic without losing significant statistical accuracy on the LCOH.
+which indicates that these parameters can be considered deterministic without losing significant accuracy on the calculated statistical moments of the LCOH.
 This reduction results in a decrease of 60% in computational cost, as only 72 model evaluations are required to 
 construct a PCE for 7 uncertain parameters in the current truncation scheme, as opposed to 182 model evaluations with 12 uncertain parameters. 
 Thus, by following this strategy, the 5 parameters with negligible contribution can be removed from :file:`stochastic_space`.
