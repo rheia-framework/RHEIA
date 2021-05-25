@@ -239,7 +239,7 @@ Example of a dictionary for deterministic design optimization
 When combining the examples in the previous section, a fully-defined optimization dictionary with the necessary items looks as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.OPT.optimization as rheia_opt
 
@@ -256,7 +256,7 @@ In the example below, parallel processing is considered, the optimization starts
 and the crossover probability is decreased to 0.85:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.OPT.optimization as rheia_opt
    import multiprocessing as mp
@@ -378,7 +378,7 @@ Example of a dictionary for robust design optimization
 When combining the examples in the previous section, a configurated optimization dictionary with only necessary items for robust design optimization looks as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.OPT.optimization as rheia_opt
 
@@ -397,7 +397,7 @@ When combining the examples in the previous section, a configurated optimization
 An additional example, where parallel processing is considered, the mutation probability is decreased to 0.05 and the sampling method is random:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.OPT.optimization as rheia_opt
    import multiprocessing as mp
@@ -431,7 +431,7 @@ impact on the standard deviation on the quantity of interest. To determine the p
 the design space is performed as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
    import multiprocessing as mp
@@ -490,7 +490,7 @@ the robust design optimization procedure.
 The worst-case LOO error (i.e. the highest LOO error over the diffferent design samples) can be determined as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
 
@@ -527,7 +527,7 @@ The stochastic parameters with negligible effect are printed through the followi
 where a threshold for the Sobol' index is set at 1/number of uncertain parameters (in this example, 10 uncertain parameters):
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
 
@@ -564,7 +564,7 @@ on line :math:`j` in :file:`fitness`.
 Plotting the results can be performed as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
    import matplotlib.pyplot as plt

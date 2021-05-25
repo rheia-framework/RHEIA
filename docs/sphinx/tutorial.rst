@@ -19,7 +19,7 @@ Detailed information on characterizing the design variables is available in :ref
 To perform a deterministic design optimization, the following optimization dictionary has to be filled and passed as an argument to the :py:func:`run_opt` function. 
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.OPT.optimization as rheia_opt
    import multiprocessing as mp
@@ -53,7 +53,7 @@ might differ slightly from the ones obtained with this run.
 The objectives and the corresponding inputs are plotted in function of the LCOH (for the results stored in :file:`run_tutorial`): 
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
    import matplotlib.pyplot as plt
@@ -114,7 +114,7 @@ that leads to an accurate expansion is not known a priori and should, therefore,
 We refer to :ref:`lab:detpolorder` for more details on this method.
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
    import multiprocessing as mp
@@ -150,7 +150,7 @@ To determine the worst-case LOO error for the 20 design samples, a :py:class:`po
 followed by the call of the :py:meth:`get_loo` method:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
 
@@ -189,7 +189,7 @@ The details on this method are provided in :ref:`lab:detpolorder`.
 For a polynomial order of 2, the stochastic parameters with a negligible Sobol' index can be identified as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
 
@@ -227,7 +227,7 @@ The code is similar than for the deterministic design optimization procedure. Th
 :ref:`lab:runrdo`.
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.OPT.optimization as rheia_opt
    import multiprocessing as mp
@@ -252,7 +252,7 @@ With 72 model evaluations required per design sample, a computational budget of 
 Similar to the deterministic design optimization, the optimization results can be plotted as follows (note that :py:data:`eval_type` has changed into :py:data:`'ROB'`):
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
    import matplotlib.pyplot as plt
@@ -298,7 +298,7 @@ This file can be saved as e.g. :file:`design_space_uq`, to avoid losing the conf
 The uncertainty quantification dictionary is then characterized and evaluated as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
    import multiprocessing as mp
@@ -320,7 +320,7 @@ For this tutorial, the results of the uncertainty quantification are provided in
 The resulting Sobol' indices can be plotted in a bar chart:
 
 .. code-block:: python
-   :linenos:
+    
 
    import rheia.POST_PROCESS.lib_post_process as rheia_pp
    import matplotlib.pyplot as plt

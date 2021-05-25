@@ -137,7 +137,7 @@ which parameters are considered uncertain during the evaluation, we refer to :re
 Evaluating a single design can be performed as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import os
    import rheia
@@ -400,7 +400,7 @@ which parameters are considered uncertain during the evaluation, we refer to :re
 Evaluating a single design can be performed as follows:
 
 .. code-block:: python
-   :linenos:
+    
 	
    import os
    import rheia
@@ -598,7 +598,7 @@ which parameters are considered uncertain during the evaluation, we refer to :re
 Evaluating a single design can be performed as follows:
 
 .. code-block:: python
-   :linenos:
+    
 
    import os
    import rheia
