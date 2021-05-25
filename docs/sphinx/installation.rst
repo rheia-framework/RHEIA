@@ -3,7 +3,7 @@
 Installation
 ============
 
-RHEIA in its entirety is a Python package.. The following sections provide information on how to install Python, followed by the installation guide of RHEIA
+RHEIA in its entirety is a Python package. The following sections provide information on how to install Python, followed by the installation guide of RHEIA
 and the package dependencies for performing deterministic design optimization, robust design optimization and uncertainty quantification.
 
 Installing Python
@@ -19,14 +19,15 @@ Installing RHEIA
 RHEIA is available on PyPi, and can be downloaded via the `pip <https://pip.pypa.io/en/stable/>`_ package manager.
 The following command installs the most recent version of RHEIA and the package dependencies::
 
-	pip install -i https://test.pypi.org/simple/ rheia-vub
+	pip install rheia
 	
 Specific from a Jupyter Kernel::
 
 	import sys
-	!{sys.executable} -m pip install -i https://test.pypi.org/simple/ rheia-vub
+	!{sys.executable} -m pip install rheia
 	
-
+After installation, the package should be installed in the native :file:`rheia` folder under the default :file:`site-packages` folder.
+	
 Package dependencies
 --------------------
 
