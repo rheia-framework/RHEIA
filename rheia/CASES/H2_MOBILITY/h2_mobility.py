@@ -565,41 +565,6 @@ class Evaluation:
 
         return m_max
 
-    def dispenser(self, m_h2):
-        """
-        The cooling power is determined before the dispensation of the hydrogen
-        into the bus fuel tank [4].
-
-        [4] A. Elgowainy, K. Reddi, D. Y. Lee, N. Rustagi, and E. Gupta,
-        “Techno-economic and thermodynamic analysis of pre-cooling systems at
-        gaseous hydrogen refueling stations,” Int. J. Hydrogen Energy, vol. 42,
-        no. 49, pp. 29067–29079, Dec. 2017.
-
-        Parameters
-        ----------
-        m_h2 : float
-            Hydrogen mass flow rate [kg/h].
-
-        Returns
-        -------
-        power : float
-            The required cooling power for dispensation [W].
-
-        """
-
-        demand_day_h2 = sum(self.load_h2[:24])
-
-        if m_h2 < 1e-6 or demand_day_h2 < 1e-4:
-            power = 0.
-        else:
-            t_amb = 10.4
-            m_h2 *= 1. / 3600.
-            ei_pcu = ((0.3 / (1.6 * np.exp(-0.018 * t_amb))) +
-                      (25. * np.log(t_amb) - 21.) / demand_day_h2)  # kWhe/kgH2
-            power = ei_pcu * m_h2 * 3.6e6  # W
-
-        return power
-
     ##############################
     # management strategy module #
     ##############################
@@ -784,7 +749,6 @@ class Evaluation:
         """
 
         n_compr = np.zeros(self.length)
-        n_disp = np.zeros(self.length)
         n_dcdc_pem = np.zeros(self.length)
         n_dcac = np.zeros(self.length)
 
@@ -799,10 +763,6 @@ class Evaluation:
         for t in range(self.length):
             e_grid_buy = 0.
             e_grid_sold = 0.
-
-            # define the power for dispensation
-            p_disp = self.dispenser(self.load_h2[t])
-            n_disp[t] = p_disp
 
             # define if there is any H2 demand left after assessing the tank
             demand_left = self.extract_h2_from_tank(self.load_h2[t])
@@ -877,7 +837,6 @@ class Evaluation:
 
         # define the capacity of the converters, compression and cooling
         self.res['n_compr'] = max(n_compr) / 1e3
-        self.res['n_cooling'] = max(n_disp) / 1e3
         self.res['n_dcdc_pemel'] = max(n_dcdc_pem) / 1e3
         self.res['n_dcac'] = max(n_dcac) / 1e3
 
@@ -963,11 +922,6 @@ class Evaluation:
                                                (crf + self.par['opex_disp']))
         components_cost += dispenser_cost
 
-        # annual cost of dispensation cooling
-        cooling_cost = self.res['n_cooling'] * (self.par['capex_cool'] *
-                                                (crf + self.par['opex_cool']))
-        components_cost += cooling_cost
-
         # annual cost of DC-AC inverter
         dcac_cost = self.res['n_dcac'] * (self.par['capex_dcac'] *
                                           (crf + self.par['opex_dcac']))
@@ -1042,10 +996,6 @@ class Evaluation:
         dispenser_co2 = self.par['n_disp'] * self.par['co2_disp']
         comp_co2 += dispenser_co2
 
-        # annual CO2 emission of cooling unit production
-        cooling_co2 = self.res['n_cooling'] * self.par['co2_cool']
-        comp_co2 += cooling_co2
-
         # annual CO2 emission of DC-AC inverter production
         dcac_co2 = self.res['n_dcac'] * self.par['co2_dcac']
         comp_co2 += dcac_co2
@@ -1096,10 +1046,6 @@ class Evaluation:
                 'compressor capacity:'.ljust(30) +
                 '%.5f kW' %
                 self.res['n_compr'])
-            print(
-                'cooling capacity:'.ljust(30) +
-                '%.5f kW' %
-                self.res['n_cooling'])
             print('life electrolyzer:'.ljust(30) + '%.5f year' %
                   self.res['life_pemel'])
 
