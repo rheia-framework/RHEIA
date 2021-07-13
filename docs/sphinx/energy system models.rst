@@ -465,26 +465,25 @@ Before dispensation, the hydrogen is cooled down in a cooling unit.
 
 .. _fig:pvmobscheme:
 
-.. figure:: images/PV_MOB_SCHEME.svg
+.. figure:: images/system_mob.svg
    :width: 80%
    :align: center
 
    The bus fleet can consist of hydrogen-fueled buses, diesel-fueled buses or a mix of both. 
    For the hydrogen-fueled buses, a grid-connected hydrogen refueling station is considered. 
    In the hydrogen refueling station, a photovoltaic array produces electricity to generate hydrogen in the electrolyzer. 
-   The produced hydrogen is compressed and stored in storage tanks. Before the dispensation of the hydrogen, 
-   the hydrogen is cooled down to 233 K to limit the temperature in the bus tank.
+   The produced hydrogen is compressed and stored in storage tanks.
 
 The power management strategy for the hydrogen refueling station aims to continuously comply with the mobility demand. 
 During the refueling period, hydrogen is extracted from the storage tank. When the storage tank is empty and the hydrogen 
-demand is not satisfied, the remaining hydrogen is produced instantaneously in the electrolyzer array, compressed, cooled and dispensed. 
-To power the electrolyzer array, compression and cooling, first PV electricity is considered, followed by the power from the battery stack. 
+demand is not satisfied, the remaining hydrogen is produced instantaneously in the electrolyzer array, compressed and dispensed. 
+To power the electrolyzer array and compression, first PV electricity is considered. 
 When the PV electricity does not comply with the electricity demand, grid electricity is used to cover the remaining demand. 
 Alternatively, when the storage tank is able to comply with the mobility demand, the PV electricity is used to
 generate and compress hydrogen in the electrolyzer array and the compressor. The generated hydrogen is stored in the hydrogen storage tank. 
  
 ..
-	At the bus depot, a typical amount of 50 buses are parked
+	At the bus depot, a typical amount of 40 buses are parked
 	with an average utilisation rate of 250 km per bus per day
  
 The photovoltaic array model and electrolyzer array model are adopted from the PVlib Python package :cite:`pvlib` and from Saeed et al. :cite:`Saeed2015`, respectively.
@@ -497,7 +496,7 @@ The LCOD is presented as the annualized system cost over the annual distance tra
 
 :math:`\mathrm{LCOD} = \dfrac{\mathrm{CAPEX}_\mathrm{a} + \mathrm{OPEX}_\mathrm{a} + \mathrm{Repl}_\mathrm{a} + G_\mathrm{c,a} - G_\mathrm{s,a} + \mathrm{diesel}_\mathrm{a}}{D}`.
 
-To determine the system cost, the annualized investment cost of all components :math:`\mathrm{CAPEX}_\mathrm{a}`, annualized operational cost :math:`\mathrm{OPEX}_\mathrm{a}`, annualized replacement cost :math:`R_\mathrm{c,a}`, 
+To determine the system cost, the annualized investment cost of all components :math:`\mathrm{CAPEX}_\mathrm{a}`, annualized operational cost :math:`\mathrm{OPEX}_\mathrm{a}`, annualized replacement cost :math:`\mathrm{Repl}_\mathrm{a}`, 
 grid electricity cost :math:`G_\mathrm{c,a}`, the gain from selling excess electricity :math:`G_\mathrm{s,a}` and the annual diesel cost to fuel the diesel-fueled buses :math:`\mathrm{diesel}_\mathrm{a}` are evaluated.
 :math:`D` represents the annual distance travelled by the fleet.  
 
@@ -512,11 +511,8 @@ To select other model outputs as optimization objectives, we refer to :ref:`lab:
 
 To optimize these performance indicators, the capacity of the photovoltaic array (:math:`\mathrm{n\_pv}`, :math:`\mathrm{kW}_\mathrm{p}`), electrolyzer array (:math:`\mathrm{n\_pemel}`, :math:`\mathrm{kW}`),
 hydrogen storage tank (:math:`\mathrm{n\_pemel}`, :math:`\mathrm{kWh}`) and the number of buses fueled by hydrogen (:math:`\mathrm{n\_h2\_bus}`) are considered as
-design variables. The capacity of the compressor and the cooling is quantified based on the highest hydrogen mass flow rate that is compressed and cooled during the evaluated year. 
+design variables. The capacity of the compressor is quantified based on the highest hydrogen mass flow rate that is compressed during the evaluated year. 
 
-In the default uncertainty characterization of this model in this framework, only the aleatory uncertainty on the model parameters is considered. 
-The aleatory uncertainty represents the natural variation of the parameter and is therefore irreducible (i.e. the future evolution of the diesel price).
-Hence, the epistemic uncertainty (i.e. the uncertainty that is characterized by lack of knowledge, and that can be reduced by gaining more information) is not considered.
 The parameters affected by aleatory uncertainty are the grid electricity price, grid electricity GHG emissions, diesel price, energy consumption, 
 annual solar irradiance, average ambient temperature and the inflation rate.
 The uncertainty on the annual solar irradiance (:math:`\mathrm{u\_sol\_irr}`) 
@@ -533,6 +529,15 @@ hydrogen-fueled bus (:math:`\mathrm{cons\_h2\_bus}`) depends on the difference b
 The uncertainty on the specific GHG emission for grid electricity consumption depends on the scenarios for the evolution of the electricity mix.
 The inflation rate (:math:`\mathrm{infl\_rate}`) is considered uncertain based on the unknown evolution of the inflation
 over the system lifetime, respectively. 
+
+For each component, the economic and environmental parameters are subject to epistemic uncertainty. 
+Indeed, by considering generic models, the uncertainty lies in the lack of specifying the exact characteristics of the component. 
+To illustrate, the CAPEX for each component is subject to the current price range on the market. 
+As the investment cost is paid at the beginning of the project, no future (i.e. aleatory) uncertainty is considered for this parameter. 
+Similar assumptions are made on the GHG emissions during the manufacturing of each component. 
+To illustrate, the uncertainty on the GHG emissions during the manufacturing of the hydrogen storage tank relates to the amount of recycled steel that has been used, 
+an uncertainty that can be addressed by specifying the hydrogen tank and its manufacturer.
+
 The following table lists the uncertainty characterization of the specific parameters described above.
 
 .. list-table:: Stochastic space for the photovoltaic-hydrogen system
@@ -574,6 +579,16 @@ The following table lists the uncertainty characterization of the specific param
      - :math:`{\large €} / \mathrm{l}`
      - :cite:`duic2017eu28`
 
+   * - :math:`\mathrm{int\_rate}`
+     - :math:`\mathcal{U}(0.05,0.07)`
+     -
+     - :cite:`coppitters2020robust`
+	 
+   * - :math:`\mathrm{infl\_rate}`
+     - :math:`\mathcal{U}(0.01,0.02)`
+     -
+     - :cite:`coppitters2020robust`
+	
    * - :math:`\mathrm{cons\_diesel\_bus}`
      - :math:`\mathcal{U}(3.7,4.5)` 
      - :math:`\mathrm{kWh} / \mathrm{km}`
@@ -583,6 +598,71 @@ The following table lists the uncertainty characterization of the specific param
      - :math:`\mathcal{U}(3.0,3.2)` 
      - :math:`\mathrm{kWh} / \mathrm{km}`
      - :cite:`frey2007comparing`
+
+   * - :math:`\mathrm{capex\_pv}`
+     - :math:`\mathcal{U}(350,600)`
+     - :math:`{\large €} / \mathrm{kW}_\mathrm{p}`
+     - :cite:`iea2019`
+
+   * - :math:`\mathrm{capex\_tank}`
+     - :math:`\mathcal{U}(11,14)`
+     - :math:`{\large €} / \mathrm{kWh}`
+     - :cite:`coppitters2020robust`
+
+   * - :math:`\mathrm{capex\_pemel}`
+     - :math:`\mathcal{U}(1400,2100)`
+     - :math:`{\large €} / \mathrm{kW}`
+     - :cite:`coppitters2020robust`
+
+   * - :math:`\mathrm{capex\_compr}`
+     - :math:`\mathcal{U}(1000,1500)`
+     - :math:`{\large €} / \mathrm{kW}`
+     - :cite:`niaz2015hydrogen`
+	 
+   * - :math:`\mathrm{capex\_disp}`
+     - :math:`\mathcal{U}(45000,65000)`
+     - :math:`{\large €} / \mathrm{unit}`
+     - :cite:`minutillo2020analyzing,arya,mayyas2019manufacturing`
+
+   * - :math:`\mathrm{capex\_diesel\_bus}`
+     - :math:`\mathcal{U}(220000,250000)`
+     - :math:`{\large €} / \mathrm{unit}`
+     - :cite:`arya, civitas2013smart, ruf2017fuel`
+
+   * - :math:`\mathrm{capex\_h2\_bus}`
+     - :math:`\mathcal{U}(400000,620000)`
+     - :math:`{\large €} / \mathrm{unit}`
+     - :cite:`arya,pocard2016fuel,civitas2013smart, ruf2017fuel`
+	 
+   * - :math:`\mathrm{co2\_pv}`
+     - :math:`\mathcal{U}(520,1550)`
+     - :math:`\mathrm{kg}_{\mathrm{CO}_{2,\mathrm{eq}}} / \mathrm{kW}_\mathrm{p}`
+     - :cite:`kristjansdottir2016embodied` 
+
+   * - :math:`\mathrm{co2\_pemel}`
+     - :math:`\mathcal{U}(190,235)`
+     - :math:`\mathrm{kg}_{\mathrm{CO}_{2,\mathrm{eq}}} / \mathrm{kW}`
+     - :cite:`zhang2017life`
+
+   * - :math:`\mathrm{co2\_tank}`
+     - :math:`\mathcal{U}(6,12)`
+     - :math:`\mathrm{kg}_{\mathrm{CO}_{2,\mathrm{eq}}} / \mathrm{kWh}`
+     - :cite:`ssco2`
+
+   * - :math:`\mathrm{co2\_compr}`
+     - :math:`\mathcal{U}(80,120)`
+     - :math:`\mathrm{kg}_{\mathrm{CO}_{2,\mathrm{eq}}} / \mathrm{kW}`
+     - :cite:`biswas2013comparison`
+
+   * - :math:`\mathrm{co2\_diesel\_engine}`
+     - :math:`\mathcal{U}(20.0,22.7)`
+     - :math:`\mathrm{kg}_{\mathrm{CO}_{2,\mathrm{eq}}} / \mathrm{kW}`
+     - :cite:`liu2014life, kawamoto2019estimation`
+
+   * - :math:`\mathrm{co2\_fc\_engine}`
+     - :math:`\mathcal{U}(43,61)`
+     - :math:`\mathrm{kg}_{\mathrm{CO}_{2,\mathrm{eq}}} / \mathrm{kW}`
+     - :cite:`dhanushkodi2008life`
 
    * - :math:`\mathrm{co2\_elec}`
      - :math:`\mathcal{U}(144,176)`

@@ -200,7 +200,7 @@ class Evaluation:
 
         # dispenser capacity such that the hourly hydrogen demand can be
         # complied with
-        dispenser_mass_flow_rate = 33.333
+        dispenser_mass_flow_rate = 33.33
         self.par['n_disp'] = max(self.load_h2) / dispenser_mass_flow_rate
 
     #############################
@@ -468,8 +468,8 @@ class Evaluation:
 
         par_c = {
             'T_in': 353.,
-            'p_in': 1.,
-            'p_out': 350.,
+            'p_in': 20.,
+            'p_out': 440.,
             'eta_c': 0.85,
             'R': 4.124,
             'n': 1.609,
@@ -544,9 +544,9 @@ class Evaluation:
         # generate a polynomial fitted on the power - mass flow rate points
         self.p_to_m_pemel_comp = polyfit_func(p_pemel_compr, m_h2_list)
 
-    #############################
-    # tank and dispenser module #
-    #############################
+    ###############
+    # tank module #
+    ###############
 
     def tank(self):
         """
@@ -730,11 +730,9 @@ class Evaluation:
         sufficient hydrogen is available in the tank. When the hydrogen in the
         tank does not comply with the hydrogen demand, the power to run the
         electrolyzer array and compressor is calculated to generate and
-        compress the remaining hydrogen. To generate this power and the
-        dispensation power, the photovoltaic power is called upon first. If
+        compress the remaining hydrogen. To generate this power,
+        the photovoltaic power is called upon first. If
         necessary, the remaining power is covered by the grid.
-        When the hydrogen tank does comply with the hydrogen demand, the
-        photovoltaic power is used to cover the required dispensation power.
         When excess photovoltaic power is present, this power is used to
         generate and compress hydrogen in the electrolyzer array and
         compressor, respectively. Finally, the lifetime, cost and
@@ -766,6 +764,7 @@ class Evaluation:
 
             # define if there is any H2 demand left after assessing the tank
             demand_left = self.extract_h2_from_tank(self.load_h2[t])
+
             if demand_left > 0.:
 
                 # power needed by the PEM and compressor to generate the demand
@@ -782,8 +781,8 @@ class Evaluation:
 
                 if net_p_1 > 0.:
                     # if yes, check if remaining PV power can comply with the
-                    # compressor and dispensation demand
-                    net_p_2 = net_p_1 - (p_compr + p_disp)
+                    # compressor
+                    net_p_2 = net_p_1 - p_compr
 
                     if net_p_2 > 0.:
                         # when still excess power available, sell to the grid
@@ -791,40 +790,28 @@ class Evaluation:
                         n_dcac[t] = e_grid_sold
 
                     else:
-                        # if the compressor and dispensation demand cannot be
+                        # if the compressor demand cannot be
                         # covered, buy remaining demand from the grid
                         e_grid_buy = abs(net_p_2)
 
                 else:
-                    # if PEM, compressor and dispensation cannot be covered by
+                    # if PEM and compressor cannot be covered by
                     # PV energy, buy required electricity from the grid
-                    p_to_buy = abs(net_p_1) + p_compr + p_disp
+                    p_to_buy = abs(net_p_1) + p_compr
                     e_grid_buy = p_to_buy
                     n_dcac[t] = abs(net_p_1)
 
             else:  # excess PV energy available to generate hydrogen
 
-                # use solar energy to power the dispensation
-                net_p = self.res['p_pv'][t] - p_disp
-
-                if net_p <= 0.:
-                    # remaining power covered by the grid
-                    e_grid_buy = abs(net_p)
-
-                    # the solar power is all used for dispensation and thus
-                    # sent through the DC-AC converter
-                    n_dcac[t] = self.res['p_pv'][t]
-
-                else:
-
+                if self.res['p_pv'][t] > 0.:
                     # quantify how much of the remaining PV energy can be used
                     # by the PEM and compressor to generate hydrogen
-                    p_pemel, p_compr = self.prod_mh2(net_p)
+                    p_pemel, p_compr = self.prod_mh2(self.res['p_pv'][t])
                     n_compr[t] = p_compr
 
                     # the remaining excess PV energy can be sold
-                    e_grid_sold = net_p - p_pemel - p_compr
-                    n_dcac[t] = p_disp + e_grid_sold + p_compr
+                    e_grid_sold = self.res['p_pv'][t] - p_pemel - p_compr
+                    n_dcac[t] = e_grid_sold + p_compr
                     n_dcdc_pem[t] = p_pemel
 
             # store evolution of storage tank, electricity bought/sold
@@ -835,7 +822,7 @@ class Evaluation:
             self.res['grid_e_sold'][t] = e_grid_sold
             self.res['grid_co2'] += e_grid_buy * self.par['co2_elec']
 
-        # define the capacity of the converters, compression and cooling
+        # define the capacity of the converters and compression
         self.res['n_compr'] = max(n_compr) / 1e3
         self.res['n_dcdc_pemel'] = max(n_dcdc_pem) / 1e3
         self.res['n_dcac'] = max(n_dcac) / 1e3
@@ -913,7 +900,7 @@ class Evaluation:
 
         # annual cost of compressor
         compressor_cost = (self.par['capex_compr'] *
-                           (self.res['n_compr']**0.5861) *
+                           self.res['n_compr'] *
                            (crf + self.par['opex_compr']))
         components_cost += compressor_cost
 
@@ -985,7 +972,7 @@ class Evaluation:
         comp_co2 += pemel_co2 + pemel_dcdc_co2
 
         # annual CO2 emission of hydrogen storage tank production
-        tank_co2 = self.par['n_tank'] / 33.33 * 16. * self.par['co2_tank']
+        tank_co2 = self.par['n_tank'] * self.par['co2_tank']
         comp_co2 += tank_co2
 
         # annual CO2 emission of compressor production
@@ -1005,7 +992,7 @@ class Evaluation:
                              (self.par['n_bus'] - self.par['n_h2_bus']))
         h2_engine_co2 = self.par['co2_fc_engine'] * 200. * self.par['n_h2_bus']
         comp_co2 += ((diesel_engine_co2 + h2_engine_co2) *
-                     (1 + int(self.par['life_sys'] / 10.)))  # 10y lifetime
+                     (1 + int(self.par['life_sys'] / 11.)))  # 10y lifetime
 
         # annual CO2 emission of diesel consumption
         diesel_co2 = sum(self.load_diesel) * self.par['co2_diesel']
