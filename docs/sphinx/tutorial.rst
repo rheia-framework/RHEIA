@@ -19,7 +19,7 @@ Detailed information on characterizing the design variables is available in :ref
 To perform a deterministic design optimization, the following optimization dictionary has to be filled and passed as an argument to the :py:func:`run_opt` function. 
 
 .. code-block:: python
-   :linenos:    
+       
 
    import rheia.OPT.optimization as rheia_opt
    import multiprocessing as mp
@@ -55,7 +55,7 @@ The objectives and the corresponding inputs are plotted in function of the LCOH 
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
    import matplotlib.pyplot as plt
 
    case = 'H2_FUEL'
@@ -152,7 +152,7 @@ followed by the call of the :py:meth:`get_loo` method:
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
 
    case = 'H2_FUEL'
 
@@ -191,7 +191,7 @@ For a polynomial order of 2, the stochastic parameters with a negligible Sobol' 
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
 
    case = 'H2_FUEL'
 
@@ -254,7 +254,7 @@ Similar to the deterministic design optimization, the optimization results can b
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
    import matplotlib.pyplot as plt
 
    case = 'H2_FUEL'
@@ -322,7 +322,7 @@ The resulting Sobol' indices can be plotted in a bar chart:
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
    import matplotlib.pyplot as plt
 
    case = 'H2_FUEL'

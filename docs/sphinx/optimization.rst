@@ -492,7 +492,7 @@ The worst-case LOO error (i.e. the highest LOO error over the diffferent design 
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
 
    case = 'case_name'
 
@@ -529,7 +529,7 @@ where a threshold for the Sobol' index is set at 1/number of uncertain parameter
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
 
    case = 'case_name'
 
@@ -566,7 +566,7 @@ Plotting the results can be performed as follows:
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
    import matplotlib.pyplot as plt
 
    case = 'case_name'

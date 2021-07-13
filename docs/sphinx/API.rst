@@ -169,25 +169,25 @@ The optimization results are extracted with the methods in :py:class:`PostProces
 .. autosummary::
    :toctree: generated/
 
-   rheia.POST_PROCESS.lib_post_process.PostProcessOpt
-   rheia.POST_PROCESS.lib_post_process.PostProcessOpt.determine_pop_gen
-   rheia.POST_PROCESS.lib_post_process.PostProcessOpt.get_fitness_values
-   rheia.POST_PROCESS.lib_post_process.PostProcessOpt.get_population_values
-   rheia.POST_PROCESS.lib_post_process.PostProcessOpt.sorted_result_file
-   rheia.POST_PROCESS.lib_post_process.PostProcessOpt.get_fitness_population
+   rheia.POST_PROCESS.post_process.PostProcessOpt
+   rheia.POST_PROCESS.post_process.PostProcessOpt.determine_pop_gen
+   rheia.POST_PROCESS.post_process.PostProcessOpt.get_fitness_values
+   rheia.POST_PROCESS.post_process.PostProcessOpt.get_population_values
+   rheia.POST_PROCESS.post_process.PostProcessOpt.sorted_result_file
+   rheia.POST_PROCESS.post_process.PostProcessOpt.get_fitness_population
 
 The uncertainty quantification results are extracted with the methods in :py:class:`PostProcessUQ`.
 
 .. autosummary::
    :toctree: generated/
 
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ.read_distr_file
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ.get_sobol
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ.get_pdf
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ.get_cdf
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ.get_loo
-   rheia.POST_PROCESS.lib_post_process.PostProcessUQ.get_max_sobol
+   rheia.POST_PROCESS.post_process.PostProcessUQ
+   rheia.POST_PROCESS.post_process.PostProcessUQ.read_distr_file
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_sobol
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_pdf
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_cdf
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_loo
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_max_sobol
    
 Characterization of design space and stochastic space
 -----------------------------------------------------

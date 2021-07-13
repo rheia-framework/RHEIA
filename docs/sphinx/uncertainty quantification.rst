@@ -263,7 +263,7 @@ The Sobol' indices can be represented in a bar chart:
 .. code-block:: python
     
 
-   import rheia.POST_PROCESS.lib_post_process as rheia_pp
+   import rheia.POST_PROCESS.post_process as rheia_pp
 
    case = 'case_name'
 

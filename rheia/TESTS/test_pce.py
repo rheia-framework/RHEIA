@@ -39,6 +39,7 @@ def input_RandomExperiment(input_case_data):
     random_exp_obj = pce.RandomExperiment(input_case_data, 0)
     return random_exp_obj
 
+@pytest.fixture
 def input_pce(input_RandomExperiment):
     pce_obj = pce.PCE(input_RandomExperiment)
     
@@ -98,3 +99,65 @@ def test_create_samples(input_RandomExperiment):
     assert len(input_RandomExperiment.x_u) == 182
     assert len(input_RandomExperiment.x_u_scaled) == 182
 
+def test_multindices(input_pce):
+    assert input_pce.multindices(range(0,2)) == [(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                                                 (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
+
+def test_ols(input_pce):
+    a = np.array([[ 1.,-0.96263],
+                  [ 1.,-0.94701],
+                  [ 1.,0.0529],
+                  [ 1.,0.5529],
+                  ])
+    b = np.array([[7.598744],
+                  [7.586986],
+                  [7.298572],
+                  [6.390994]])
+
+    test_res = input_pce.ols(a,b)[0][0]
+    assert round(test_res,3) == 6.996
+    
+def test_calc_a(input_RandomExperiment, input_pce):
+    input_RandomExperiment.read_previous_samples(False)
+    input_RandomExperiment.create_distributions()
+    input_RandomExperiment.create_samples()
+    multindices = input_pce.multindices(range(0,91))
+    test_res = input_pce.calc_a(multindices)
+    assert round(test_res[0][1],3) == -0.963
+    assert round(test_res[3][12],3) == -0.533
+    
+def test_run(input_RandomExperiment, input_pce):
+    input_RandomExperiment.n_terms()
+    input_RandomExperiment.read_previous_samples(False)
+    input_RandomExperiment.create_distributions()
+    input_RandomExperiment.create_samples()
+    input_RandomExperiment.y = input_RandomExperiment.y_prev
+    input_pce.run()
+    coeff = input_pce.coefficients
+    assert round(coeff[0][0],3) == 7.730
+    assert round(coeff[3][0],3) == 0.559
+    assert round(input_pce.moments['mean'],3) == 7.730 
+    assert round(input_pce.moments['variance'],3) == 0.742
+
+def test_calc_sobol(input_RandomExperiment, input_pce):
+    input_RandomExperiment.n_terms()
+    input_RandomExperiment.read_previous_samples(False)
+    input_RandomExperiment.create_distributions()
+    input_RandomExperiment.create_samples()
+    input_RandomExperiment.y = input_RandomExperiment.y_prev
+    input_pce.run()
+    input_pce.calc_sobol()
+    assert round(input_pce.sensitivity['s_i'][0],3) == 0.059
+    assert round(input_pce.sensitivity['s_i'][6],3) == 0.012    
+    assert round(input_pce.sensitivity['s_tot_i'][2],3) == 0.142
+    assert round(input_pce.sensitivity['s_tot_i'][9],3) == 0.002    
+
+def test_calc_loo(input_RandomExperiment, input_pce):
+    input_RandomExperiment.n_terms()
+    input_RandomExperiment.read_previous_samples(False)
+    input_RandomExperiment.create_distributions()
+    input_RandomExperiment.create_samples()
+    input_RandomExperiment.y = input_RandomExperiment.y_prev
+    input_pce.run()
+    input_pce.calc_loo()
+    assert round(input_pce.loo,5) == 0.00595

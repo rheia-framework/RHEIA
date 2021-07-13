@@ -306,10 +306,11 @@ class RandomExperiment(Data):
 
             elif method == 'SOBOL':
                 # sobol sequence
-                skip = 123456
-                x_tr = np.transpose(i4_sobol_generate(self.dimension,
-                                                      size + len(self.x_prev),
-                                                      skip))
+                skip = 123454
+                x_tr = sobol.sample(dimension=self.dimension,
+                                    n_points=size + len(self.x_prev),
+                                    skip=skip)
+
                 for i in range(self.dimension):
                     self.x_u[:, i] = self.dists[i].ppf(
                         x_tr[len(self.x_prev):, i])
@@ -459,7 +460,7 @@ class PCE(RandomExperiment):
 
     Parameters
     ----------
-    Experiment : obj
+    RandomExperiment : obj
         RandomExperiment object, with information on the random samples.
 
     """

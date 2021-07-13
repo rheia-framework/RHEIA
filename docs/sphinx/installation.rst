@@ -49,6 +49,7 @@ To perform uncertainty quantification:
    - SciPy
 - Other packages:
    - pyDOE
+   - SobolSequence
 
 To perform deterministic design optimization:
 
@@ -65,6 +66,7 @@ To perform robust design optimization:
    - SciPy
 - Other packages:
    - pyDOE
+   - SobolSequence
    - DEAP
 
 In case Anaconda is used, keep in mind that the packages excluded from the Anaconda native installation can be installed in the activated Anaconda environment either by the conda library or through the classic pip library.
@@ -82,4 +84,4 @@ To perform uncertainty quantification::
 
 To post-process the results::
 
-    import rheia.POST_PROCESS.lib_post_process as rheia_pp
+    import rheia.POST_PROCESS.post_process as rheia_pp

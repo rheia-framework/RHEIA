@@ -1,5 +1,5 @@
 """
-The :py:mod:`lib_post_process` module contains classes to present the
+The :py:mod:`post_process` module contains classes to present the
 optimization and uncertainty quantification results.
 """
 
