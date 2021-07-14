@@ -808,7 +808,7 @@ class PCE(RandomExperiment):
             self.loo += 1.0 / float(size) * deltai**2. / (np.var(y_res))
 
         if self.loo > 1.:
-            raise ValueError("""The LOO error is higher than 1.
+            raise Warning("""The LOO error is higher than 1.
                                 Check the UQ characterization and results.""")
 
     ##########################

@@ -1002,7 +1002,7 @@ class Evaluation:
                diesel_co2)
 
         # CO2 emitted per km driven by the fleet
-        self.res['lco2'] = co2 / (self.par['n_km_bus'] * self.par['n_bus'] *
+        self.res['ci'] = co2 / (self.par['n_km_bus'] * self.par['n_bus'] *
                                   365. * self.length / 8760.)
 
     def print_results(self, succes=True):
@@ -1020,7 +1020,7 @@ class Evaluation:
         else:
             print('outputs:')
             print('LCOE:'.ljust(30) + '%.5f euro/km' % self.res['lcom'])
-            print('LCO2:'.ljust(30) + '%.5f kg co2-eq/km' % self.res['lco2'])
+            print('CI:'.ljust(30) + '%.5f kg co2-eq/km' % self.res['ci'])
             print(
                 'PV electricity generated:'.ljust(30) +
                 '%.5f MWh' %
