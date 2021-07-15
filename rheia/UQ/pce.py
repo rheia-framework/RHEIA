@@ -10,8 +10,7 @@ from functools import partial
 import itertools
 import numpy as np
 from scipy import stats, special
-from rheia.UQ.sobol_mod import i4_sobol_generate
-
+import sobol
 
 class Data:
     """
