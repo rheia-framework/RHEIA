@@ -3,8 +3,8 @@ Glossary
 
 
 .. list-table::
-   :header-rows: 1
    :width: 1 2
+   :header-rows: 1
 
    * - Name
      - Description
