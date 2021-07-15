@@ -22,14 +22,15 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = u'rheia'
-#copyright = u'2021'
+copyright = u'2021'
 #author = u'Diederik Coppitters, Panagiotis Tsirikoglou'
 
-# The short X.Y version
-version = u''
-# The full version, including alpha/beta/rc tags
-release = u''
+import rheia
 
+# The short X.Y version.
+version = '%s' % (rheia.__version__)
+# The full version, including alpha/beta/rc tags.
+release = version
 
 # -- General configuration ---------------------------------------------------
 
