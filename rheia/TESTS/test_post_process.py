@@ -19,7 +19,7 @@ def input_case_uq():
 
     """
     case = 'H2_FUEL'
-    test_obj = PostProcessUQ(case, 1)
+    test_obj = PostProcessUQ(case, 2)
 
     return test_obj
 
@@ -60,12 +60,12 @@ def test_get_pdf(input_case_uq):
     objective = 'lcoh'
     x, y = input_case_uq.get_pdf(result_dir, objective)
 
-    assert round(x[0], 3) == 4.912
-    assert round(x[5], 3) == 5.195
-    assert round(x[7], 3) == 5.308
-    assert round(y[23], 3) == 0.102
-    assert round(y[29], 3) == 0.201
-    assert round(y[35], 3) == 0.280
+    assert round(x[0], 3) == 5.187
+    assert round(x[5], 3) == 5.481
+    assert round(x[7], 3) == 5.598
+    assert round(y[23], 3) == 0.205
+    assert round(y[29], 3) == 0.324
+    assert round(y[35], 3) == 0.415
 
 
 def test_get_cdf(input_case_uq):
@@ -84,12 +84,12 @@ def test_get_cdf(input_case_uq):
     objective = 'lcoh'
     x, y = input_case_uq.get_cdf(result_dir, objective)
 
-    assert round(x[0], 3) == 4.912
-    assert round(x[5], 3) == 5.195
-    assert round(x[7], 3) == 5.308
-    assert round(y[23], 3) == 0.038
-    assert round(y[29], 3) == 0.092
-    assert round(y[35], 3) == 0.177
+    assert round(x[0], 3) == 5.187
+    assert round(x[5], 3) == 5.481
+    assert round(x[7], 3) == 5.598
+    assert round(y[23], 3) == 0.084
+    assert round(y[29], 3) == 0.180
+    assert round(y[35], 3) == 0.315
 
 
 def test_get_loo(input_case_uq):
@@ -107,7 +107,7 @@ def test_get_loo(input_case_uq):
     objective = 'lcoh'
     loo = input_case_uq.get_loo(result_dir, objective)
 
-    assert round(loo, 3) == 0.063
+    assert round(loo, 6) == 0.005952
 
 
 def test_get_sobol(input_case_uq):
@@ -125,7 +125,7 @@ def test_get_sobol(input_case_uq):
     objective = 'lcoh'
     names, sobol = input_case_uq.get_sobol(result_dir, objective)
 
-    assert names[1] == 'capex_pemel'
-    assert names[4] == 'opex_pemel'
-    assert round(sobol[1], 3) == 0.323
-    assert round(sobol[4], 3) == 0.059
+    assert names[0] == 'capex_pemel'
+    assert names[5] == 'opex_pemel'
+    assert round(sobol[0], 3) == 0.327
+    assert round(sobol[5], 3) == 0.057
