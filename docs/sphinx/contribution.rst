@@ -3,22 +3,13 @@
 How to contribute
 =================
 
-To be completed.
+RHEIA is under active development. In case of issues or missing functionalities,
+we recommend to open an issue on the `Github Issue Tracker <https://github.com/rheia-framework/RHEIA/issues>`_.
+Alternatively, contact us directly on the following e-mail address:
 
-Contribute
-----------
+rheia.framework@gmail.com
 
-- Issue Tracker: https://github.com/rheia-framework/RHEIA/issues
-- Source Code: https://github.com/rheia-framework/RHEIA
+Finally, you can start a `push request <https://github.com/rheia-framework/RHEIA/pulls>`_.
 
-
-how to contribute
------------------
-
-- github
-- push request
-
-code style
-----------
-
-PEP-8
+RHEIA generally follows the `PEP 8 - Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`_.
+We aim for a maximum code line length of 79 characters.
