@@ -23,7 +23,7 @@ More information is available at the [Installation page](https://rheia.readthedo
 License
 =======
 
-MIT license [MIT license](https://github.com/rheia-framework/RHEIA/blob/main/LICENSE)
+[MIT license](https://github.com/rheia-framework/RHEIA/blob/main/LICENSE)
 
 Support
 =======
@@ -31,25 +31,3 @@ Support
 Contact us for questions and feedback:
 
 rheia.framework@gmail.com
-
-
-Citing
-======
-
-If you use pvlib-python in a published work, please cite:
-
-  William F. Holmgren, Clifford W. Hansen, and Mark A. Mikofski.
-  "pvlib python: a python package for modeling solar energy systems."
-  Journal of Open Source Software, 3(29), 884, (2018).
-  https://doi.org/10.21105/joss.00884
-
-Please also cite the DOI corresponding to the specific version of
-pvlib-python that you used. pvlib-python DOIs are listed at
-[Zenodo.org](https://zenodo.org/search?page=1&size=20&q=conceptrecid:593284&all_versions&sort=-version)
-
-NumFOCUS
-========
-
-pvlib python is a [NumFOCUS Affiliated Project](https://numfocus.org/sponsored-projects/affiliated-projects)
-
-[![NumFocus Affliated Projects](https://i0.wp.com/numfocus.org/wp-content/uploads/2019/06/AffiliatedProject.png)](https://numfocus.org/sponsored-projects/affiliated-projects)
