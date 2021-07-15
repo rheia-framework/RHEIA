@@ -36,7 +36,7 @@ can be defined as follows in the :py:mod:`case_description` module::
         return params
 
 The model evaluation is performed in the function :py:func:`evaluate()`. This function is called
-by the optimization or uncertainty quantification algorithm, 
+by the optimization algorithm or uncertainty quantification algorithm, 
 which provides the sample as an argument in the form of an enumerate object :py:obj:`x`.
 The keys of the dictionary :py:obj:`x[1]` consist of the model parameter names and design variable names, 
 as defined in :file:`design_space` and :file:`stochastic_space`.
