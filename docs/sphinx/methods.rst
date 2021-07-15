@@ -112,8 +112,8 @@ The top half of the design samples lead to the next generation of design samples
 offsprings are again created and the new population and offspring are again ranked, leading to the next generation. 
 This process is repeated until the computational budget is spent. 
 
-.. figure:: images/logo_4.svg
-   :width: 80%
+.. figure:: images/rdo_scheme.pdf
+   :width: 100%
    :align: center
 
 The surrogate-assisted robust design optimization algorithm. After the generation of the offspring, 
