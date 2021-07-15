@@ -3,7 +3,6 @@ Glossary
 
 
 .. list-table::
-   :width: 1 2
    :header-rows: 1
 
    * - Name
@@ -32,7 +31,4 @@ Glossary
 
    * - hydrogen-based energy system
      - An energy system that produces and uses hydrogen as an energy carrier.
-
-
-   
 
