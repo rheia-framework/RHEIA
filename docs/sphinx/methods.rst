@@ -88,3 +88,41 @@ To ensure sufficient exploitation, we suggest to reach a number of generations o
 
 The probability of crossover and mutation are user-defined constants which support the exploitation and exploration, respectively.
 As a good practice, the crossover probability is at least 0.85, while the probability of mutation usually remains below 0.1. Users with a priori knowledge on the model behaviour and its characteristics, are encouraged to adjust those values, in order to achieve maximum performance of NSGA-II in a particular case.
+
+
+.. _lab:rdoprocedure:
+
+Robust design optimization procedure
+------------------------------------
+
+The surrogate-assisted RDO algorithm consists of NSGA-II to perform the optimization, while PCE is applied on each design sample to provide the statistical moments as fitness values. 
+Like in NSGA-II, the first step consists of generating a first population of design samples. 
+For each design sample in this first population, a PCE is constructed for each quantity of interest. 
+To illustrate, if the optimization problem consists of two quantities of interest (e.g.\ the efficiency and total cost of a system), 
+then two PCEs are created to quantify the mean and standard deviation for each quantity of interest. 
+To quantify the coefficients for each PCE, a set of random samples is generated, based on the distributions of the random parameters. 
+These random samples are evaluated in the deterministic model and in the basis functions in the information matrix. Out of the coefficients, 
+the mean and standard deviation is derived. Note that only one set of training samples is required to generate all the required PCEs for a design sample, 
+as each sample generates a value for each quantity of interest. Thus, for each design sample, the fitness values are defined.
+Out of the initial population, an offspring is created, for which the same procedure is applied: a PCE is created for each quantity of interest and 
+the corresponding mean and standard deviation are stored as fitness values. 
+When the mean and standard deviation values are quantified for each design sample in the uncertainty quantification inner loop, 
+the design samples in the population and offspring are ranked based on their dominance in the objectives. 
+The top half of the design samples lead to the next generation of design samples. Out of this new generation, 
+offsprings are again created and the new population and offspring are again ranked, leading to the next generation. 
+This process is repeated until the computational budget is spent. 
+
+.. figure:: images/logo_4.svg
+   :width: 80%
+   :align: center
+
+The surrogate-assisted robust design optimization algorithm. After the generation of the offspring, 
+a design sample :math:`\bm{d}_i` is selected out of the offspring, which contains :math:`a+b` values. 
+Design variables :math:`d_{1},...,d_{a}` are considered uncertain, which means that the values in :math:`d_{i,1},...,d_{i,a}` are used as mean value for the distributions :math:`X_{i,M-a+1},...,X_{i,M}`. 
+From the :math:`M` distributions, the training samples are generated and each training sample is appended with the values from the deterministic design variables :math:`d_{i,a+1},...,d_{i,b}`. 
+After evaluating the training samples in the deterministic model, the fitness values and constraint values (i.e. mean :math:`\mu$` and standard deviation :math:`\sigma` from each PCE) are stored. 
+This process is repeated until all :math:`N` design samples in :math:`Q_t` are processed. 
+The offspring :math:`Q_t` is combined with the population :math:`P_t` and the new population :math:`P_{t+1}` is generated using the NSGA-II selection procedure. 
+As long as the user-defined computational budget is not spent, a new offspring is generated and the entire process is repeated. 
+Note that for the first iteration, :math:`P_0` is empty and the offspring :math:`Q_0` is generated. 
+After going through the uncertainty quantification loop, :math:`P_1 = P_0`.
