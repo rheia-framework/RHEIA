@@ -134,7 +134,7 @@ We refer to :ref:`lab:detpolorder` for more details on this method.
                   'pol order':             1,
                   'objective names':       ['LCOH','mh2'],
                   'objective of interest': 'LCOH',
-                  'results dir':           'sample_tutorial_%i' %iteration      
+                  'results dir':           'sample_%i' %iteration      
                   }   
        if __name__ == '__main__':
            rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_%i' %iteration)
@@ -315,7 +315,7 @@ The uncertainty quantification dictionary is then characterized and evaluated as
    if __name__ == '__main__':
        rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_uq')
 
-For this tutorial, the results of the uncertainty quantification are provided in :file:`RESULTS\\PV_ELEC\\UQ\\opt_design_tutorial`
+**For this tutorial, the results of the uncertainty quantification are provided in** :file:`RESULTS\\PV_ELEC\\UQ\\opt_design_tutorial`
 
 The resulting Sobol' indices can be plotted in a bar chart:
 
@@ -350,7 +350,6 @@ dominate the uncertainty on the LCOH.
 Finally, the probability density function is plotted with the :py:meth:`get_pdf` method:
 
 .. code-block:: python
-   :lineno-start: 20
 
    x_pdf, y_pdf = my_post_process_uq.get_pdf(result_dir, objective)
 
