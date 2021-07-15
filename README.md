@@ -1,5 +1,6 @@
-<img src="docs/sphinx/images/logo_4.svg" width="600">
-
+<p align="center">
+  <img src="docs/sphinx/images/logo_4.svg" width="600">
+</p>
 The Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems (RHEIA) framework provides 
 multi-objective optimization (deterministic and stochastic) and uncertainty quantification algorithms. 
 These algorithms can be applied on hydrogen-based energy systems, which are included in RHEIA.
