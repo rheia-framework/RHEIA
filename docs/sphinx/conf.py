@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 project = u'rheia'
 copyright = u'2021'
-#author = u'Diederik Coppitters, Panagiotis Tsirikoglou'
+author = u'Diederik Coppitters et al.'
 
 # The short X.Y version
 version = u''
