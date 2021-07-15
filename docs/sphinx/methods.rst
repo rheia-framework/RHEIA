@@ -117,7 +117,7 @@ This process is repeated until the computational budget is spent.
    :align: center
 
 The surrogate-assisted robust design optimization algorithm. After the generation of the offspring, 
-a design sample :math:`\bm{d}_i` is selected out of the offspring, which contains :math:`a+b` values. 
+a design sample :math:`\pmb{d}_i` is selected out of the offspring, which contains :math:`a+b` values. 
 Design variables :math:`d_{1},...,d_{a}` are considered uncertain, which means that the values in :math:`d_{i,1},...,d_{i,a}` are used as mean value for the distributions :math:`X_{i,M-a+1},...,X_{i,M}`. 
 From the :math:`M` distributions, the training samples are generated and each training sample is appended with the values from the deterministic design variables :math:`d_{i,a+1},...,d_{i,b}`. 
 After evaluating the training samples in the deterministic model, the fitness values and constraint values (i.e. mean :math:`\mu$` and standard deviation :math:`\sigma` from each PCE) are stored. 
