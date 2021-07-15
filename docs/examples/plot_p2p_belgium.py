@@ -22,7 +22,7 @@ hydrogen-based power-to-power system for a dwelling in Belgium.
 # %%
 # After 150 generations, a trade-off exists between minimizing the LCOE mean and LCOE standard deviation:
 
-import rheia.POST_PROCESS.lib_post_process as rheia_pp
+import rheia.POST_PROCESS.post_process as rheia_pp
 import matplotlib.pyplot as plt
 
 case = 'H2_POWER'

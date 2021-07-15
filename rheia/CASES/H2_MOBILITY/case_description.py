@@ -72,13 +72,13 @@ def evaluate(x_in, params=[]):
 
         # when constrained satisfied, get values for objectives
         lcom = my_evaluation.res['lcom']
-        lco2 = my_evaluation.res['lco2']
+        ci = my_evaluation.res['ci']
         grid_e_bought = sum(my_evaluation.res['grid_e_buy'])/1e6
     else:
 
         # when constrained violated, return large value for objectives
         lcom = 1e8
-        lco2 = 1e8
+        ci = 1e8
         grid_e_bought = 1e8
 
-    return lcom, lco2, grid_e_bought
+    return lcom, ci, grid_e_bought
