@@ -45,13 +45,14 @@ The hydrogen-based energy system models are described in :ref:`lab:energysystemm
 Support
 =======
 
-Contact us
+Contact us for questions and feedback:
+
 rheia.framework@gmail.com
 
 License
 =======
 
-The project is licensed under `MIT license <https://github.com/DCoppitters/RHEIA/blob/master/LICENSE>`_. 
+The project is licensed under `MIT license <https://github.com/rheia-framework/RHEIA/blob/main/LICENSE>`_. 
 
 
 Indices and tables
