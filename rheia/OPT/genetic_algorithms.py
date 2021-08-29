@@ -194,11 +194,11 @@ class NSGA2:
         temp = np.tile(list(self.space_obj.par_dict.values()), (len(pop), 1))
 
         # check if samples in population have the appropriate length
-        for pop_sample in pop:
+        for ii, pop_sample in enumerate(pop):
             if len(pop_sample) != len(self.space_obj.var_dict):
                 raise NameError(
-                    """A sample in the list of starting design samples
-                       does not match the number of design variables.""")
+                    """Sample with index number {0:d} in the list of starting design samples,
+                       does not match the number of design variables.""".format(ii))
 
         # store the samples
         temp_samples = np.hstack((temp, np.array(pop))).tolist()
