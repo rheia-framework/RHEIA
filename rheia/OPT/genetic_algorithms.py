@@ -123,7 +123,7 @@ class NSGA2:
         file.write(msg + '\n')
         file.close()
 
-    def append_points_to_file(self, nests, filename):
+    def append_points_to_file(self, individuals, filename):
         """
 
         This function is used to append the result (population or fitness)
@@ -131,7 +131,7 @@ class NSGA2:
 
         Parameters
         ----------
-        nests : list
+        individuals : list
             The values to be appended to the file.
         filename : str
             The filename where the points
@@ -144,7 +144,7 @@ class NSGA2:
 
         with open(file_dir, 'a') as file:
 
-            for n_in in nests:
+            for n_in in individuals:
 
                 for item in n_in:
 
