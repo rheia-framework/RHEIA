@@ -386,14 +386,14 @@ class NSGA2:
                 fitness_values = []
                 for obj_position in self.objective_position:
                     if obj_position > len(temp_fitness[0]) - 1:
-                        raise TypeError(""" The objective "%s" falls out
+                        raise TypeError(""" The objective "{0:s}" falls out
                                             of the range of predefined
                                             quantities of interest.
-                                            Only %i outputs are returned
-                                            from the model""" %
-                                        (self.run_dict['objective names'][
+                                            Only {1:d} outputs are returned
+                                            from the model""".format(
+                                        self.run_dict['objective names'][
                                             int(obj_position)],
-                                         len(temp_fitness[0])))
+                                         len(temp_fitness[0]))
 
                     # add the fitness values to the PCE instance variable
                     # that stores the deterministic results of the sample
