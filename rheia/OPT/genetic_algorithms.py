@@ -449,8 +449,8 @@ class NSGA2:
                     violate = True
 
             if violate:
-                raise TypeError("""Design sample %s violates the
-                                   design variable bounds. """ % str(doe[-1]))
+                raise TypeError("""Design sample {0:s} violates the
+                                   design variable bounds. """.format(str(doe[-1]))
 
         # test if the doe size equals the number of the population size
         # provided in the optimization dictionary
