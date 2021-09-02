@@ -211,7 +211,7 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
 
     # create the doe set of samples
     doe_filename = os.path.join(doe_path,
-                                'DOE_n%i' % run_dict['population size'])
+                                'DOE_n{0:d}'.format(run_dict['population size']))
 
     if not start_from_last_gen:
         # if the starting population needs to be created
