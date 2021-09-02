@@ -364,8 +364,8 @@ class PostProcessUQ():
         """
 
         cdf_file = os.path.join(self.result_path,
-                                '%s' % result_dir,
-                                'data_cdf_%s' % objective
+                                '{0:s}'.format(result_dir),
+                                'data_cdf_{0:s}'.format(objective)
                                 )
 
         # get the x and y values for the CDF
