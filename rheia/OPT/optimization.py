@@ -246,8 +246,8 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
             # check if the custom file exists
             if not os.path.isfile(doe_custom):
                 raise NameError(
-                    """The initial population file %s
-                    is not found in the case folder.""" %
+                    """The initial population file {0:s}
+                    is not found in the case folder.""".format(
                     os.path.basename(doe_custom))
 
             copyfile(doe_custom, doe_filename)
