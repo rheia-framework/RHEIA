@@ -67,7 +67,7 @@ def load_optimizer(optimizer):
 
     # check if optimizer exists and load optimization module
     if optimizer not in optimizers:
-        raise KeyError('Optimizer is not available!')
+        raise KeyError('{0:s} optimizer is not available!'.format(optimizer))
 
     # get object from optimizer class
     for opt in opt_list:
