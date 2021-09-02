@@ -394,8 +394,8 @@ class PostProcessUQ():
         """
 
         loo_file = os.path.join(self.result_path,
-                                '%s' % (result_dir),
-                                'full_pce_order_%i_%s' % (
+                                '{0:s}'.format(result_dir),
+                                'full_pce_order_{0:d}_{1:s}'.format(
                                     self.pol_order, objective)
                                 )
 
