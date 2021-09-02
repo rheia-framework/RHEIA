@@ -448,9 +448,9 @@ class PostProcessUQ():
         print('significant Sobol indices:')
         for k in names:
             if max_dict[k] >= threshold:
-                print('%s: %4f' % (k, max_dict[k]))
+                print('{0:s}: {1:.4f}'.format(k, max_dict[k]))
 
         print('\nnegligible Sobol indices:')
         for k in names:
             if max_dict[k] < threshold:
-                print('%s: %4f' % (k, max_dict[k]))
+                print('{0:s}: {1:.4f}'.format(k, max_dict[k]))
