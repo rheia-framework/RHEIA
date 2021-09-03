@@ -822,7 +822,7 @@ class PCE(RandomExperiment):
         mean = self.moments['mean']
         var = self.moments['variance']
 
-        print('%s Polynomial chaos output %s \n' % ('-' * 20, '-' * 20))
+        print('{0:s} Polynomial chaos output {1:s} \n'.format('-' * 20, '-' * 20))
         print(' Number of input variables ::'.ljust(30) + '%d' %
               len(self.my_experiment.dists))
         print(' Maximal degree ::'.ljust(30) + '%d' %
