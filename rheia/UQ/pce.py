@@ -272,9 +272,8 @@ class RandomExperiment(Data):
                 self.polytypes[i] = 'Hermite'
 
             else:
-                raise ValueError(""" Distribution for %s not found.
-                                     Choose between Uniform and Gaussian."""
-                                 % self.my_data.stoch_data['types'][i])
+                raise ValueError(""" Distribution for {0:S} not found.
+                                     Choose between Uniform and Gaussian.""".format(self.my_data.stoch_data['types'][i]))
 
     def create_samples(self, size=0):
         """
