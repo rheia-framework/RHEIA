@@ -419,11 +419,10 @@ class RandomExperiment(Data):
 
         # check that the quantity of interest exists
         if self.objective_position > len(res[0]) - 1:
-            raise IndexError(""" The objective "%s" falls out of
+            raise IndexError(""" The objective "{0:s}" falls out of
                                  the range of predefined quantities
-                                 of interest. Only %i outputs are
-                                 returned from the model""" %
-                             (self.my_data.inputs['objective names'][
+                                 of interest. Only {1:d} outputs are
+                                 returned from the model""".format(self.my_data.inputs['objective names'][
                                  int(self.objective_position)], len(res[0])))
 
         # combine model output for quantity of interest with previous results
