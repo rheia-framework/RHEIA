@@ -261,6 +261,7 @@ These files respectively include the PCE information (LOO error, mean and standa
 The Sobol' indices can be represented in a bar chart:
 
 .. code-block:: python
+   :linenos:
     
 
    import rheia.POST_PROCESS.post_process as rheia_pp
