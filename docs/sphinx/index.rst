@@ -1,5 +1,5 @@
 .. figure:: images/logo_4.svg
-   :width: 70%
+   :width: 60%
    :align: center
 
 .. toctree::
