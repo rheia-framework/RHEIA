@@ -189,6 +189,7 @@ the optimization dictionary can be completed to perform the design optimization.
 To illustrate, for a deterministic design optimization:
 
 .. code-block:: python
+   :linenos:
     
 
    import rheia.OPT.optimization as rheia_opt
@@ -208,6 +209,7 @@ and result printing are adopted from the standard setting and are therefore not 
 Similarly, the optimization dictionary for robust design optimization on the mean and standard deviation of the displacement can be characterized as follows:
 
 .. code-block:: python
+   :linenos:
     
 
    import rheia.OPT.optimization as rheia_opt
@@ -352,6 +354,7 @@ Run uncertainty quantification
 With the characterization complete for uncertainty quantification, the algorithm can be initiated with:
 
 .. code-block:: python
+   :linenos:
     
 
    import rheia.UQ.uncertainty_quantification as rheia_uq

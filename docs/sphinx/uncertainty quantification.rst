@@ -163,7 +163,7 @@ Example of a dictionary for uncertainty quantification
 When combining the examples in the previous section, a configurated uncertainty quantification dictionary with the necessary items looks as follows:
 
 .. code-block:: python
-    
+   :linenos:
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
 
@@ -179,7 +179,7 @@ When combining the examples in the previous section, a configurated uncertainty 
 Alternatively, an uncertainty quantification dictionary which considers random sampling and generates 100,000 PDF and CDF samples on the PCE surrogate:
  
 .. code-block:: python
-    
+   :linenos:
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
 
@@ -211,6 +211,7 @@ In :file:`design_space` and :file:`stochastic_space`, the stochastic design spac
 The samples can be generated as follows:
 
 .. code-block:: python
+   :linenos:
     
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
@@ -231,6 +232,7 @@ the PCE can be constructed for the three quantities of interest. In that case, t
 To illustrate, for a PCE on 'output_2':
 
 .. code-block:: python
+   :linenos:
     
 
    import rheia.UQ.uncertainty_quantification as rheia_uq
