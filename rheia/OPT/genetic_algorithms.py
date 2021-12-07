@@ -123,7 +123,7 @@ class NSGA2:
         file.write(msg + '\n')
         file.close()
 
-    def append_points_to_file(self, individuals, filename):
+    def append_points_to_file(self, nests, filename):
         """
 
         This function is used to append the result (population or fitness)
@@ -131,7 +131,7 @@ class NSGA2:
 
         Parameters
         ----------
-        individuals : list
+        nests : list
             The values to be appended to the file.
         filename : str
             The filename where the points
@@ -144,7 +144,7 @@ class NSGA2:
 
         with open(file_dir, 'a') as file:
 
-            for n_in in individuals:
+            for n_in in nests:
 
                 for item in n_in:
 
@@ -194,11 +194,11 @@ class NSGA2:
         temp = np.tile(list(self.space_obj.par_dict.values()), (len(pop), 1))
 
         # check if samples in population have the appropriate length
-        for ii, pop_sample in enumerate(pop):
+        for pop_sample in pop:
             if len(pop_sample) != len(self.space_obj.var_dict):
                 raise NameError(
-                    """Sample with index number {0:d} in the list of starting design samples,
-                       does not match the number of design variables.""".format(ii))
+                    """A sample in the list of starting design samples
+                       does not match the number of design variables.""")
 
         # store the samples
         temp_samples = np.hstack((temp, np.array(pop))).tolist()
@@ -386,14 +386,14 @@ class NSGA2:
                 fitness_values = []
                 for obj_position in self.objective_position:
                     if obj_position > len(temp_fitness[0]) - 1:
-                        raise TypeError(""" The objective "{0:s}" falls out
+                        raise TypeError(""" The objective "%s" falls out
                                             of the range of predefined
                                             quantities of interest.
-                                            Only {1:d} outputs are returned
-                                            from the model""".format(
-                                        self.run_dict['objective names'][
+                                            Only %i outputs are returned
+                                            from the model""" %
+                                        (self.run_dict['objective names'][
                                             int(obj_position)],
-                                         len(temp_fitness[0]))
+                                         len(temp_fitness[0])))
 
                     # add the fitness values to the PCE instance variable
                     # that stores the deterministic results of the sample
@@ -449,8 +449,8 @@ class NSGA2:
                     violate = True
 
             if violate:
-                raise TypeError("""Design sample {0:s} violates the
-                                   design variable bounds. """.format(str(doe[-1]))
+                raise TypeError("""Design sample %s violates the
+                                   design variable bounds. """ % str(doe[-1]))
 
         # test if the doe size equals the number of the population size
         # provided in the optimization dictionary

@@ -67,7 +67,7 @@ def load_optimizer(optimizer):
 
     # check if optimizer exists and load optimization module
     if optimizer not in optimizers:
-        raise KeyError('{0:s} optimizer is not available!'.format(optimizer))
+        raise KeyError('Optimizer is not available!')
 
     # get object from optimizer class
     for opt in opt_list:
@@ -211,7 +211,7 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
 
     # create the doe set of samples
     doe_filename = os.path.join(doe_path,
-                                'DOE_n{0:d}'.format(run_dict['population size']))
+                                'DOE_n%i' % run_dict['population size'])
 
     if not start_from_last_gen:
         # if the starting population needs to be created
@@ -246,8 +246,8 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
             # check if the custom file exists
             if not os.path.isfile(doe_custom):
                 raise NameError(
-                    """The initial population file {0:s}
-                    is not found in the case folder.""".format(
+                    """The initial population file %s
+                    is not found in the case folder.""" %
                     os.path.basename(doe_custom))
 
             copyfile(doe_custom, doe_filename)

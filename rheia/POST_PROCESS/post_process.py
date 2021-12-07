@@ -332,8 +332,8 @@ class PostProcessUQ():
         """
 
         pdf_file = os.path.join(self.result_path,
-                                '{0:s}'.format(result_dir),
-                                'data_pdf_{0:s}'.format(objective)
+                                '%s' % result_dir,
+                                'data_pdf_%s' % objective
                                 )
 
         # get the x and y values for the PDF
@@ -364,8 +364,8 @@ class PostProcessUQ():
         """
 
         cdf_file = os.path.join(self.result_path,
-                                '{0:s}'.format(result_dir),
-                                'data_cdf_{0:s}'.format(objective)
+                                '%s' % result_dir,
+                                'data_cdf_%s' % objective
                                 )
 
         # get the x and y values for the CDF
@@ -394,8 +394,8 @@ class PostProcessUQ():
         """
 
         loo_file = os.path.join(self.result_path,
-                                '{0:s}'.format(result_dir),
-                                'full_pce_order_{0:d}_{1:s}'.format(
+                                '%s' % (result_dir),
+                                'full_pce_order_%i_%s' % (
                                     self.pol_order, objective)
                                 )
 
@@ -448,9 +448,9 @@ class PostProcessUQ():
         print('significant Sobol indices:')
         for k in names:
             if max_dict[k] >= threshold:
-                print('{0:s}: {1:.4f}'.format(k, max_dict[k]))
+                print('%s: %4f' % (k, max_dict[k]))
 
         print('\nnegligible Sobol indices:')
         for k in names:
             if max_dict[k] < threshold:
-                print('{0:s}: {1:.4f}'.format(k, max_dict[k]))
+                print('%s: %4f' % (k, max_dict[k]))

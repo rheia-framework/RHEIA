@@ -272,8 +272,9 @@ class RandomExperiment(Data):
                 self.polytypes[i] = 'Hermite'
 
             else:
-                raise ValueError(""" Distribution for {0:S} not found.
-                                     Choose between Uniform and Gaussian.""".format(self.my_data.stoch_data['types'][i]))
+                raise ValueError(""" Distribution for %s not found.
+                                     Choose between Uniform and Gaussian."""
+                                 % self.my_data.stoch_data['types'][i])
 
     def create_samples(self, size=0):
         """
@@ -406,7 +407,14 @@ class RandomExperiment(Data):
             # linear processing
             res = []
             for index, sample in enumerate(eval_dict):
-                res.append(eval_func((index, sample), params=params))
+                res.append(eval_func((index + len(self.x_prev), sample), params=params))
+                with open(self.my_data.filename_samples, 'a+') as file:
+                    line = list(samples[index]) + res[-1]
+                    for j in line:
+                        file.write('%25f ' % j)
+                    file.write('\n')
+
+
         else:
             # multiprocessing
             pool = mp.Pool(processes=self.my_data.inputs['n jobs'])
@@ -417,12 +425,22 @@ class RandomExperiment(Data):
                 enumerate(eval_dict))
             pool.close()
 
+            # append new samples and model outputs to samples file
+            with open(self.my_data.filename_samples, 'a+') as file:
+                for i, sample in enumerate(samples):
+                    line = list(np.concatenate((sample, res[i])))
+                    for j in line:
+                        file.write('%25f ' % j)
+
+                    file.write('\n')
+
         # check that the quantity of interest exists
         if self.objective_position > len(res[0]) - 1:
-            raise IndexError(""" The objective "{0:s}" falls out of
+            raise IndexError(""" The objective "%s" falls out of
                                  the range of predefined quantities
-                                 of interest. Only {1:d} outputs are
-                                 returned from the model""".format(self.my_data.inputs['objective names'][
+                                 of interest. Only %i outputs are
+                                 returned from the model""" %
+                             (self.my_data.inputs['objective names'][
                                  int(self.objective_position)], len(res[0])))
 
         # combine model output for quantity of interest with previous results
@@ -432,16 +450,6 @@ class RandomExperiment(Data):
             self.y = np.vstack((self.y_prev, np.array(y_res).reshape((-1, 1))))
         else:
             self.y = np.array(y_res).reshape((-1, 1))
-
-        # append new samples and model outputs to samples file
-        with open(self.my_data.filename_samples, 'a+') as file:
-            for i, sample in enumerate(samples):
-                line = list(np.concatenate((sample, res[i])))
-                for j in line:
-                    file.write('%25f ' % j)
-
-                file.write('\n')
-
 
 class PCE(RandomExperiment):
     """
@@ -822,7 +830,7 @@ class PCE(RandomExperiment):
         mean = self.moments['mean']
         var = self.moments['variance']
 
-        print('{0:s} Polynomial chaos output {1:s} \n'.format('-' * 20, '-' * 20))
+        print('%s Polynomial chaos output %s \n' % ('-' * 20, '-' * 20))
         print(' Number of input variables ::'.ljust(30) + '%d' %
               len(self.my_experiment.dists))
         print(' Maximal degree ::'.ljust(30) + '%d' %
