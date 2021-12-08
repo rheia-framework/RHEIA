@@ -406,6 +406,47 @@ class PostProcessUQ():
 
         return loo
 
+    def get_mean_std(self, result_dir, objective):
+        """
+
+        Reads the mean and standard deviation
+        from the corresponding file in the result directory.
+
+        Parameters
+        ----------
+        result_dir : str
+            The result directory.
+        objective : str
+            The name of the quantity of interest.
+
+        Returns
+        -------
+        mean : float
+            The mean.
+        std : float
+            The standard deviation.
+
+        """
+
+        loo_file = os.path.join(self.result_path,
+                                '%s' % (result_dir),
+                                'full_pce_order_%i_%s' % (
+                                    self.pol_order, objective)
+                                )
+
+        # retrieve the mean and standard deviation
+        with open(loo_file, 'r') as file:
+            line = file.readlines()[2]
+            mean = float(line.split()[1])
+
+        with open(loo_file, 'r') as file:
+            line = file.readlines()[3]
+            std = float(line.split()[2])
+
+        return mean, std
+
+
+
     def get_max_sobol(self, result_dirs, objective, threshold=0.05):
         """
 
