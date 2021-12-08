@@ -23,7 +23,7 @@ To characterize the uncertainty quantification, the following dictionary with pa
                'pol order':             pol_order,
                'objective names':       obj_names,
                'objective of interest': obj_of_interest,
-               'results dir':           directory      
+               'results dir':           directory,      
 
                'sampling method':       sampling_method,        #optional, default is 'SOBOL'
                'create only samples':   only_samples_bool,      #optional, default is False
@@ -297,7 +297,6 @@ If the data for the Probability Density Function (PDF) and Cumulative Distributi
    :lineno-start: 18
 
    x_pdf, y_pdf = my_post_process_uq.get_pdf(result_dir, objective)
-
    x_cdf, y_cdf = my_post_process_uq.get_cdf(result_dir, objective)
  
 
