@@ -1,7 +1,7 @@
 .. _lab:optimization:
 
-Running optimization tasks in RHEIA
-====================
+Run an optimization task
+========================
 
 The deterministic design optimization procedure optimizes model outputs of interest by searching a finite design space as it is constructed by selected model input parameters, also known as design variables. 
 The robust design optimization works under the same principle. The fundamental change is focused on the probabilistic treatment of the model input parameters (i.e. definition and propagation of uncertainties), which dictate the optimization of mean and minimization of the standard deviation of the considered model outpus.
