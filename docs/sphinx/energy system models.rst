@@ -468,7 +468,7 @@ Before dispensation, the hydrogen is cooled down in a cooling unit.
 .. _fig:pvmobscheme:
 
 .. figure:: images/system_mob.svg
-   :width: 80%
+   :width: 90%
    :align: center
 
    The bus fleet can consist of hydrogen-fueled buses, diesel-fueled buses or a mix of both. 
