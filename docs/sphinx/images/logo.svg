@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="223.59714mm"
-   height="43.702351mm"
-   viewBox="0 0 223.59715 43.70235"
+   width="233.55956mm"
+   height="45.141762mm"
+   viewBox="0 0 233.55957 45.141761"
    version="1.1"
    id="svg8"
    inkscape:version="1.1 (c68e22c387, 2021-05-23)"
@@ -20,10 +20,10 @@
      id="defs2">
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 86.114084 : 1"
+       inkscape:vp_x="0 : 87.553496 : 1"
        inkscape:vp_y="0 : 1000.0001 : 0"
-       inkscape:vp_z="151.40782 : 86.114084 : 1"
-       inkscape:persp3d-origin="75.703909 : 59.512376 : 1"
+       inkscape:vp_z="151.40783 : 87.553496 : 1"
+       inkscape:persp3d-origin="75.703913 : 60.951788 : 1"
        id="perspective1212" />
     <clipPath
        clipPathUnits="userSpaceOnUse"
@@ -55,7 +55,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.0784544"
      inkscape:cx="425.14547"
-     inkscape:cy="164.58739"
+     inkscape:cy="166.4419"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -84,7 +84,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(89.843918,-153.17438)">
+     transform="translate(89.843918,-152.68372)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.8px;line-height:0.9;font-family:sans-serif;-inkscape-font-specification:sans-serif;letter-spacing:0px;word-spacing:0px;opacity:0.75;fill:#0072d8;fill-opacity:1;stroke:none;stroke-width:0.264583"
