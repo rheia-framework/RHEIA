@@ -298,7 +298,7 @@ If the data for the Probability Density Function (PDF) and Cumulative Distributi
 
    x_pdf, y_pdf = my_post_process_uq.get_pdf(result_dir, objective)
 
-   x_cdf, y_cdf = my_post_process_uq.get_pdf(result_dir, objective)
+   x_cdf, y_cdf = my_post_process_uq.get_cdf(result_dir, objective)
  
 
 
