@@ -34,18 +34,10 @@ def check_dictionary(run_dict, uq_bool=False):
     requirements = ['case',
                     'n jobs',
                     'results dir',
-                    'AMPL path',
-                    'gwp limit'
                     ]
 
     if 'n jobs' not in run_dict:
         run_dict['n jobs'] = 1
-
-    if 'AMPL path' not in run_dict:
-        run_dict['AMPL path'] = ''
-
-    if 'gwp limit' not in run_dict:
-        run_dict['gwp limit'] = 1e7
 
     for key in requirements:
         try:
@@ -401,7 +393,7 @@ def load_case(run_dict, design_space, uq_bool=False, create_only_samples=False):
         if hasattr(case_description, 'set_params'):
             params = case_description.set_params()
         else:
-            params = [run_dict]
+            params = []
 
     else:
         eval_func = None
