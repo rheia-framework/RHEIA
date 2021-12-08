@@ -48,9 +48,9 @@ When :py:func:`set_params()` does not exist, i.e. when no data needs to be impor
 :py:data:`params` corresponds to an empty list.
 In summary, the :py:func:`evaluate()` function can be defined as follows::
 
-    def evaluate(x, params = []):
+    def evaluate(x_in, params = []):
         
-        arguments = params + [x[1]]
+        arguments = params + [x_in[1]]
 
         obj_1, obj_2 = system_model_evaluation(*arguments)
         
@@ -100,15 +100,15 @@ And the model parameters are defined as follows:
 
 Conclusively, the system model evaluation is coded as follows::
 
-    def four_bar_truss(x):
+    def four_bar_truss(x_i):
 
-        vol = x['L'] * (2. * x['A_1'] + 2.**(0.5) *
-                        x['A_2'] + x['A_3']**(0.5) + x['A_4'])
+        vol = x_i['L'] * (2. * x_i['A_1'] + 2.**(0.5) *
+                          x_i['A_2'] + x_i['A_3']**(0.5) + x_i['A_4'])
 
-        disp = x['F'] * x['L'] * (2. / (x['A_1'] * x['E_1']) +
-                                  2. * 2**(0.5) / (x['A_2'] * x['E_2']) -
-                                  2. * 2**(0.5) / (x['A_3'] * x['E_3']) +
-                                  2. / (x['A_4'] * x['E_4']))
+        disp = x_i['F'] * x_i['L'] * (2. / (x_i['A_1'] * x_i['E_1']) +
+                                      2. * 2**(0.5) / (x_i['A_2'] * x_i['E_2']) -
+                                      2. * 2**(0.5) / (x_i['A_3'] * x_i['E_3']) +
+                                      2. / (x_i['A_4'] * x_i['E_4']))
 
         return vol, disp
 
@@ -175,9 +175,9 @@ The dictionary with the input sample names and values :py:data:`x[1]` is passed 
 The :py:func:`four_bar_truss` function returns the values for the optimization objectives, i.e. the volume :math:`V` and deflection :math:`d`.
 Conclusively, the :py:func:`evaluate()` function is completed as follows::
 
-    def evaluate(x, params = []):
+    def evaluate(x_in, params = []):
         
-        vol, disp = four_bar_truss(x[1])
+        vol, disp = four_bar_truss(x_in[1])
 
         return vol, disp
 
@@ -338,15 +338,15 @@ In the :py:mod:`case_description` module, the function to run the case in Energy
 
     from rheia.CASES.ENERGYPLAN.run_energyplan import energyplan
 
-The :py:func:`run_energyplan()` function is evaluated in :py:func:`evaluate()`, where the enumerate object :py:data:`x` is provided as an argument. For this case, no fixed parameters are provided as an argument::
+The :py:func:`run_energyplan()` function is evaluated in :py:func:`evaluate()`, where the enumerate object :py:data:`x_in` is provided as an argument. For this case, no fixed parameters are provided as an argument::
 
-    def evaluate(x, params=[]):
+    def evaluate(x_in, params=[]):
 
-        co2, fuel = energyplan(x)
+        co2, fuel = energyplan(x_in)
         
         return co2, fuel
 
-The enumerate object :py:data:`x` contains the sample to be evaluated and the index of the sample in the list of samples.
+The enumerate object :py:data:`x_in` contains the sample to be evaluated and the index of the sample in the list of samples.
 
 Run uncertainty quantification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
