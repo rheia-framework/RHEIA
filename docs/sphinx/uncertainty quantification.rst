@@ -187,7 +187,7 @@ Alternatively, an uncertainty quantification dictionary which considers random s
               'pol order': 2,
               'objective names': ['output_1', 'output_2', 'output_3'],
               'objective of interest': 'output_2',
-              'results dir': 'results_1'      
+              'results dir': 'results_1',      
               'sampling method': 'RANDOM',
               'draw pdf cdf': [True, 1000000],                
               }  
