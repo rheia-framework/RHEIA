@@ -416,7 +416,8 @@ An additional example, where parallel processing is considered, the mutation pro
                'n jobs':                int(mp.cpu_count()/2), 
                }
 
-   rheia_opt.run_opt(dict_opt)
+   if __name__ == '__main__'
+       rheia_opt.run_opt(dict_opt)
 
 The post-processing of the results is described in :ref:`lab:optimizationresults`.
 

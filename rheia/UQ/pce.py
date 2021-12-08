@@ -409,7 +409,7 @@ class RandomExperiment(Data):
             for index, sample in enumerate(eval_dict):
                 res.append(eval_func((index + len(self.x_prev), sample), params=params))
                 with open(self.my_data.filename_samples, 'a+') as file:
-                    line = list(samples[index]) + res[-1]
+                    line = list(samples[index]) + list(res[-1])
                     for j in line:
                         file.write('%25f ' % j)
                     file.write('\n')

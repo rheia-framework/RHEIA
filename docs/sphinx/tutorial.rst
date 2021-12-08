@@ -126,7 +126,7 @@ We refer to :ref:`lab:detpolorder` for more details on this method.
 
    var_dict = rheia_uq.get_design_variables(case)
 
-   X = rheia_uq.set_design_samples(var_dict, n_des_var)
+   X = rheia_uq.set_design_samples(var_dict, n_des_var, ds = 'design_space')
 
    for iteration, x in enumerate(X):
        rheia_uq.write_design_space(case, iteration, var_dict, x)
