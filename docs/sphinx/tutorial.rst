@@ -282,8 +282,8 @@ Similar to the deterministic design optimization, the optimization results can b
    plt.show()
 
 The results show a single design, which indicates that there is no trade-off between minimizing the LCOH mean and minimizing the LCOH standard deviation.
-The optimized design corresponds to a PV DC-DC converter of :math:`1.68 \mathrm{kW}` and an electrolyzer array of :math:`1.68 \mathrm{kW}`. 
-The design achieves an LCOH mean of :math:`7.78 \mathrm{euro} / \mathrm{kg}_{\mathrm{H}_2}` and a LCOH standard deviation of :math:`0.85 \mathrm{euro} / \mathrm{kg}_{\mathrm{H}_2}`. 
+The optimized design corresponds to a PV DC-DC converter of :math:`1.68~\mathrm{kW}` and an electrolyzer array of :math:`1.68~\mathrm{kW}`. 
+The design achieves an LCOH mean of :math:`7.78~\mathrm{euro} / \mathrm{kg}_{\mathrm{H}_2}` and a LCOH standard deviation of :math:`0.85~\mathrm{euro} / \mathrm{kg}_{\mathrm{H}_2}`. 
 
 Uncertainty quantification
 --------------------------
