@@ -37,7 +37,7 @@ y, x = my_opt_plot.get_fitness_population(result_dir)
 
 plt.plot(y[0], y[1], '-o')
 plt.xlabel('LCOE mean [euro/MWh]')
-plt.ylabel('LCOE standard deviation [euro/kg]')
+plt.ylabel('LCOE standard deviation [euro/MWh]')
 plt.xticks([y[0][0], y[0][-1]])
 plt.yticks([y[1][0], y[1][-1]])
 plt.show()
