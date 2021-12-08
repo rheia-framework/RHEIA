@@ -1,4 +1,4 @@
-.. figure:: images/logo_4.pdf
+.. figure:: images/logo_4.svg
    :width: 80%
    :align: center
 
