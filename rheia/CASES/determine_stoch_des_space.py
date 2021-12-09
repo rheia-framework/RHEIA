@@ -8,6 +8,17 @@ dictionary.
 import os
 import sys
 import collections
+import warnings
+
+def custom_formatwarning(msg, *args, **kwargs):
+    """
+    Customize the format of the warning message:
+    Show only the message.
+
+    """
+    # ignore everything except the message
+    return str(msg) + '\n'
+
 
 
 def check_dictionary(run_dict, uq_bool=False):
@@ -26,6 +37,8 @@ def check_dictionary(run_dict, uq_bool=False):
 
     """
 
+    warnings.formatwarning = custom_formatwarning
+    
     rob = False
 
     if not isinstance(run_dict, collections.Mapping):
@@ -67,12 +80,19 @@ def check_dictionary(run_dict, uq_bool=False):
 
         if 'x0' not in run_dict:
             run_dict['x0'] = ('AUTO', 'LHS')
+            warnings.warn("If no previous results existed, the starting "
+                          "population is generated using Latin Hypercube sampling.")
         if 'cx prob' not in run_dict:
             run_dict['cx prob'] = 0.9
+            warnings.warn("The crossover probability is defined automatically "
+                          "at 0.9")
         if 'mut prob' not in run_dict:
             run_dict['mut prob'] = 0.1
+            warnings.warn("The mutation probability is defined automatically "
+                          "at 0.1")
         if 'eta' not in run_dict:
             run_dict['eta'] = 0.2
+            warnings.warn("The eta parameter is defined automatically at 0.2")
 
         for key in requirements[3:]:
             try:
@@ -242,6 +262,8 @@ def check_dictionary(run_dict, uq_bool=False):
 
         if 'sampling method' not in run_dict:
             run_dict['sampling method'] = 'SOBOL'
+            warnings.warn("The Sobol' sequence is selected as "
+                          "sampling method.")
 
         for key in requirements[-3:]:
             try:
