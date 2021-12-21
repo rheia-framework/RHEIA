@@ -46,15 +46,21 @@ bibliography: paper.bib
 
 # Summary
 
-The massive deployment of intermittent renewable energy sources requires energy storage over longer periods (seasonal) to provide grid flexibility.
-Among others, the energy can be stored in the form of hydrogen through water electrolysis. 
-The stored energy can be recovered in multiple sectors by designing different hydrogen-based energy systems:
+The massive deployment of intermittent renewable energy sources, such as solar and wind, 
+requires energy storage over longer periods, to cover the energy demand at all times.
+Among others, renewable energy storage in the form of hydrogen is gaining a lot of attention. 
+The stored energy can be recovered in multiple sectors:
 hydrogen can be converted back into electricity (power-to-power),
-it can be used to produce low-carbon fuels (power-to-fuel) and it can be used to fuel hydrogen vehicles (power-to-mobility).
-The performance of these hydrogen-based energy systems is subject to uncertainties, e.g., the costs related to the production of renewable hydrogen and the energy consumption of hydrogen-fueled buses.
-RHEIA provides models to evaluate the techno-economic and environmental performance of hydrogen in a power-to-fuel, power-to-power and power-to-mobility context.
-In addition, a robust design optimization algorithm is included, which yields design solutions least-sensitive to the real-world uncertainties, i.e., the robust design.
-When combined, RHEIA unlocks the robust designs for hydrogen-based energy systems, and highlights their advantages.
+it can be used to produce low-carbon fuels (power-to-fuel),
+and it can be used to fuel hydrogen vehicles (power-to-mobility).
+The performance of these hydrogen-based energy systems is subject to uncertainties, 
+e.g., the solar irradiance, the energy consumption of hydrogen-powered buses and the price of grid electricity.
+Disregarding these uncertainties in the design process for these systems can result in a drastic mismatch between simulated and real-world performance, 
+and thus lead to a kill-by-randomness of the system.
+RHEIA provides a robust design optimization algorithm, which considers real-world uncertainties and yields design solutions that are least-sensitive to these uncertainties in their performance, i.e., the robust design.
+Moreover, models are included to evaluate the techno-economic and environmental performance of hydrogen in a power-to-fuel, power-to-power and power-to-mobility context.
+When combined, RHEIA unlocks the robust designs for hydrogen-based energy systems.
+
 
 # Statement of need
 
