@@ -8,28 +8,39 @@ tags:
 authors:
   - name: Diederik Coppitters
     orcid: 0000-0001-9480-2781
-    affiliation: "1, 2, 3"
+    affiliation: "1, 2"
   - name: Panagiotis Tsirikoglou
     orcid: xxx
-    affiliation: 4
+    affiliation: 3
   - name: Ward De Paepe
     orcid: 0000-0001-5008-2946
-    affiliation: 1
+    affiliation: 4
+  - name: Konstantinos Kyprianidis
+    orcid: 0000-0001-5008-2946
+    affiliation: 5
+  - name: Anestis Kalfas
+    orcid: 0000-0001-5008-2946
+    affiliation: 6
   - name: Francesco Contino
     orcid: 0000-0002-8341-4350
-    affiliation: 5
+    affiliation: 1
 affiliations:
- - name: Thermal Engineering and Combustion Unit, University of Mons
+ - name: Institute of Mechanics, Materials and Civil Engineering, Université catholique de Louvain
    index: 1
  - name: Fluid and Thermal Dynamics, Vrije Universiteit Brussel
    index: 2
- - name: Combustion and Robust Optimization Group, Vrije Universiteit Brussel and Université Libre de Bruxelles
-   index: 3
  - name: Limmat Scientific AG
+   index: 3
+ - name: Thermal Engineering and Combustion Unit, University of Mons
    index: 4
- - name: Institute of Mechanics, Materials and Civil Engineering, Université catholique de Louvain
+ - name: Department of Automation in Energy and Environment, School of Business, Society and Engineering, Malardalen University
    index: 5
-date: 1 May 2021
+ - name: Department of Mechanical Engineering, Aristotle University of Thessaloniki
+   index: 6
+   
+
+   
+date: 21 December 2021
 bibliography: paper.bib
 ---
 
