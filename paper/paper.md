@@ -69,7 +69,7 @@ Moreover, the optimization is often performed under the assumption of determinis
 Considering fixed values for model parameters in design optimization yields designs sensitive to real-world uncertainties
 and results in a drastic mismatch between simulated and actual performances.
 In fields different from energy systems, e.g., structural mechanics, aerospace and automobile applications, 
-Robust Design Optimization (RDO) yielded robust designs by minimizing the variance on the performance [@Chatterjee2017].
+Robust Design Optimization (RDO) yielded robust designs by minimizing the variance on the performance [@orosz2020robust].
 Consequently, alternative design solutions were proposed which provide a performance that is least sensitive to the random environment.
 To ensure the computational tractability of RDO, surrogate modelling techniques achieve a promising computational efficiency
 to quantify the mean and variance on the performance. Nevertheless, applications of such surrogate-assisted robust design optimization techniques are limited [@Chatterjee2017].
@@ -102,7 +102,7 @@ an Aspen Plus model of a power-to-ammonia model has been optimized with the fram
 Other Aspen Plus models have been optimized as well through 
 RHEIA: a micro gas turbine with a carbon capture plant [@giorgetti2019] and a 
 micro gas turbine [@Paepe2019a]. Finally, uncertainty quantification has been
-performed on an EnergyScope model [@limpensa2020impact].
+performed on an EnergyScope model [@rixhon2021role].
 
 
 # Future work
