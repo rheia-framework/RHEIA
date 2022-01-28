@@ -47,21 +47,21 @@ bibliography: paper.bib
 # Summary
 
 Climate change is a constant call for the massive deployment of intermittent renewable energy sources, such as solar and wind. 
-However, to cover the energy demand at all times, these systems require energy storage over more extended periods.
-Among others, renewable energy storage in the form of hydrogen is gaining ground on leading the transition of today's economy towards decarbonization. 
-The stored energy can be reconverted in multiple energy sectors:
+However, to cover the energy demand at all times, these sources require energy storage over more extended periods.
+In this framework, renewable energy storage in the form of hydrogen is gaining ground on leading the transition of today's economy towards decarbonization. 
+Among others, hydrogen can be integrated into multiple energy sectors:
 hydrogen can be converted back into electricity (power-to-power),
 it can be used to produce low-carbon fuels (power-to-fuel),
 and it can be used to fuel hydrogen vehicles (power-to-mobility).
 However, the performance of these hydrogen-based energy systems is subject to uncertainties, 
-e.g., the solar irradiance, the energy consumption of hydrogen-powered buses, the price of grid electricity.
+such as the uncertainty on the solar irradiance, the energy consumption of hydrogen-powered buses and the price of grid electricity.
 Disregarding these uncertainties in the design process can result in a drastic mismatch between simulated and real-world performance, 
 and thus lead to a *kill-by-randomness* of the system.
-The *Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems* (RHEIA) framework provides a robust design optimization pipeline, 
+The *Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems* (RHEIA) framework provides a robust design optimization pipeline 
 that considers real-world uncertainties and yields robust designs, i.e., designs with a performance less sensitive to these uncertainties.
 Moreover, RHEIA includes models to evaluate hydrogen's techno-economic and environmental performance in a power-to-fuel, power-to-power and power-to-mobility context.
 When combined, RHEIA unlocks the robust designs for hydrogen-based energy systems.
-Finally, RHEIA considers the system models as a black box, meaning that the framework can be applied to existing open-source and closed-source models.
+As RHEIA considers the system models as a black box, the framework can be applied to existing open-source and closed-source models.
 To illustrate, an interface with the [EnergyPLAN](https://www.energyplan.eu/) software is included in the framework. 
 
 
