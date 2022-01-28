@@ -53,7 +53,7 @@ Among others, hydrogen can be integrated into multiple energy sectors:
 hydrogen can be converted back into electricity (power-to-power),
 it can be used to produce low-carbon fuels (power-to-fuel),
 and it can be used to fuel hydrogen vehicles (power-to-mobility).
-However, the performance of these hydrogen-based energy systems is subject to uncertainties, 
+The performance of these hydrogen-based energy systems is subject to uncertainties, 
 such as the uncertainty on the solar irradiance, the energy consumption of hydrogen-powered buses and the price of grid electricity.
 Disregarding these uncertainties in the design process can result in a drastic mismatch between simulated and real-world performance, 
 and thus lead to a *kill-by-randomness* of the system.
@@ -76,21 +76,21 @@ Robust Design Optimization (RDO) yielded robust designs by minimizing the varian
 Consequently, alternative design solutions were proposed that provide the least sensitive performance to the random environment.
 To ensure the computational tractability of RDO, surrogate modelling techniques achieve a promising computational efficiency
 to quantify the mean and variance on the performance. Nevertheless, applications of such surrogate-assisted robust design optimization techniques are limited [@Chatterjee2017].
-To fill these research gaps, RHEIA provides a multi-objective robust design optimization algorithm,
+To fill these research gaps, RHEIA provides a multi-objective RDO algorithm,
 for which the uncertainty quantification is performed through a Polynomial Chaos Expansion (PCE) surrogate modelling technique.
 In addition, RHEIA includes Python-based models for relevant valorization pathways of hydrogen: power-to-fuel, power-to-power and power-to-mobility.
-The significant techno-economic and environmental uncertainties for these models are characterized based on scientific literature.
-In addition, a method is included to gather climate data and demand data for the location of interest.
+The significant techno-economic and environmental uncertainties for these models are characterized based on scientific literature, 
+and a method is included to gather climate data and demand data for the location of interest.
 Finally, RHEIA allows connecting your own models to the RDO and uncertainty quantification algorithms as well.   
 
-Simulation models exist, which include the evaluation of hydrogen-based energy systems,
+Simulation models that include the evaluation of hydrogen-based energy systems exist,
 e.g., [INSEL](https://insel.eu/en/home_en.html), [EnergyPLAN](https://www.energyplan.eu/) and [TRNSYS](http://www.trnsys.com/).
-Despite their extensive component model libraries, these models lack an optimization feature.
+Despite their extensive component model libraries, these simulation models lack an optimization feature.
 [HOMER Energy](https://www.homerenergy.com/products/pro/index.html) includes an optimization algorithm to design hybrid microgrids, including hydrogen system component models.
 In Python, [Calliope](https://www.callio.pe/) [@pfenninger2018calliope] considers the optimization of multi-scale energy system models, where hydrogen is regarded as a fuel in advanced gas turbines.
 However, neither multi-objective problems nor uncertainties during design optimization can be considered.
 
-Coppitters et al. applied the RDO framework to hydrogen-based energy systems, developed in Python: 
+Coppitters et al. applied the RDO framework to Python-based hydrogen-based energy systems: 
 A directly-coupled photovoltaic-electrolyzer system [@Coppitters2019a] and a photovoltaic-battery-hydrogen system [@coppitters2020robust]. 
 In addition, Verleysen et al. used the framework to optimize an Aspen Plus model of a power-to-ammonia system [@verleysen2020can].
 Other Aspen Plus models have been optimized as well through 
@@ -107,7 +107,7 @@ The sparse PCE algorithm has been proven effective in RDO for a photovoltaic-bat
 To ensure a smooth inclusion of this sparse PCE algorithm in RHEIA, we built the ``pce`` module, 
 instead of adopting an existing PCE package in Python, such as ChaosPy [@feinberg2015chaospy].
 - Including optimization algorithm alternatives (e.g., Particle Swarm Optimization, Firefly Algorithm, Cuckoo Search), 
-following the experience gained in our research group over the last years on using these algorithms in a surrogate-assisted RDO context [@Tsirikoglou2017].
+following our experience gained over the last years on using these algorithms in a surrogate-assisted RDO context [@Tsirikoglou2017].
 Moreover, optimization schemes that can handle mixed-integer problems are also of vital interest. 
 The latter will enable RHEIA to address design and optimization problems closer to the industry.
 - Adding additional models on hydrogen-based energy carrier production and utilization (e.g. ammonia, biomethane) in power-to-gas applications. 
