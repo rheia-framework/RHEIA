@@ -26,7 +26,8 @@ Specific from a Jupyter Kernel::
 	import sys
 	!{sys.executable} -m pip install rheia
 	
-After installation, the package should be installed in the native :file:`rheia` folder under the default :file:`site-packages` folder.
+After installation, the package should be installed in the native :file:`rheia` folder under the default :file:`site-packages` folder,
+e.g. :file:`C:\\Users\\...\\anaconda3\\Lib\\site-packages\\rheia`
 	
 Package dependencies
 --------------------
