@@ -287,14 +287,14 @@ The Sobol' indices can be represented in a bar chart:
 The LOO-error can be extracted:
 
 .. code-block:: python
-   :lineno-start: 17
+   :lineno-start: 18
 
    loo = my_post_process_uq.get_loo(result_dir, objective)
 	
 If the data for the Probability Density Function (PDF) and Cumulative Distribution Function (CDF) was generated, both functions can be plotted as follows:
 
 .. code-block:: python
-   :lineno-start: 18
+   :lineno-start: 19
 
    x_pdf, y_pdf = my_post_process_uq.get_pdf(result_dir, objective)
    x_cdf, y_cdf = my_post_process_uq.get_cdf(result_dir, objective)
