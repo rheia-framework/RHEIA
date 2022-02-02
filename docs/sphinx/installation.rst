@@ -28,7 +28,7 @@ Specific from a Jupyter Kernel::
 	
 After installation, the package should be installed in the native :file:`rheia` folder under the default :file:`site-packages` folder,
 e.g. :file:`C:\\Users\\...\\anaconda3\\Lib\\site-packages\\rheia`.
-From this directory, rheia's unit tests can be conveniently performed using ``pytest``.
+From this directory, the unit tests can be conveniently performed using ``pytest``.
 
 Package dependencies
 --------------------
