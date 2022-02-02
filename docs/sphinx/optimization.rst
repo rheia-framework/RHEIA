@@ -272,7 +272,7 @@ and the crossover probability is decreased to 0.85:
                'n jobs':              int(mp.cpu_count() / 2),
                }
 
-   if __name__ == '__main__'
+   if __name__ == '__main__':
        rheia_opt.run_opt(dict_opt)
 
 .. _lab:runrdo:
@@ -416,7 +416,7 @@ An additional example, where parallel processing is considered, the mutation pro
                'n jobs':                int(mp.cpu_count()/2), 
                }
 
-   if __name__ == '__main__'
+   if __name__ == '__main__':
        rheia_opt.run_opt(dict_opt)
 
 The post-processing of the results is described in :ref:`lab:optimizationresults`.
@@ -599,7 +599,7 @@ This enables to evaluate the convergence of the result. To illustrate, plotting
 generation 5, 15 and 25 can be done as follows:
 
 .. code-block:: python
-   :lineno-start: 27
+   :lineno-start: 25
 	
    for i in [5,15,25]:
        y,x = my_opt_plot.get_fitness_population(result_dir, gen = i)
