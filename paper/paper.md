@@ -116,6 +116,6 @@ epistemic and aleatory uncertainty on a parameter. For example, we performed an 
 
 # Acknowledgements
 
-The first author acknowledges the support of Fonds de la Recherche Scientifique - FNRS [35484777 FRIA-B2].
+The first author acknowledges the support from the Belgian federal Energy Transition Fund, project DRIVER.
 
 # References
