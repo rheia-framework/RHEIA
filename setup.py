@@ -8,7 +8,7 @@ DESCRIPTION = 'Robust design optimization of renewable Hydrogen and dErIved ener
 URL = 'https://github.com/rheia-framework/RHEIA'
 EMAIL = 'rheia.framework@gmail.com'
 AUTHOR = 'Diederik Coppitters, Panagiotis Tsirikoglou, Ward De Paepe, Konstantinos Kyprianidis, Anestis Kalfas, Francesco Contino'
-VERSION = '0.0.19'
+VERSION = '1.0.0'
 
 with open("README.md", "r", encoding="utf-8") as fh:
     LONG_DESCRIPTION = fh.read()
