@@ -16,6 +16,9 @@ the installation of many common packages in data science (and used in RHEIA), su
 Installing RHEIA
 ----------------
 
+From PyPi
+^^^^^^^^^
+
 RHEIA is available on PyPi, and can be downloaded via the `pip <https://pip.pypa.io/en/stable/>`_ package manager.
 The following command installs the most recent version of RHEIA and the package dependencies::
 
@@ -28,7 +31,23 @@ Specific from a Jupyter Kernel::
 	
 After installation, the package should be installed in the native :file:`rheia` folder under the default :file:`site-packages` folder,
 e.g. :file:`C:\\Users\\...\\anaconda3\\Lib\\site-packages\\rheia`.
-From this directory, the unit tests can be conveniently performed using ``pytest``.
+
+From source
+^^^^^^^^^^^
+
+Alternatively, if you do not have pip, you can instead install the package from the source code.
+First, clone the repository::
+
+	git clone https://github.com/rheia-framework/RHEIA.git
+
+Then, from that directory, install the package::
+
+	python setup.py install
+
+Testing
+^^^^^^^
+
+From the rheia directory, the unit tests can be conveniently performed using ``pytest``.
 
 Package dependencies
 --------------------
