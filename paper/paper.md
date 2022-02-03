@@ -10,16 +10,15 @@ authors:
     orcid: 0000-0001-9480-2781
     affiliation: "1, 2"
   - name: Panagiotis Tsirikoglou
-    orcid: xxx
     affiliation: 3
   - name: Ward De Paepe
     orcid: 0000-0001-5008-2946
     affiliation: 4
   - name: Konstantinos Kyprianidis
-    orcid: 0000-0001-5008-2946
+    orcid: 0000-0002-8466-356X
     affiliation: 5
   - name: Anestis Kalfas
-    orcid: 0000-0001-5008-2946
+    orcid: 0000-0002-0025-9392
     affiliation: 6
   - name: Francesco Contino
     orcid: 0000-0002-8341-4350
