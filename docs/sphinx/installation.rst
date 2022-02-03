@@ -48,9 +48,16 @@ The package will be installed under the default :file:`site-packages` folder, in
 e.g. :file:`C:\\Users\\...\\anaconda3\\Lib\\site-packages\\rheia-1.0.0-py3.8.egg\\rheia`.
 
 Testing
-^^^^^^^
+-------
 
-From the rheia directory, the unit tests can be conveniently performed using ``pytest``.
+From the rheia directory, the unit tests can be conveniently performed using ``pytest``::
+
+	pytest
+	
+A set of unit sets can be selected individually, e.g. the ones to test the energy system models::
+
+	pytest TESTS\test_models.py
+
 
 Package dependencies
 --------------------
