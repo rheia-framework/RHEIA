@@ -21,7 +21,7 @@ setuptools.setup(name=NAME,
       url=URL,
       author=AUTHOR,
       author_email=EMAIL,
-      packages= setuptools.find_packages(where="src"),
+      packages= setuptools.find_packages(),
       classifiers=[
                 "Programming Language :: Python :: 3",
                 "License :: OSI Approved :: MIT License",
