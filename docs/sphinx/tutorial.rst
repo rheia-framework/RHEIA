@@ -126,16 +126,16 @@ We refer to :ref:`lab:detpolorder` for more details on this method.
 
    var_dict = rheia_uq.get_design_variables(case)
 
-   X = rheia_uq.set_design_samples(var_dict, n_des_var, ds = 'design_space')
+   X = rheia_uq.set_design_samples(var_dict, n_des_var)
 
    for iteration, x in enumerate(X):
-       rheia_uq.write_design_space(case, iteration, var_dict, x)
+       rheia_uq.write_design_space(case, iteration, var_dict, x, ds = 'design_space_tutorial')
        dict_uq = {'case':                  case,
                   'n jobs':                int(mp.cpu_count()/2),
                   'pol order':             1,
                   'objective names':       ['LCOH','mh2'],
                   'objective of interest': 'LCOH',
-                  'results dir':           'sample_%i' %iteration      
+                  'results dir':           'sample_tutorial_%i' %iteration      
                   }   
        if __name__ == '__main__':
            rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_%i' %iteration)
@@ -352,7 +352,7 @@ dominate the uncertainty on the LCOH.
 Finally, the probability density function is plotted with the :py:meth:`get_pdf` method:
 
 .. code-block:: python
-   :linenos:
+   :lineno-start: 18
 
    x_pdf, y_pdf = my_post_process_uq.get_pdf(result_dir, objective)
 
