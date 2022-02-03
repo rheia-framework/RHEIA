@@ -44,6 +44,9 @@ Then, from that directory, install the package::
 
 	python setup.py install
 
+The package will be installed under the default :file:`site-packages` folder, in the :file:`.egg` folder
+e.g. :file:`C:\\Users\\...\\anaconda3\\Lib\\site-packages\\rheia-1.0.0-py3.8.egg\\rheia`.
+
 Testing
 ^^^^^^^
 
