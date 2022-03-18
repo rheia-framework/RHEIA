@@ -408,7 +408,10 @@ class RandomExperiment(Data):
             # linear processing
             res = []
             for index, sample in enumerate(eval_dict):
-                res.append(eval_func((index + len(self.x_prev), sample), params=params))
+                result = eval_func((index + len(self.x_prev), sample), params=params)
+                if not isinstance(result, tuple):
+                    result = (result,)
+                res.append(result)
                 with open(self.my_data.filename_samples, 'a+') as file:
                     line = list(samples[index]) + list(res[-1])
                     for j in line:
@@ -429,6 +432,8 @@ class RandomExperiment(Data):
             # append new samples and model outputs to samples file
             with open(self.my_data.filename_samples, 'a+') as file:
                 for i, sample in enumerate(samples):
+                    if not isinstance(res[i], tuple):
+                        res[i] = (res[i],)
                     line = list(np.concatenate((sample, res[i])))
                     for j in line:
                         file.write('%25f ' % j)
