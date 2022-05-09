@@ -32,6 +32,7 @@ setuptools.setup(name=NAME,
       'deap',
       'numpy',
       'scipy',
+      'pvlib',
       'sobolsequence'
       ],
       python_requires = ">=3.6",
