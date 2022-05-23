@@ -32,6 +32,8 @@ setuptools.setup(name=NAME,
       'deap',
       'numpy',
       'scipy',
+      'pandas',
+      'matplotlib',
       'pvlib',
       'sobolsequence'
       ],
