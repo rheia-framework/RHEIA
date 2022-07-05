@@ -41,6 +41,28 @@ The guides to perform the deterministic design optimization, robust design optim
 :ref:`lab:uncertaintyquantification`, respectively.
 The hydrogen-based energy system models are described in :ref:`lab:energysystemmodels`, including the uncertainty characterization of the techno-economic and environmental parameters, a script to evaluate the performance of specific designs and a method to get the climate data and demand data for your location of interest. The documentation concludes with brief details on the optimization and uncertainty quantification algorithms (:ref:`lab:methods`), the :ref:`lab:APIref` and the details on how to contribute to the framework (:ref:`lab:contribution`).
 
+Citing RHEIA
+============
+
+Please use the following to cite the framework::
+
+   Coppitters et al., (2022). RHEIA: Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems. Journal of Open Source Software, 7(75), 4370, https://doi.org/10.21105/joss.04370
+
+Bibtex entry::
+
+   @article{Coppitters2022,
+     doi = {10.21105/joss.04370},
+     url = {https://doi.org/10.21105/joss.04370},
+     year = {2022},
+     publisher = {The Open Journal},
+     volume = {7},
+     number = {75},
+     pages = {4370},
+     author = {Diederik Coppitters and Panagiotis Tsirikoglou and Ward De Paepe and Konstantinos Kyprianidis and Anestis Kalfas and Francesco Contino},
+     title = {{RHEIA: Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems}},
+     journal = {Journal of Open Source Software}
+   }
+
 
 Support
 =======
