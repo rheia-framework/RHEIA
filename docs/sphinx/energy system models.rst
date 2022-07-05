@@ -79,17 +79,17 @@ The following table lists the uncertainty characterization of the specific param
    
    * - :math:`\mathrm{capex\_pv}`
      - :math:`\mathcal{U}(350,600)`
-     - :math:`{\large €} / \mathrm{kW}_\mathrm{p}`
+     - :math:`{euro} / \mathrm{kW}_\mathrm{p}`
      - :cite:`iea2019`
 
    * - :math:`\mathrm{opex\_pv}`
      - :math:`\mathcal{U}(16,19)`
-     - :math:`{\large €} / \mathrm{kW}_\mathrm{p} / \mathrm{year}`
+     - :math:`{euro} / \mathrm{kW}_\mathrm{p} / \mathrm{year}`
      - :cite:`coppitters2020robust`
 	 
    * - :math:`\mathrm{capex\_pemel}`
      - :math:`\mathcal{U}(1400,2100)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{opex\_pemel}`
@@ -109,7 +109,7 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{capex\_dcdc}`
      - :math:`\mathcal{U}(100,200)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`coppitters2020robust`
 
 
@@ -298,12 +298,12 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{elec\_cost}`
      - :math:`\mathcal{U}(46,97)` 
-     - :math:`{\large €} / \mathrm{MWh}`
+     - :math:`{euro} / \mathrm{MWh}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{elec\_cost\_profit}`
      - :math:`\mathcal{U}(15,25)` 
-     - :math:`{\large €} / \mathrm{MWh}`
+     - :math:`{euro} / \mathrm{MWh}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{elec\_cost\_ratio}`
@@ -313,17 +313,17 @@ The following table lists the uncertainty characterization of the specific param
    
    * - :math:`\mathrm{capex\_pv}`
      - :math:`\mathcal{U}(350,600)`
-     - :math:`{\large €} / \mathrm{kW}_\mathrm{p}`
+     - :math:`{euro} / \mathrm{kW}_\mathrm{p}`
      - :cite:`iea2019`
 
    * - :math:`\mathrm{opex\_pv}`
      - :math:`\mathcal{U}(16,19)`
-     - :math:`{\large €} / \mathrm{kW}_\mathrm{p} / \mathrm{year}`
+     - :math:`{euro} / \mathrm{kW}_\mathrm{p} / \mathrm{year}`
      - :cite:`coppitters2020robust`
 	 
    * - :math:`\mathrm{capex\_pemel}`
      - :math:`\mathcal{U}(1400,2100)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{opex\_pemel}`
@@ -343,12 +343,12 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{capex\_pemfc}`
      - :math:`\mathcal{U}(1500,2400)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{opex\_pemfc}`
      - :math:`\mathcal{U}(0.045,0.135)`
-     - :math:`{\large €} / \mathrm{h}`
+     - :math:`{euro} / \mathrm{h}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{repl\_pemfc}`
@@ -363,7 +363,7 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{capex\_tank}`
      - :math:`\mathcal{U}(10.4,14.4)`
-     - :math:`{\large €} / \mathrm{kWh}`
+     - :math:`{euro} / \mathrm{kWh}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{opex\_tank}`
@@ -373,7 +373,7 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{capex\_dcdc}`
      - :math:`\mathcal{U}(100,200)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{opex\_dcdc}`
@@ -563,12 +563,12 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{elec\_cost}`
      - :math:`\mathcal{U}(46,97)` 
-     - :math:`{\large €} / \mathrm{MWh}`
+     - :math:`{euro} / \mathrm{MWh}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{elec\_cost\_profit}`
      - :math:`\mathcal{U}(15,25)` 
-     - :math:`{\large €} / \mathrm{MWh}`
+     - :math:`{euro} / \mathrm{MWh}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{elec\_cost\_ratio}`
@@ -578,7 +578,7 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{diesel\_cost}`
      - :math:`\mathcal{U}(1.42,2.31)` 
-     - :math:`{\large €} / \mathrm{l}`
+     - :math:`{euro} / \mathrm{l}`
      - :cite:`duic2017eu28`
 
    * - :math:`\mathrm{int\_rate}`
@@ -603,37 +603,37 @@ The following table lists the uncertainty characterization of the specific param
 
    * - :math:`\mathrm{capex\_pv}`
      - :math:`\mathcal{U}(350,600)`
-     - :math:`{\large €} / \mathrm{kW}_\mathrm{p}`
+     - :math:`{euro} / \mathrm{kW}_\mathrm{p}`
      - :cite:`iea2019`
 
    * - :math:`\mathrm{capex\_tank}`
      - :math:`\mathcal{U}(11,14)`
-     - :math:`{\large €} / \mathrm{kWh}`
+     - :math:`{euro} / \mathrm{kWh}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{capex\_pemel}`
      - :math:`\mathcal{U}(1400,2100)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`coppitters2020robust`
 
    * - :math:`\mathrm{capex\_compr}`
      - :math:`\mathcal{U}(1000,1500)`
-     - :math:`{\large €} / \mathrm{kW}`
+     - :math:`{euro} / \mathrm{kW}`
      - :cite:`niaz2015hydrogen`
 	 
    * - :math:`\mathrm{capex\_disp}`
      - :math:`\mathcal{U}(45000,65000)`
-     - :math:`{\large €} / \mathrm{unit}`
+     - :math:`{euro} / \mathrm{unit}`
      - :cite:`minutillo2020analyzing,arya,mayyas2019manufacturing`
 
    * - :math:`\mathrm{capex\_diesel\_bus}`
      - :math:`\mathcal{U}(220000,250000)`
-     - :math:`{\large €} / \mathrm{unit}`
+     - :math:`{euro} / \mathrm{unit}`
      - :cite:`arya, civitas2013smart, ruf2017fuel`
 
    * - :math:`\mathrm{capex\_h2\_bus}`
      - :math:`\mathcal{U}(400000,620000)`
-     - :math:`{\large €} / \mathrm{unit}`
+     - :math:`{euro} / \mathrm{unit}`
      - :cite:`arya,pocard2016fuel,civitas2013smart, ruf2017fuel`
 	 
    * - :math:`\mathrm{co2\_pv}`
