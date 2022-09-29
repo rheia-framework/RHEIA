@@ -51,7 +51,7 @@ def input_case(run_dict):
 
     """
 
-    design_space = 'design_space'
+    design_space = 'design_space.csv'
     space_obj, eval_func, params = opt.load_case(run_dict, design_space)
 
     return space_obj, eval_func, params

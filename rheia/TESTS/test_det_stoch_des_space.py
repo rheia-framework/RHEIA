@@ -46,7 +46,7 @@ def input_case(run_dict):
 
     """
 
-    design_space = 'design_space'
+    design_space = 'design_space.csv'
     opt_type = list(run_dict['objectives'].keys())[0]
     case = run_dict['case']
     test_class = StochasticDesignSpace(opt_type, case, design_space)
@@ -79,7 +79,7 @@ def test_design_space_name(input_case):
 
     """
 
-    assert input_case.design_space == 'design_space'
+    assert input_case.design_space == 'design_space.csv'
 
 
 def test_opt_type(input_case):

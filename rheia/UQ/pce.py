@@ -12,13 +12,14 @@ import numpy as np
 from scipy import stats, special
 import sobol
 import warnings
+import pandas as pd
 
 class Data:
     """
 
     The class includes methods to create a file to store the samples
     and to store information on the stochastic design space, exctracted
-    from the :file:`design_space` and :file:`stochastic_space` files.
+    from the :file:`design_space.txt` and :file:`stochastic_space.txt` files.
 
     Parameters
     ----------
@@ -59,15 +60,23 @@ class Data:
             os.makedirs(self.path_res)
 
         # file where evaluated samples are stored
-        self.filename_samples = os.path.join(self.path_res, 'samples')
-
+        self.filename_samples = os.path.join(self.path_res, 'samples.csv')
+        
+        if not os.path.isfile(self.filename_samples):
+            df = pd.DataFrame([self.stoch_data['names'] + 
+                           self.inputs['objective names']])
+            with open(self.filename_samples, 'w') as f:
+                 df.to_csv(f, header=False, index=False, line_terminator='\n')
+        
+        '''
         if not os.path.isfile(self.filename_samples):
             with open(self.filename_samples, "w") as file:
-                for name in self.stoch_data['names'] + \
+                self.stoch_data['names'] + \
                         self.inputs['objective names']:
-                    file.write('%25s ' % name)
+                    file.write('%25s, ' % name)
                 file.write('\n')
-
+        '''
+        
     def read_stoch_parameters(self, var_values=[]):
         """
         Read in the stochastic design space
@@ -200,7 +209,20 @@ class RandomExperiment(Data):
             should only be created.
 
         """
-
+        
+        df = pd.read_csv(self.my_data.filename_samples)
+        df_x = df[self.my_data.stoch_data['names']]
+        df_y = df[self.my_data.inputs['objective of interest']]
+        
+        self.x_prev = df_x.to_numpy()
+        
+        self.y_prev = np.zeros((len(self.x_prev), 1))
+        y_int = df_y.to_numpy()
+        
+        for i,y in enumerate(y_int):
+            self.y_prev[i] = y
+            
+        '''
         with open(self.my_data.filename_samples, 'r') as file:
             lines = file.readlines()
             x_int = np.zeros((len(lines) - 1,
@@ -236,6 +258,7 @@ class RandomExperiment(Data):
         # store samples and deterministic output
         self.y_prev = np.array(y_int)
         self.x_prev = np.array(x_int)
+        '''
 
     def create_distributions(self):
         """
@@ -356,6 +379,12 @@ class RandomExperiment(Data):
         """
 
         if create_only_samples:
+
+            df = pd.DataFrame(self.x_u, columns=None)
+            with open(self.my_data.filename_samples, 'a+') as f:
+                df.to_csv(f, header=False, index=False, line_terminator='\n')
+
+            '''
             # add the samples to the samples file, no output results
             with open(self.my_data.filename_samples, 'a+') as file:
                 for i, x_u_sample in enumerate(self.x_u):
@@ -364,6 +393,7 @@ class RandomExperiment(Data):
                         file.write('%25f ' % j)
 
                     file.write('\n')
+            '''
 
     def evaluate(self, eval_func, params):
         """
@@ -408,16 +438,22 @@ class RandomExperiment(Data):
             # linear processing
             res = []
             for index, sample in enumerate(eval_dict):
-                result = eval_func((index + len(self.x_prev), sample), params=params)
-                if not isinstance(result, tuple):
-                    result = (result,)
-                res.append(result)
+                res.append(eval_func((index + len(self.x_prev), sample), params=params))
+
+            df = pd.DataFrame(samples, columns=None)
+            df2 = pd.DataFrame(res, columns=None)
+            df3 = pd.concat([df, df2], axis=1)
+                        
+            with open(self.my_data.filename_samples, 'a+') as f:
+                df3.to_csv(f, header=False, index=False, line_terminator='\n')
+
+                '''
                 with open(self.my_data.filename_samples, 'a+') as file:
                     line = list(samples[index]) + list(res[-1])
                     for j in line:
                         file.write('%25f ' % j)
                     file.write('\n')
-
+                '''
 
         else:
             # multiprocessing
@@ -432,8 +468,6 @@ class RandomExperiment(Data):
             # append new samples and model outputs to samples file
             with open(self.my_data.filename_samples, 'a+') as file:
                 for i, sample in enumerate(samples):
-                    if not isinstance(res[i], tuple):
-                        res[i] = (res[i],)
                     line = list(np.concatenate((sample, res[i])))
                     for j in line:
                         file.write('%25f ' % j)
@@ -860,7 +894,7 @@ class PCE(RandomExperiment):
         print('-' * 65)
 
         filename_res = (
-            "full_pce_order_%d_%s" %
+            "full_pce_order_%d_%s.txt" %
             (self.order,
              self.my_experiment.my_data.inputs['objective of interest']))
 
@@ -875,10 +909,19 @@ class PCE(RandomExperiment):
             file.write('%25s %25f \n' % ('mean', mean))
             file.write(
                 '%25s %25f \n' % ('std. dev.', np.sqrt(var)))
+                
+        total = np.array([self.my_experiment.my_data.stoch_data['names'],self.sensitivity['s_i'][:len(self.sensitivity['s_tot_i'])],self.sensitivity['s_tot_i']]).transpose()
+        
+        df1 = pd.DataFrame(total, columns=['name',
+                 'First-order Sobol indices',
+                 'Total-order Sobol indices'])
 
         # write sobol indices in the corresponding result file
         with open(os.path.join(self.my_experiment.my_data.path_res,
-                               filename_res + '_Sobol_indices'), "w") as file:
+                               filename_res[:-4] + '_Sobol_indices.csv'), "w") as file:                               
+            df1.to_csv(file, index=False, line_terminator='\n')
+                               
+            '''
             file.write(
                 '%30s %30s %30s  \n' %
                 ('name',
@@ -891,6 +934,7 @@ class PCE(RandomExperiment):
                     (self.my_experiment.my_data.stoch_data['names'][i],
                      self.sensitivity['s_i'][i],
                      self.sensitivity['s_tot_i'][i]))
+            '''
 
     def draw(self, size):
         """
@@ -918,10 +962,22 @@ class PCE(RandomExperiment):
         # generate the pdf
         density, bins = np.histogram(data, bins=100, density=1)
         centers = [(a + b) / 2 for a, b in zip(bins[::1], bins[1::1])]
+        
+        total = np.array([centers,density]).transpose()
+        
+        df1 = pd.DataFrame(total, columns=[self.my_experiment.my_data.inputs['objective of interest'],'probability density'])
         with open(os.path.join(self.my_experiment.my_data.path_res,
-                               ("data_pdf_%s"
+                               ("data_pdf_%s.csv"
+                                % (self.my_experiment.my_data.inputs[
+                                    'objective of interest']))), "w") as f:
+            df1.to_csv(f, index=False, line_terminator='\n')
+        
+        '''
+        with open(os.path.join(self.my_experiment.my_data.path_res,
+                               ("data_pdf_%s.csv"
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as file:
+
 
             file.write(
                 '%25s %25s \n' %
@@ -930,9 +986,21 @@ class PCE(RandomExperiment):
             for i, j in enumerate(centers):
                 file.write('%25f %25f' % (j, density[i]))
                 file.write('\n')
-
+        '''
+        
         # generate the cdf
         cdf = np.cumsum(density * np.diff(bins))
+
+        total = np.array([centers,cdf]).transpose()
+        
+        df1 = pd.DataFrame(total, columns=[self.my_experiment.my_data.inputs['objective of interest'],'cumulative probability'])
+        with open(os.path.join(self.my_experiment.my_data.path_res,
+                               ("data_cdf_%s.csv"
+                                % (self.my_experiment.my_data.inputs[
+                                    'objective of interest']))), "w") as f:
+            df1.to_csv(f, index=False, line_terminator='\n')
+
+        '''
         with open(os.path.join(self.my_experiment.my_data.path_res,
                                ("data_cdf_%s"
                                 % (self.my_experiment.my_data.inputs[
@@ -945,3 +1013,4 @@ class PCE(RandomExperiment):
             for i, j in enumerate(centers):
                 file.write('%25f %25f' % (j, cdf[i]))
                 file.write('\n')
+        '''

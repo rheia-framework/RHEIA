@@ -460,7 +460,7 @@ class StochasticDesignSpace(object):
 
     def read_design_space(self):
         """
-        Reads the :file:`design_space` file and extracts the deterministic
+        Reads the :file:`design_space.csv` file and extracts the deterministic
         values for the parameters and the bounds for the design variables.
 
         """
@@ -470,17 +470,17 @@ class StochasticDesignSpace(object):
         # check if design_space file exists
         if not os.path.isfile(path_to_read):
             raise ValueError(
-                """Missing file: "design_space" or the name of the case does
+                """Missing file: "design_space.csv" or the name of the case does
                    not exist. Make sure that the name of the case is equal to
                    the name of the folder in CASES.""")
 
         with open(path_to_read, 'r') as file:
             for line in file:
-                tmp = line.split()
+                tmp = line.split(",")
 
                 # store model parameter names and deterministic value
                 if tmp[1] == 'par':
-                    if len(tmp) != 3:
+                    if len(tmp) > 3 and tmp[3] != '\n' and tmp[3] != '':
                         raise IndexError(
                             """ Wrong characterization of the parameter %s.
                                 Is it supposed to be a variable?
@@ -490,7 +490,7 @@ class StochasticDesignSpace(object):
 
                 # store design variable names and bounds
                 elif tmp[1] == 'var':
-                    if len(tmp) != 4:
+                    if len(tmp) < 4:
                         raise IndexError(
                             """ Wrong characterization of the design variable %s.
                                 Is it supposed to be a parameter?
@@ -523,7 +523,7 @@ class StochasticDesignSpace(object):
 
         """
 
-        path_to_read = os.path.join(self.case_path, 'stochastic_space')
+        path_to_read = os.path.join(self.case_path, 'stochastic_space.csv')
 
         if any(
             x in self.opt_type for x in [
@@ -533,14 +533,14 @@ class StochasticDesignSpace(object):
             # get characteristics of stochastic parameters
             with open(path_to_read, 'r') as file:
                 for line in file:
-                    tmp = line.split()
+                    tmp = line.split(",")
                     self.upar_dict[tmp[0]] = [tmp[1], tmp[2], float(tmp[3])]
 
         elif (any(x in self.opt_type for x in ['ROB', 'UQ'])
               and not os.path.isfile(path_to_read)):
 
             raise NameError(
-                """Missing file: "stochastic_space".
+                """Missing file: "stochastic_space.csv".
                    Uncertainty matrix cannot be built!""")
 
     def attach_objectives(self, obj):

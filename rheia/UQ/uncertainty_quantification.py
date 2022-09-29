@@ -13,7 +13,7 @@ import rheia.UQ.pce as uq
 def get_design_variables(case):
     """
     This function loads the design variable names and bounds
-    out of the :file:`design_space` file.
+    out of the :file:`design_space.csv` file.
 
     Parameters
     ----------
@@ -37,12 +37,12 @@ def get_design_variables(case):
                 os.pardir)),
         'CASES',
         case,
-        'design_space')
+        'design_space.csv')
 
     # read in the design variable bounds
     with open(path_to_read, 'r') as file:
         for line in file:
-            tmp = line.split()
+            tmp = line.split(",")
             if tmp[1] == 'var':
                 var_dict[tmp[0]] = [float(tmp[2]), float(tmp[3])]
 
@@ -82,7 +82,7 @@ def set_design_samples(var_dict, n_samples):
     return samples
 
 
-def write_design_space(case, iteration, var_dict, sample, ds = 'design_space'):
+def write_design_space(case, iteration, var_dict, sample, ds = 'design_space.csv'):
     """
     A new design space file is created. In this file,
     the model parameters are copied from the original file,
@@ -112,7 +112,7 @@ def write_design_space(case, iteration, var_dict, sample, ds = 'design_space'):
     des_var_file = os.path.join(os.path.abspath(os.path.join(path, os.pardir)),
                                 'CASES',
                                 case,
-                                'design_space',
+                                'design_space.csv',
                                 )
 
     new_des_var_file = os.path.join(
@@ -122,7 +122,7 @@ def write_design_space(case, iteration, var_dict, sample, ds = 'design_space'):
                 os.pardir)),
         'CASES',
         case,
-        '%s_%i' % (ds, iteration)
+        '%s_%i%s' % (ds[:-4], iteration, ds[-4:])
     )
 
     # write the new design_space file if it does not exist already
@@ -145,7 +145,7 @@ def write_design_space(case, iteration, var_dict, sample, ds = 'design_space'):
                 file.write("%s" % item)
 
 
-def run_uq(run_dict, design_space='design_space'):
+def run_uq(run_dict, design_space='design_space.csv'):
     """
     This function is the main to run uncertainty quantification.
     First, the input distributions are created,

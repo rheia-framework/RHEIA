@@ -51,7 +51,7 @@ class PostProcessOpt():
         with open(self.fitness_file, 'r') as file:
             self.y_lines = file.readlines()
             for string in self.y_lines:
-                if string == '- \n':
+                if string == '-\n':
                     # count the number of generations
                     self.n_gen += 1
 
@@ -76,13 +76,13 @@ class PostProcessOpt():
 
         """
 
-        fit_val = np.zeros((len(self.y_lines[0].split()), self.n_pop))
+        fit_val = np.zeros((len(self.y_lines[0].split(",")), self.n_pop))
         for index, line in enumerate(
-                self.y_lines[(gen - 1) * self.n_pop - 1 + gen:
-                             gen * self.n_pop - 1 + gen]):
+                self.y_lines[(gen - 1) * self.n_pop + gen -1:
+                             gen * self.n_pop-1 + gen]):
 
             # add fitness values for the desired generation
-            fit_val[:, index] = [float(i) for i in line.split()]
+            fit_val[:, index] = [float(i) for i in line.split(",")]
 
         return fit_val
 
@@ -106,13 +106,13 @@ class PostProcessOpt():
         with open(self.population_file, 'r') as file:
             self.x_lines = file.readlines()
 
-        pop_val = np.zeros((len(self.x_lines[0].split()), self.n_pop))
+        pop_val = np.zeros((len(self.x_lines[0].split(",")), self.n_pop))
         for index, line in enumerate(
-                self.x_lines[(gen - 1) * self.n_pop - 1 + gen:
-                             gen * self.n_pop - 1 + gen]):
+                self.x_lines[(gen - 1) * self.n_pop + gen-1:
+                             gen * self.n_pop-1 + gen]):
 
             # add population values for the desired generation
-            pop_val[:, index] = [float(i) for i in line.split()]
+            pop_val[:, index] = [float(i) for i in line.split(",")]
 
         return pop_val
 
@@ -133,14 +133,14 @@ class PostProcessOpt():
         """
 
         # write sorted fitness values in corresponding file
-        with open(self.fitness_file + "_final_sorted", 'w') as file:
+        with open(self.fitness_file[:-4] + "_final_sorted.csv", 'w') as file:
             for sample in y_val:
                 for value in sample:
-                    file.write('%f, ' % value)
+                    file.write('%f,' % value)
                 file.write('\n')
 
         # write sorted population values in corresponding file
-        with open(self.population_file + "_final_sorted", 'w') as file:
+        with open(self.population_file[:-4] + "_final_sorted.csv", 'w') as file:
             for sample in x_val:
                 for value in sample:
                     file.write('%f, ' % value)
@@ -171,12 +171,12 @@ class PostProcessOpt():
 
         self.fitness_file = os.path.join(self.result_path,
                                          result_dir,
-                                         'fitness',
+                                         'fitness.csv',
                                          )
 
         self.population_file = os.path.join(self.result_path,
                                             result_dir,
-                                            'population',
+                                            'population.csv',
                                             )
 
         # set the population size and number of generations
@@ -265,7 +265,7 @@ class PostProcessUQ():
             x_val = np.ones(len(lines) - 1)
             y_val = np.ones(len(lines) - 1)
             for index, line in enumerate(lines[1:]):
-                tmp = line.split()
+                tmp = line.split(",")
                 x_val[index] = float(tmp[0])
                 y_val[index] = float(tmp[1])
 
@@ -295,7 +295,7 @@ class PostProcessUQ():
 
         sobol_file = os.path.join(self.result_path,
                                   '%s' % result_dir,
-                                  'full_pce_order_%i_%s_Sobol_indices' % (
+                                  'full_pce_order_%i_%s_Sobol_indices.csv' % (
                                       self.pol_order, objective)
                                   )
 
@@ -303,7 +303,7 @@ class PostProcessUQ():
         res_tmp = []
         with open(sobol_file, 'r') as file:
             for line in file.readlines()[1:]:
-                res_tmp.append([i for i in line.split()])
+                res_tmp.append([i for i in line.split(",")])
             names = [row[0] for row in res_tmp]
             sobol = [float(row[2]) for row in res_tmp]
 
@@ -333,7 +333,7 @@ class PostProcessUQ():
 
         pdf_file = os.path.join(self.result_path,
                                 '%s' % result_dir,
-                                'data_pdf_%s' % objective
+                                'data_pdf_%s.csv' % objective
                                 )
 
         # get the x and y values for the PDF
@@ -365,7 +365,7 @@ class PostProcessUQ():
 
         cdf_file = os.path.join(self.result_path,
                                 '%s' % result_dir,
-                                'data_cdf_%s' % objective
+                                'data_cdf_%s.csv' % objective
                                 )
 
         # get the x and y values for the CDF
@@ -395,7 +395,7 @@ class PostProcessUQ():
 
         loo_file = os.path.join(self.result_path,
                                 '%s' % (result_dir),
-                                'full_pce_order_%i_%s' % (
+                                'full_pce_order_%i_%s.txt' % (
                                     self.pol_order, objective)
                                 )
 
@@ -430,7 +430,7 @@ class PostProcessUQ():
 
         loo_file = os.path.join(self.result_path,
                                 '%s' % (result_dir),
-                                'full_pce_order_%i_%s' % (
+                                'full_pce_order_%i_%s.txt' % (
                                     self.pol_order, objective)
                                 )
 

@@ -54,7 +54,7 @@ def input_case(run_dict):
 
     """
 
-    design_space = 'design_space'
+    design_space = 'design_space.csv'
     space_obj, eval_func, params = opt.load_case(run_dict, design_space)
     run_dict['evaluate'] = eval_func
     nsga_obj = ga.NSGA2(run_dict, space_obj, True, params)

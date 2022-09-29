@@ -9,7 +9,7 @@ from shutil import copyfile
 from pyDOE import lhs
 from rheia.CASES.determine_stoch_des_space import load_case, check_dictionary
 import numpy as np
-
+import pandas as pd
 #######################
 # optimizer functions #
 #######################
@@ -108,7 +108,7 @@ def check_existing_results(run_dict, space_obj):
         'RESULTS',
         space_obj.case,
         list(run_dict['objectives'].keys())[0], run_dict['results dir'],
-        'population')
+        'population.csv')
 
     # path of the fitness file
     fitness_file = os.path.join(os.path.split(os.path.dirname(
@@ -116,7 +116,7 @@ def check_existing_results(run_dict, space_obj):
         'RESULTS',
         space_obj.case,
         list(run_dict['objectives'].keys())[0], run_dict['results dir'],
-        'fitness')
+        'fitness.csv')
 
     # check if the population and fitness file exist
     start_from_last_gen = False
@@ -166,7 +166,6 @@ def write_starting_samples(doe, filename):
         The path to the filename for the starting samples.
 
     """
-
     with open(filename, 'w') as file:
         for x_in in doe:
             if not isinstance(x_in, list):
@@ -262,24 +261,25 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
             space_obj.case,
             list(run_dict['objectives'].keys())[0],
             run_dict['results dir'],
-            'population')
+            'population.csv')
+            
+        df = pd.read_csv(doe_custom)
+        df.drop(df.tail(1).index,inplace=True)
 
-        d_file = open(doe_custom, 'r')
+        rows = df.tail(run_dict['population size']).to_numpy()
+        
 
-        # Read DOE points
         doe = []
-        for line in reversed(d_file.readlines()[:-1]):
-            # stop when the population is finished
-            if line == '- \n':
-                break
-
-            doe.append([float(i) for i in line.split()])
-
+        for line in rows:
+            dummy = []
+            for l in line:
+                dummy.append(float(l))
+            doe.append(dummy)
+            
         # check if the size of the existing population matches with the
         # provided one in the optimization dictionary
         if len(doe) == run_dict['population size']:
             write_starting_samples(doe, doe_filename)
-            d_file.close()
         else:
             raise ValueError(""" The defined population size does not match
                                  the population size from a previous run in
@@ -290,7 +290,7 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
 ########################
 
 
-def run_opt(run_dict, design_space='design_space'):
+def run_opt(run_dict, design_space='design_space.csv'):
     """
     This function runs the optimization pipeline.
     First, the case, optimizer and configuration
@@ -305,7 +305,7 @@ def run_opt(run_dict, design_space='design_space'):
         The dictionary with user-defined values for
         the characterization of the optimization.
     design_space : string, optional
-        The design_space filename. The default is 'design_space'.
+        The design_space filename. The default is 'design_space.csv'.
 
     """
 

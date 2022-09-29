@@ -53,7 +53,7 @@ def case(run_dict):
 
     """
 
-    design_space = 'design_space_tutorial_uq'
+    design_space = 'design_space_tutorial_uq.csv'
     space_obj, eval_func, params = load_case(
         run_dict, design_space, uq_bool=True)
     run_dict['evaluate'] = eval_func

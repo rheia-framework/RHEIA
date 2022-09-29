@@ -88,12 +88,12 @@ class ReadData:
 
         """
         param_dict = {}
-        design_space = os.path.join(self.path, 'design_space')
+        design_space = os.path.join(self.path, 'design_space.csv')
 
         # read the deterministic values for the parameters in `design_space`
         with open(design_space, 'r') as file:
             for line in file:
-                tmp = line.split()
+                tmp = line.split(",")
                 if tmp[1] == 'par':
                     param_dict[tmp[0]] = float(tmp[2])
 

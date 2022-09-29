@@ -11,7 +11,7 @@ from copy import deepcopy
 import numpy as np
 from deap import creator, base, tools
 import rheia.UQ.pce as uq
-
+import pandas as pd
 
 class NSGA2:
     """
@@ -87,7 +87,7 @@ class NSGA2:
         """
 
         # the directory of the STATUS file
-        stat_dir = os.path.join(self.opt_res_dir, 'STATUS')
+        stat_dir = os.path.join(self.opt_res_dir, 'STATUS.txt')
 
         with open(stat_dir, 'rb') as file:
 
@@ -116,7 +116,7 @@ class NSGA2:
         """
 
         # the directory of the STATUS file
-        stat_dir = os.path.join(self.opt_res_dir, 'STATUS')
+        stat_dir = os.path.join(self.opt_res_dir, 'STATUS.txt')
 
         # add the message to the STATUS file
         file = open(stat_dir, 'a')
@@ -141,7 +141,20 @@ class NSGA2:
 
         # the directory to the file in the results directory
         file_dir = os.path.join(self.opt_res_dir, filename)
+                
+        dummy = ['-']
 
+        df = pd.DataFrame(nests, columns=None)
+        
+        with open(file_dir, 'a') as f:
+             df.to_csv(f, header=False, index=False, line_terminator='\n')
+
+        df2 = pd.DataFrame(dummy, columns=None)
+
+        with open(file_dir, 'a') as f:
+             df2.to_csv(f, header=False, index=False, line_terminator='\n')
+        
+        '''
         with open(file_dir, 'a') as file:
 
             for n_in in nests:
@@ -153,7 +166,9 @@ class NSGA2:
                 file.write('\n')
 
             file.write('- \n')
-
+        '''
+        
+        
     ##########################################
     # sample creation and evaluation methods #
     ##########################################
@@ -521,25 +536,42 @@ class NSGA2:
             current_pop = self.assign_fitness_to_population(current_pop,
                                                             fitnesses,
                                                             unc_samples)
-
+                                                            
+                                                            
             # update the population and fitness files
-            self.append_points_to_file(current_pop, 'population')
-
+            self.append_points_to_file(current_pop, 'population.csv')
+            
             self.append_points_to_file([x.fitness.values for x in current_pop],
-                                       'fitness')
+                                       'fitness.csv')
 
             # update the STATUS file
             self.write_status('%8i%8i' % (1, n_eval))
 
         else:
+
+            df = pd.read_csv(os.path.join(self.opt_res_dir, 'fitness.csv'))
+            df.drop(df.tail(1).index,inplace=True)
+
+            rows = df.tail(self.run_dict['population size']).to_numpy()
+            
+
+            output = []
+            for line in rows:
+                dummy = []
+                for l in line:
+                    dummy.append(float(l))
+                output.append(dummy)
+
+            '''
             # get the population and fitness from the last available generation
-            with open(os.path.join(self.opt_res_dir, 'fitness')) as file:
+            with open(os.path.join(self.opt_res_dir, 'fitness.csv')) as file:
 
                 # Read DOE points
                 output = []
                 for line in file.readlines()[-len(doe) - 1:-1]:
                     output.append([float(i) for i in line.split()])
 
+            '''
             # add the fitness to the corresponding sample in the population
             for i, pop in enumerate(current_pop):
                 pop.fitness.values = output[i]
@@ -637,13 +669,14 @@ class NSGA2:
                 offspring[i] = deepcopy(ind)
 
         # select next population using the NSGA-II operator
+        
         new_pop = tools.selNSGA2(current_pop + offspring, len(current_pop))
 
         # update the population and fitness files
-        self.append_points_to_file(new_pop, 'population')
+        self.append_points_to_file(new_pop, 'population.csv')
 
         fitness_values = [x.fitness.values for x in new_pop]
-        self.append_points_to_file(fitness_values, 'fitness')
+        self.append_points_to_file(fitness_values, 'fitness.csv')
 
         # update the STATUS file
         ite, evals = self.parse_status()
