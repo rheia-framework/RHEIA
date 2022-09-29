@@ -460,10 +460,10 @@ the design space is performed as follows:
 After providing the name of the case, a dictionary with the design variable names, lower bounds and upper bounds can be defined
 via the :py:func:`get_design_variables` function.
 From this dictionary, the design samples can be constructed through LHS via :py:func:`set_design_samples`. 
-Then, for each design sample in the array :py:data:`X`, a :file:`design_space.txt` file is constructed through the function :py:func:`write_design_space()`. 
-For each :file:`design_space.txt` file, the PCE is constructed through the characterization of the uncertainty quantification dictionary. 
+Then, for each design sample in the array :py:data:`X`, a :file:`design_space` file is constructed through the function :py:func:`write_design_space()`. 
+For each :file:`design_space` file, the PCE is constructed through the characterization of the uncertainty quantification dictionary. 
 For more information on the characterization of this dictionary, we refer to :ref:`lab:uncertaintyquantification`.
-The uncertainty quantification dictionary and the specific :file:`design_space.txt` file is then provided to the :py:func:`run_uq` function.
+The uncertainty quantification dictionary and the specific :file:`design_space` file is then provided to the :py:func:`run_uq` function.
 This results in a PCE for each design sample, with a corresponding Leave-One-Out (LOO) error. That LOO error is stored in the :file:`RESULTS` folder.
 Considering the specific dictionary determined above, the results for the different design samples are stored in :file:`\\RESULTS\\case_name\\UQ`::
 

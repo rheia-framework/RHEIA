@@ -5,7 +5,7 @@ Run an uncertainty quantification
 
 The uncertainty quantification procedure provides the mean and standard deviation of the quantity of interest and the Sobol' indices 
 by constructing a Polynomial Chaos Expansion (PCE). More information on PCE is available in :ref:`lab:PCE`.
-The mean value and the corresponding uncertainty of the model parameters are characterized in :file:`design_space.txt` and :file:`stochastic_space.txt`, respectively.
+The mean value and the corresponding uncertainty of the model parameters are characterized in :file:`design_space` and :file:`stochastic_space`, respectively.
 More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively.  
 The model returns the values for the quantity of interest through the function :py:meth:`evaluate()` defined in :py:mod:`case_description`.
 More information on this Python wrapper is discussed in :ref:`lab:wrapper`. 
@@ -203,11 +203,11 @@ Create samples for an unconnected model
 
 When it is burdensome to connect the system model to the framework, the framework provides the option to generate the random samples for uncertainty quantification without a model evaluation.
 As the generation of these random samples is based on the characterization of the uncertainties,
-a :file:`design_space.txt` file and :file:`stochastic_space.txt` file have to be defined. 
+a :file:`design_space` file and :file:`stochastic_space` file have to be defined. 
 To generate the samples, use (or make a copy of) the :file:`NO_MODEL` folder in :file:`CASES`.
-In this folder, a :py:mod:`case_description` module is present, as well as :file:`design_space.txt` and :file:`stochastic_space.txt`.
+In this folder, a :py:mod:`case_description` module is present, as well as :file:`design_space` and :file:`stochastic_space`.
 The :py:mod:`case_description` is empty, as no model evaluations are required.
-In :file:`design_space.txt` and :file:`stochastic_space.txt`, the stochastic design space of interest is defined. 
+In :file:`design_space` and :file:`stochastic_space`, the stochastic design space of interest is defined. 
 The samples can be generated as follows:
 
 .. code-block:: python

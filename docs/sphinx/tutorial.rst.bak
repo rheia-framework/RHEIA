@@ -13,7 +13,7 @@ Deterministic design optimization
 
 For a fixed photovoltaic array of :math:`5~\mathrm{kW}_\mathrm{p}`, the capacity of the electrolyzer stack and the capacity of the DC-DC converter 
 can be designed such that the Levelized Cost Of Hydrogen (:math:`\mathrm{LCOH}`) and hydrogen production :math:`\dot{m}_{\mathrm{H}_2}` are optimized.
-The bounds for the design variables and the values for the model parameters can be adjusted in :file:`CASES\\H2_FUEL\\design_space.txt`.
+The bounds for the design variables and the values for the model parameters can be adjusted in :file:`CASES\\H2_FUEL\\design_space`.
 Detailed information on characterizing the design variables is available in :ref:`lab:ssdesignspace`.
 
 To perform a deterministic design optimization, the following optimization dictionary has to be filled and passed as an argument to the :py:func:`run_opt` function. 
@@ -315,7 +315,7 @@ The uncertainty quantification dictionary is then characterized and evaluated as
               }  
 
    if __name__ == '__main__':
-       rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_uq.txt')
+       rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_uq')
 
 **For this tutorial, the results of the uncertainty quantification are provided in** :file:`RESULTS\\PV_ELEC\\UQ\\opt_design_tutorial`
 
