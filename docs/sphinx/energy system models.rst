@@ -754,11 +754,11 @@ The method of converting the demand to the specified location has been presented
 - Convert the climate data and demand data file formats according to the climate and demand data files present in :file:`CASES\\DATA\\climate` and :file:`CASES\\DATA\\demand`, respectively.
 - Add the climate data and demand data to :file:`CASES\\DATA\\climate` and :file:`CASES\\DATA\\demand`, respectively.
 
-In the provided hydrogen-based energy systems, the yearly annual solar irradiance is provided as a model parameter in the form of a relative number to the provided yearly annual solar irradiance. In other words, characterizing :py:data:`sol_irr` with 1 in :file:`design_space.txt` results 
+In the provided hydrogen-based energy systems, the yearly annual solar irradiance is provided as a model parameter in the form of a relative number to the provided yearly annual solar irradiance. In other words, characterizing :py:data:`sol_irr` with 1 in :file:`design_space.csv` results 
 in a yearly annual solar irradiance equal to the sum of the hourly solar irradiance values provided in the dataset for the specific location.
 If the value is different (or subjected to uncertainty), all hourly solar irradiance values are scaled accordingly.
 
-The characterization of the energy demand in :file:`design_space.txt` is similar. This enables the user to scale the typical demand profiles for a specific location
+The characterization of the energy demand in :file:`design_space.csv` is similar. This enables the user to scale the typical demand profiles for a specific location
 based on the number of demands (e.g. a community of 500 dwellings).
 
 The locations with climate and demand data currently present in RHEIA:

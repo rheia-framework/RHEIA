@@ -13,7 +13,7 @@ Deterministic design optimization
 
 For a fixed photovoltaic array of :math:`5~\mathrm{kW}_\mathrm{p}`, the capacity of the electrolyzer stack and the capacity of the DC-DC converter 
 can be designed such that the Levelized Cost Of Hydrogen (:math:`\mathrm{LCOH}`) and hydrogen production :math:`\dot{m}_{\mathrm{H}_2}` are optimized.
-The bounds for the design variables and the values for the model parameters can be adjusted in :file:`CASES\\H2_FUEL\\design_space.txt`.
+The bounds for the design variables and the values for the model parameters can be adjusted in :file:`CASES\\H2_FUEL\\design_space.csv`.
 Detailed information on characterizing the design variables is available in :ref:`lab:ssdesignspace`.
 
 To perform a deterministic design optimization, the following optimization dictionary has to be filled and passed as an argument to the :py:func:`run_opt` function. 
@@ -103,8 +103,8 @@ Robust design optimization
 
 The robust design optimization procedure simultaneously minimizes the mean and standard deviation of a quantity of interest.
 These statistical moments are quantified following the propagation of the input parameter uncertainties.
-The stochastic input parameters are characterized in the :file:`CASES\\H2_FUEL\\stochastic_space.txt` file. 
-More information on the construction of :file:`stochastic_space.txt` is found in :ref:`lab:ssstochastic_space`.
+The stochastic input parameters are characterized in the :file:`CASES\\H2_FUEL\\stochastic_space.csv` file. 
+More information on the construction of :file:`stochastic_space.csv` is found in :ref:`lab:ssstochastic_space`.
 	
 Determination of the polynomial order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -129,7 +129,7 @@ We refer to :ref:`lab:detpolorder` for more details on this method.
    X = rheia_uq.set_design_samples(var_dict, n_des_var)
 
    for iteration, x in enumerate(X):
-       rheia_uq.write_design_space(case, iteration, var_dict, x, ds = 'design_space_tutorial.txt')
+       rheia_uq.write_design_space(case, iteration, var_dict, x, ds = 'design_space_tutorial.csv')
        dict_uq = {'case':                  case,
                   'n jobs':                int(mp.cpu_count()/2),
                   'pol order':             1,
@@ -138,11 +138,11 @@ We refer to :ref:`lab:detpolorder` for more details on this method.
                   'results dir':           'sample_tutorial_%i' %iteration      
                   }   
        if __name__ == '__main__':
-           rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_%i.txt' %iteration)
+           rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_%i.csv' %iteration)
 
 The functions :py:func:`get_design_variables` and :py:func:`set_design_samples`
 are used to collect the bounds of the design variables and to generate the samples through Latin Hypercube Sampling, respectively.
-Then, :file:`design_space.txt` files are created through :py:func:`write_design_space` 
+Then, :file:`design_space.csv` files are created through :py:func:`write_design_space` 
 -- one for each design sample -- and a PCE is constructed for each sample. 
 At first, a polynomial degree of 1 is selected for evaluation.
 
@@ -212,7 +212,7 @@ A threshold for the Sobol' index is set at 1/12 (= 1/number of uncertain paramet
 which indicates that these parameters can be considered deterministic without losing significant accuracy on the calculated statistical moments of the LCOH.
 This reduction results in a decrease of 60% in computational cost, as only 72 model evaluations are required to 
 construct a PCE for 7 uncertain parameters in the current truncation scheme, as opposed to 182 model evaluations with 12 uncertain parameters. 
-Thus, by following this strategy, the 5 parameters with negligible contribution can be removed from :file:`stochastic_space.txt`.
+Thus, by following this strategy, the 5 parameters with negligible contribution can be removed from :file:`stochastic_space.csv`.
 
 .. warning::
 	As the accuracy of this method depends mainly on the number of design samples considered, the results are only indicative.
@@ -291,12 +291,12 @@ Uncertainty quantification
 Following the robust design optimization, a single optimized design is characterized that optimizes both mean and standard deviation of the LCOH.
 The Sobol' indices for this design can illustrate the main drivers of the uncertainty on the LCOH, which can provide guidelines 
 to effectively reduce the uncertainty by gathering more information on the dominant parameters.
-To evaluate the Sobol' indices of this design, the design design variables should be transformed in the following model parameters in :file:`design_space.txt`::
+To evaluate the Sobol' indices of this design, the design design variables should be transformed in the following model parameters in :file:`design_space.csv`::
 
 	n_dcdc_pv   par 1.68
 	n_elec      par 1.68
 
-This file can be saved as e.g. :file:`design_space_uq.txt`, to avoid losing the configuration for optimization.
+This file can be saved as e.g. :file:`design_space_uq.csv`, to avoid losing the configuration for optimization.
 The uncertainty quantification dictionary is then characterized and evaluated as follows:
 
 .. code-block:: python
@@ -315,7 +315,7 @@ The uncertainty quantification dictionary is then characterized and evaluated as
               }  
 
    if __name__ == '__main__':
-       rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_uq.txt')
+       rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_uq.csv')
 
 **For this tutorial, the results of the uncertainty quantification are provided in** :file:`RESULTS\\PV_ELEC\\UQ\\opt_design_tutorial`
 

@@ -9,32 +9,32 @@ This range should be provided, to shape the search space for the optimizer.
 A model parameter corresponds to a parameter that usually cannot be controlled by the designer (e.g. the cost of a photovoltaic panel), 
 or the decision on this parameter value is fixed (e.g. a fixed amount of photovoltaic panels on the roof). 
 Such a parameter can be considered deterministic or uncertain.
-The design variables and model parameters are characterized in two files: :file:`design_space.txt` and :file:`stochastic_space.txt`.
+The design variables and model parameters are characterized in two files: :file:`design_space.csv` and :file:`stochastic_space.csv`.
 These files are present in the case folder for the specific case considered (e.g. :file:`CASES\\H2_FUEL` for the `H2_FUEL` case).
-In :file:`design_space.txt`, the deterministic values for the model parameters and the range for the design variables are provided.
-In :file:`stochastic_space.txt`, the uncertainty is allocated to the specific model parameters and design variables.
-When a deterministic design optimization is performed, only the :file:`design_space.txt` file is required. 
+In :file:`design_space.csv`, the deterministic values for the model parameters and the range for the design variables are provided.
+In :file:`stochastic_space.csv`, the uncertainty is allocated to the specific model parameters and design variables.
+When a deterministic design optimization is performed, only the :file:`design_space.csv` file is required. 
 In the other cases, i.e. uncertainty quantification and robust design optimization, both files are required.
 
 .. _lab:ssdesignspace:
 
-The design_space.txt file
+The design_space.csv file
 ---------------------
 
-In the :file:`design_space.txt` file, the design variables and the model parameters which need a quantification in your model are defined. 
-When performing uncertainty quantification, the :file:`design_space.txt` file consists only of model parameters.
-In the case of deterministic design optimization or robust design optimization, the :file:`design_space.txt` file requires design variables. 
+In the :file:`design_space.csv` file, the design variables and the model parameters which need a quantification in your model are defined. 
+When performing uncertainty quantification, the :file:`design_space.csv` file consists only of model parameters.
+In the case of deterministic design optimization or robust design optimization, the :file:`design_space.csv` file requires design variables. 
 Additionally, if some model parameters require a quantification outside the model, 
-the :file:`design_space.txt` file includes both :ref:`lab:ssdesignvariables` and :ref:`lab:ssmodelparameters`.
+the :file:`design_space.csv` file includes both :ref:`lab:ssdesignvariables` and :ref:`lab:ssmodelparameters`.
 
 .. _lab:ssdesignvariables:
 
 Characterizing the design variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  
-To define a design variable, the set-up in the :file:`design_space.txt` file is as follows::
+To define a design variable, the set-up in the :file:`design_space.csv` file is as follows::
 
-	name feature_type lb ub
+	name,feature_type,lb,ub
 
 where:
 
@@ -45,7 +45,7 @@ where:
 
 An example for a configured design variable `des_var_1` with a range between 10 and 50 is::
 
-    des_var_1 var 10 50
+    des_var_1,var,10,50
 
 
 .. _lab:ssmodelparameters:
@@ -53,10 +53,10 @@ An example for a configured design variable `des_var_1` with a range between 10 
 Characterizing the model parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In this file :file:`design_space.txt`, the deterministic value (or mean value when the parameter is considered uncertain) is provided.
+In this file :file:`design_space.csv`, the deterministic value (or mean value when the parameter is considered uncertain) is provided.
 The configuration of a model parameter is similar to the configuration of a design variable::
 
-    name feature_type value
+    name,feature_type,value
 
 where:
 
@@ -66,39 +66,39 @@ where:
 
 An example of a configured model parameter `par_1` with a mean value of 0.03 is::
 
-	par_1 par 0.03
+	par_1,par,0.03
 
 .. _lab:ssexampleds:
 
-Example of design_space.txt
+Example of design_space.csv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-An example of a configured :file:`design_space.txt` file, which consists of 3 model parameters (par_1, par_2 and par_3) and 2 design variables (design_var_1 and design_var_2), is presented::
+An example of a configured :file:`design_space.csv` file, which consists of 3 model parameters (par_1, par_2 and par_3) and 2 design variables (design_var_1 and design_var_2), is presented::
 
-	design_var_1 var 1 3
-	design_var_2 var 10 100
-	par_1        par 4
-	par_2        par 2.5
-	par_3        par 175
+	design_var_1,var,1,3
+	design_var_2,var,10,100
+	par_1,par,4
+	par_2,par,2.5
+	par_3,par,175
 
 .. _lab:ssstochastic_space:
 
-The stochastic_space.txt file
+The stochastic_space.csv file
 -------------------------
 
-The uncertainty on the design variables and model parameters can be allocated through the file :file:`stochastic_space.txt`. 
+The uncertainty on the design variables and model parameters can be allocated through the file :file:`stochastic_space.csv`. 
 This file is required when performing robust design optimization and uncertainty quantification, where several parameters are subjected to uncertainty. 
-For every design variable and model parameter defined in :file:`design_space.txt`, an uncertainty can be defined.
+For every design variable and model parameter defined in :file:`design_space.csv`, an uncertainty can be defined.
 
 Characterizing the uncertainties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Defining the uncertainty can be done as follows::
 
-	name abs_rel distribution deviation
+	name,abs_rel,distribution,deviation
 
 where:
 
-	- name: name of the parameter or variable, equal to the name of the parameter or variable in :file:`design_space.txt`;
+	- name: name of the parameter or variable, equal to the name of the parameter or variable in :file:`design_space.csv`;
 	- abs_rel: absolute or relative uncertainty to the mean, defined with `absolute` or `relative`, respectively;
 	- distribution: The distribution of the uncertainty;
 	- deviation: uncertainty on the mean.
@@ -115,20 +115,20 @@ Keep always in mind that the mean value of the design variables is the determini
 
 An example of a configured uncertain parameter `par_2`, characterized by a Uniform distribution with a :math:`\pm 1` deviation from the mean value::
 
-	par_2 absolute Uniform 1
+	par_2,absolute,Uniform,1
 
-Note that it is not required to allocate an uncertainty to every design variable and model parameter defined in :file:`design_space.txt`.
-In other words, when a parameter (or variable) is defined in :file:`design_space.txt`, but not in :file:`stochastic_space.txt`, the parameter (or variable) is considered deterministic. 
-Moreover, it is not necessary to keep the same order of appearance of parameters and variables in :file:`design_space.txt` :file:`stochastic_space.txt` files.
+Note that it is not required to allocate an uncertainty to every design variable and model parameter defined in :file:`design_space.csv`.
+In other words, when a parameter (or variable) is defined in :file:`design_space.csv`, but not in :file:`stochastic_space.csv`, the parameter (or variable) is considered deterministic. 
+Moreover, it is not necessary to keep the same order of appearance of parameters and variables in :file:`design_space.csv` :file:`stochastic_space.csv` files.
 
-Example of stochastic_space.txt
+Example of stochastic_space.csv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In summary, a :file:`stochastic_space.txt` file corresponding to the illustrative :file:`design_space.txt` example file in :ref:`lab:ssexampleds` looks like this::
+In summary, a :file:`stochastic_space.csv` file corresponding to the illustrative :file:`design_space.csv` example file in :ref:`lab:ssexampleds` looks like this::
 
-	par_1        relative Gaussian 0.5
-	par_2        absolute Uniform  1
-	design_var_2 relative Uniform  0.1
+	par_1,relative Gaussian,0.5
+	par_2,absolute Uniform,1
+	design_var_2,relative,Uniform,0.1
 
 Where the model parameter `par_3` and design variable `design_var_1` are considered deterministic, 
 `par_1` is characterized by a Gaussian distribution with a 

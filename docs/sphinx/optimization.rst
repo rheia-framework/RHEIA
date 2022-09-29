@@ -6,8 +6,8 @@ Run an optimization task
 The deterministic design optimization procedure optimizes model outputs of interest by searching a finite design space as it is constructed by selected model input parameters, also known as design variables. 
 The robust design optimization works under the same principle. The fundamental change is focused on the probabilistic treatment of the model input parameters (i.e. definition and propagation of uncertainties), which dictate the optimization of mean and minimization of the standard deviation of the considered model outpus.
 The multi-objective optimization algorithm used in RHEIA is Nondominating Sorting Genetic Algorithm (NSGA-II). More information on NSGA-II is available in :ref:`lab:ssnsga2`.
-The design variables and model parameters are characterized in the :file:`design_space.txt` file.
-As per robust design optimization, the uncertainty on the respective design variables and model parameters is characterized in the :file:`stochastic_space.txt` file.
+The design variables and model parameters are characterized in the :file:`design_space.csv` file.
+As per robust design optimization, the uncertainty on the respective design variables and model parameters is characterized in the :file:`stochastic_space.csv` file.
 More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively. 
 The system model evaluations are coupled with the optimization algorithm in :py:mod:`case_description.`.
 More information on this Python wrapper is discussed in :ref:`lab:wrapper`. 
@@ -174,11 +174,11 @@ To illustrate for :py:data:`'CASE_1'`, with a starting population saved in :file
 This extensionless file should contain a number of samples equal to the population size. 
 Each sample is characterized by a number of values equal to the number of design variables, delimited by a white space.
 Each value should situate between the lower bound and upper bound of the corresponding design variable, 
-in the order of appearance of the design variables in the :file:`design_space.txt` file.
+in the order of appearance of the design variables in the :file:`design_space.csv` file.
 
 Example: 
 
-The following design variables are defined in :file:`design_space.txt`::
+The following design variables are defined in :file:`design_space.csv`::
 
 	var_1 var 1 3
 	var_2 var 0.4 0.9
@@ -455,15 +455,15 @@ the design space is performed as follows:
                   'results dir':           'sample_%i' %iteration      
                   }  
 
-       rheia_uq.run_uq(dict_uq, design_space = 'design_space_%i.txt' %iteration)
+       rheia_uq.run_uq(dict_uq, design_space = 'design_space_%i.csv' %iteration)
 
 After providing the name of the case, a dictionary with the design variable names, lower bounds and upper bounds can be defined
 via the :py:func:`get_design_variables` function.
 From this dictionary, the design samples can be constructed through LHS via :py:func:`set_design_samples`. 
-Then, for each design sample in the array :py:data:`X`, a :file:`design_space.txt` file is constructed through the function :py:func:`write_design_space()`. 
-For each :file:`design_space.txt` file, the PCE is constructed through the characterization of the uncertainty quantification dictionary. 
+Then, for each design sample in the array :py:data:`X`, a :file:`design_space.csv` file is constructed through the function :py:func:`write_design_space()`. 
+For each :file:`design_space.csv` file, the PCE is constructed through the characterization of the uncertainty quantification dictionary. 
 For more information on the characterization of this dictionary, we refer to :ref:`lab:uncertaintyquantification`.
-The uncertainty quantification dictionary and the specific :file:`design_space.txt` file is then provided to the :py:func:`run_uq` function.
+The uncertainty quantification dictionary and the specific :file:`design_space.csv` file is then provided to the :py:func:`run_uq` function.
 This results in a PCE for each design sample, with a corresponding Leave-One-Out (LOO) error. That LOO error is stored in the :file:`RESULTS` folder.
 Considering the specific dictionary determined above, the results for the different design samples are stored in :file:`\\RESULTS\\case_name\\UQ`::
 
@@ -556,13 +556,13 @@ Post-processing of the results
 An illustrative path directs towards the result files from optimization, 
 for which the path depends on the case name (e.g. :py:data:`'CASE_1'`), the analysis type (:py:data:`'DET'` or :py:data:`'ROB'`)
 and the results directory (e.g. :py:data:`'results_1'`), is defined as follows: :file:`\\RESULTS\\CASE_1\\DET\\results_1`.
-In this folder, 3 folder are present: :file:`STATUS`, :file:`fitness` and :file:`population`.
-The :file:`STATUS` file consists of two columns: ITER and EVALS. In ITER, the finished generation number is saved, while the corresponding number in EVALS
+In this folder, 3 folder are present: :file:`STATUS.txt`, :file:`fitness.csv` and :file:`population.csv`.
+The :file:`STATUS.txt` file consists of two columns: ITER and EVALS. In ITER, the finished generation number is saved, while the corresponding number in EVALS
 provides the actual computational budget spent after completing that generation.
-The :file:`population` and :file:`fitness` files contain the design samples and results, respectively. 
+The :file:`population.csv` and :file:`fitness.csv` files contain the design samples and results, respectively. 
 This information is stored for every design sample in every generation. 
-The design sample on line :math:`j` in :file:`population` corresponds to the fitness 
-on line :math:`j` in :file:`fitness`.
+The design sample on line :math:`j` in :file:`population.csv` corresponds to the fitness 
+on line :math:`j` in :file:`fitness.csv`.
 Plotting the results can be performed as follows:
 
 .. code-block:: python
@@ -608,5 +608,5 @@ generation 5, 15 and 25 can be done as follows:
    plt.ylabel('obj_2')
    plt.show()
 
-When calling the :py:meth:`get_fitness_population()` method, the design samples and fitness values are sorted based on the first objective and saved in :file:`population_final_sorted` 
-and :file:`fitness_final_sorted`, respectively, in the results directory.
+When calling the :py:meth:`get_fitness_population()` method, the design samples and fitness values are sorted based on the first objective and saved in :file:`population_final_sorted.csv` 
+and :file:`fitness_final_sorted.csv`, respectively, in the results directory.
