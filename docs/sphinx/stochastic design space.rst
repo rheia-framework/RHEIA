@@ -19,7 +19,7 @@ In the other cases, i.e. uncertainty quantification and robust design optimizati
 .. _lab:ssdesignspace:
 
 The design_space.csv file
----------------------
+-------------------------
 
 In the :file:`design_space.csv` file, the design variables and the model parameters which need a quantification in your model are defined. 
 When performing uncertainty quantification, the :file:`design_space.csv` file consists only of model parameters.
@@ -83,7 +83,7 @@ An example of a configured :file:`design_space.csv` file, which consists of 3 mo
 .. _lab:ssstochastic_space:
 
 The stochastic_space.csv file
--------------------------
+-----------------------------
 
 The uncertainty on the design variables and model parameters can be allocated through the file :file:`stochastic_space.csv`. 
 This file is required when performing robust design optimization and uncertainty quantification, where several parameters are subjected to uncertainty. 
