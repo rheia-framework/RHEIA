@@ -21,6 +21,7 @@
    contribution
    bibliography
    glossary
+   whatsnew
 
 Introduction
 ============
