@@ -419,7 +419,9 @@ def load_case(run_dict, design_space, uq_bool=False, create_only_samples=False):
 
     else:
         eval_func = None
-        params = None
+        params = []
+        
+    params.append({'results dir': run_dict['results dir']})
 
     return space_obj, eval_func, params
 
