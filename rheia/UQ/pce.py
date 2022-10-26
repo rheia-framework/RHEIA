@@ -222,44 +222,6 @@ class RandomExperiment(Data):
         for i,y in enumerate(y_int):
             self.y_prev[i] = y
             
-        '''
-        with open(self.my_data.filename_samples, 'r') as file:
-            lines = file.readlines()
-            x_int = np.zeros((len(lines) - 1,
-                              len(self.my_data.stoch_data['mean'])))
-            y_int = np.zeros((len(lines) - 1, 1))
-
-            # if samples are present in the samples file
-            if len(lines) > 1:
-                if (len(lines[-1].split()) !=
-                    len(self.my_data.stoch_data['mean']) +
-                        len(self.my_data.inputs['objective names'])):
-                    raise SyntaxError(
-                        """The samples file is not properly formatted
-                           or it already contains samples
-                           without model output.""")
-
-                if create_only_samples:
-                    raise ValueError(
-                        """The samples file already contains samples
-                           with model output.
-                           Consider changing the result directory
-                           or switching "create only samples" to False.""")
-
-                # read in samples and deterministic model output
-                for i, line in enumerate(lines[1:]):
-                    line_split = line.split()
-                    x_int[i] = [float(el) for el in line_split[:len(
-                        self.my_data.stoch_data['mean'])]]
-                    y_int[i] = float(
-                        line_split[len(self.my_data.stoch_data['mean']) +
-                                   self.objective_position])
-
-        # store samples and deterministic output
-        self.y_prev = np.array(y_int)
-        self.x_prev = np.array(x_int)
-        '''
-
     def create_distributions(self):
         """
         Create the distributions, polynomial distributions and polynomial types
@@ -384,17 +346,6 @@ class RandomExperiment(Data):
             with open(self.my_data.filename_samples, 'a+') as f:
                 df.to_csv(f, header=False, index=False, line_terminator='\n')
 
-            '''
-            # add the samples to the samples file, no output results
-            with open(self.my_data.filename_samples, 'a+') as file:
-                for i, x_u_sample in enumerate(self.x_u):
-                    line = list(x_u_sample)
-                    for j in line:
-                        file.write('%25f ' % j)
-
-                    file.write('\n')
-            '''
-
     def evaluate(self, eval_func, params):
         """
         Evaluate the samples in the model
@@ -439,13 +390,11 @@ class RandomExperiment(Data):
             res = []
             for index, sample in enumerate(eval_dict):
                 res.append(eval_func((index + len(self.x_prev), sample), params=params))
-
-            df = pd.DataFrame(samples, columns=None)
-            df2 = pd.DataFrame(res, columns=None)
-            df3 = pd.concat([df, df2], axis=1)
-                        
-            with open(self.my_data.filename_samples, 'a+') as f:
-                df3.to_csv(f, header=False, index=False, line_terminator='\n')
+                with open(self.my_data.filename_samples, 'a+') as file:
+                    line = list(samples[index]) + list(res[-1])
+                    for j in line:
+                        file.write('%25f,' % j)
+                    file.write('\n')
 
         else:
             # multiprocessing
@@ -464,9 +413,9 @@ class RandomExperiment(Data):
             # append new samples and model outputs to samples file
             with open(self.my_data.filename_samples, 'a+') as f:
                 df3.to_csv(f, header=False, index=False, line_terminator='\n')
-
+            
         # check that the quantity of interest exists
-        if isinstance(res, float):
+        if isinstance(res[0], float):
             len_res = 1
         else:
             len_res = len(res[0])
@@ -914,6 +863,7 @@ class PCE(RandomExperiment):
         # write sobol indices in the corresponding result file
         with open(os.path.join(self.my_experiment.my_data.path_res,
                                filename_res[:-4] + '_Sobol_indices.csv'), "w") as file:                               
+
             file.write(
                 '%30s,%30s,%30s.  \n' %
                 ('name',
@@ -962,7 +912,7 @@ class PCE(RandomExperiment):
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as f:
             df1.to_csv(f, index=False, line_terminator='\n')
-        
+                
         # generate the cdf
         cdf = np.cumsum(density * np.diff(bins))
 
