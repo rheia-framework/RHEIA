@@ -475,7 +475,11 @@ class RandomExperiment(Data):
                     file.write('\n')
 
         # check that the quantity of interest exists
-        if self.objective_position > len(res[0]) - 1:
+        if isinstance(res, float):
+            len_res = 1
+        else:
+            len_res = len(res[0])
+        if self.objective_position > len_res - 1:
             raise IndexError(""" The objective "%s" falls out of
                                  the range of predefined quantities
                                  of interest. Only %i outputs are
