@@ -447,14 +447,6 @@ class RandomExperiment(Data):
             with open(self.my_data.filename_samples, 'a+') as f:
                 df3.to_csv(f, header=False, index=False, line_terminator='\n')
 
-                '''
-                with open(self.my_data.filename_samples, 'a+') as file:
-                    line = list(samples[index]) + list(res[-1])
-                    for j in line:
-                        file.write('%25f ' % j)
-                    file.write('\n')
-                '''
-
         else:
             # multiprocessing
             pool = mp.Pool(processes=self.my_data.inputs['n jobs'])
@@ -465,14 +457,13 @@ class RandomExperiment(Data):
                 enumerate(eval_dict))
             pool.close()
 
-            # append new samples and model outputs to samples file
-            with open(self.my_data.filename_samples, 'a+') as file:
-                for i, sample in enumerate(samples):
-                    line = list(np.concatenate((sample, res[i])))
-                    for j in line:
-                        file.write('%25f ' % j)
+            df = pd.DataFrame(samples, columns=None)
+            df2 = pd.DataFrame(res, columns=None)
+            df3 = pd.concat([df, df2], axis=1)
 
-                    file.write('\n')
+            # append new samples and model outputs to samples file
+            with open(self.my_data.filename_samples, 'a+') as f:
+                df3.to_csv(f, header=False, index=False, line_terminator='\n')
 
         # check that the quantity of interest exists
         if isinstance(res, float):
@@ -923,22 +914,18 @@ class PCE(RandomExperiment):
         # write sobol indices in the corresponding result file
         with open(os.path.join(self.my_experiment.my_data.path_res,
                                filename_res[:-4] + '_Sobol_indices.csv'), "w") as file:                               
-            df1.to_csv(file, index=False, line_terminator='\n')
-                               
-            '''
             file.write(
-                '%30s %30s %30s  \n' %
+                '%30s,%30s,%30s.  \n' %
                 ('name',
                  'First-order Sobol indices',
                  'Total-order Sobol indices'))
             indices = np.argsort(self.sensitivity['s_tot_i'])[::-1]
             for i in indices:
                 file.write(
-                    '%30s %30f %30f  \n' %
+                    '%30s,%30f,%30f  \n' %
                     (self.my_experiment.my_data.stoch_data['names'][i],
                      self.sensitivity['s_i'][i],
                      self.sensitivity['s_tot_i'][i]))
-            '''
 
     def draw(self, size):
         """
@@ -976,22 +963,6 @@ class PCE(RandomExperiment):
                                     'objective of interest']))), "w") as f:
             df1.to_csv(f, index=False, line_terminator='\n')
         
-        '''
-        with open(os.path.join(self.my_experiment.my_data.path_res,
-                               ("data_pdf_%s.csv"
-                                % (self.my_experiment.my_data.inputs[
-                                    'objective of interest']))), "w") as file:
-
-
-            file.write(
-                '%25s %25s \n' %
-                (self.my_experiment.my_data.inputs['objective of interest'],
-                 'probability density'))
-            for i, j in enumerate(centers):
-                file.write('%25f %25f' % (j, density[i]))
-                file.write('\n')
-        '''
-        
         # generate the cdf
         cdf = np.cumsum(density * np.diff(bins))
 
@@ -1003,18 +974,3 @@ class PCE(RandomExperiment):
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as f:
             df1.to_csv(f, index=False, line_terminator='\n')
-
-        '''
-        with open(os.path.join(self.my_experiment.my_data.path_res,
-                               ("data_cdf_%s"
-                                % (self.my_experiment.my_data.inputs[
-                                    'objective of interest']))), "w") as file:
-
-            file.write(
-                '%25s %25s \n' %
-                (self.my_experiment.my_data.inputs['objective of interest'],
-                 'cumulative probability'))
-            for i, j in enumerate(centers):
-                file.write('%25f %25f' % (j, cdf[i]))
-                file.write('\n')
-        '''
