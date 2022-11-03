@@ -210,17 +210,41 @@ class RandomExperiment(Data):
 
         """
         
-        df = pd.read_csv(self.my_data.filename_samples)
-        df_x = df[self.my_data.stoch_data['names']]
-        df_y = df[self.my_data.inputs['objective of interest']]
-        
-        self.x_prev = df_x.to_numpy()
-        
-        self.y_prev = np.zeros((len(self.x_prev), 1))
-        y_int = df_y.to_numpy()
-        
-        for i,y in enumerate(y_int):
-            self.y_prev[i] = y
+        with open(self.my_data.filename_samples, 'r') as file:
+            lines = file.readlines()
+            x_int = np.zeros((len(lines) - 1,
+                              len(self.my_data.stoch_data['mean'])))
+            y_int = np.zeros((len(lines) - 1, 1))
+
+            # if samples are present in the samples file
+            if len(lines) > 1:
+                if (len(lines[-1].split()) !=
+                    len(self.my_data.stoch_data['mean']) +
+                        len(self.my_data.inputs['objective names'])):
+                    raise SyntaxError(
+                        """The samples file is not properly formatted
+                           or it already contains samples
+                           without model output.""")
+
+                if create_only_samples:
+                    raise ValueError(
+                        """The samples file already contains samples
+                           with model output.
+                           Consider changing the result directory
+                           or switching "create only samples" to False.""")
+
+                # read in samples and deterministic model output
+                for i, line in enumerate(lines[1:]):
+                    line_split = line.split(",")
+                    x_int[i] = [float(el) for el in line_split[:len(
+                        self.my_data.stoch_data['mean'])]]
+                    y_int[i] = float(
+                        line_split[len(self.my_data.stoch_data['mean']) +
+                                   self.objective_position])
+
+        # store samples and deterministic output
+        self.y_prev = np.array(y_int)
+        self.x_prev = np.array(x_int)
             
     def create_distributions(self):
         """
@@ -433,7 +457,11 @@ class RandomExperiment(Data):
 
         # combine model output for quantity of interest with previous results
         # available in samples file
-        y_res = [row[self.objective_position] for row in res]
+        
+        if len_res == 1:
+            y_res = [row for row in res]
+        else:
+            y_res = [row[self.objective_position] for row in res]
         if self.y_prev.size:
             self.y = np.vstack((self.y_prev, np.array(y_res).reshape((-1, 1))))
         else:
