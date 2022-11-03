@@ -68,14 +68,6 @@ class Data:
             with open(self.filename_samples, 'w') as f:
                  df.to_csv(f, header=False, index=False, line_terminator='\n')
         
-        '''
-        if not os.path.isfile(self.filename_samples):
-            with open(self.filename_samples, "w") as file:
-                self.stoch_data['names'] + \
-                        self.inputs['objective names']:
-                    file.write('%25s, ' % name)
-                file.write('\n')
-        '''
         
     def read_stoch_parameters(self, var_values=[]):
         """
@@ -218,7 +210,7 @@ class RandomExperiment(Data):
 
             # if samples are present in the samples file
             if len(lines) > 1:
-                if (len(lines[-1].split()) !=
+                if (len(lines[-1].split(",")) !=
                     len(self.my_data.stoch_data['mean']) +
                         len(self.my_data.inputs['objective names'])):
                     raise SyntaxError(
@@ -420,8 +412,11 @@ class RandomExperiment(Data):
                     else:
                         line = list(samples[index]) + list(res[-1])
 
-                    for j in line:
-                        file.write('%25f,' % j)
+                    for index,j in enumerate(line):
+                        if index != len(line)-1:
+                            file.write('%25f,' % j)
+                        else:
+                            file.write('%25f' % j)
                     file.write('\n')
 
         else:
