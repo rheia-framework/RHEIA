@@ -135,7 +135,7 @@ def write_design_space(case, iteration, var_dict, sample, ds = 'design_space.csv
                 for index, name in enumerate(list(var_dict.keys())):
 
                     if name == tmp[0]:
-                        text.append('%s par %f \n' % (name, sample[index]))
+                        text.append('%s, par, %f \n' % (name, sample[index]))
                         found = True
                 if not found:
                     text.append(line)
