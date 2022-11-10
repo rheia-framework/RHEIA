@@ -131,7 +131,7 @@ def write_design_space(case, iteration, var_dict, sample, ds = 'design_space.csv
             text = []
             for line in file.readlines():
                 found = False
-                tmp = line.split()
+                tmp = line.split(",")
                 for index, name in enumerate(list(var_dict.keys())):
 
                     if name == tmp[0]:
