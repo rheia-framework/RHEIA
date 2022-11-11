@@ -5,7 +5,7 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
-v1.1.2.
+v1.1.5.
 -------
 
 The input files for the cases (:file:`design_space.csv` and :file:`stochastic_space.csv`)
