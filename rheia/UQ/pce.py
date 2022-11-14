@@ -892,14 +892,14 @@ class PCE(RandomExperiment):
                                filename_res[:-4] + '_Sobol_indices.csv'), "w") as file:                               
 
             file.write(
-                '%30s,%30s,%30s.  \n' %
+                '%s,%s,%s  \n' %
                 ('name',
                  'First-order Sobol indices',
                  'Total-order Sobol indices'))
             indices = np.argsort(self.sensitivity['s_tot_i'])[::-1]
             for i in indices:
                 file.write(
-                    '%30s,%30f,%30f  \n' %
+                    '%s,%f,%f  \n' %
                     (self.my_experiment.my_data.stoch_data['names'][i],
                      self.sensitivity['s_i'][i],
                      self.sensitivity['s_tot_i'][i]))
