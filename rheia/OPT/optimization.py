@@ -263,7 +263,7 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
             run_dict['results dir'],
             'population.csv')
             
-        df = pd.read_csv(doe_custom)
+        df = pd.read_csv(doe_custom, header=None)
         df.drop(df.tail(1).index,inplace=True)
 
         rows = df.tail(run_dict['population size']).to_numpy()

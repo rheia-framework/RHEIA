@@ -549,7 +549,7 @@ class NSGA2:
 
         else:
 
-            df = pd.read_csv(os.path.join(self.opt_res_dir, 'fitness.csv'))
+            df = pd.read_csv(os.path.join(self.opt_res_dir, 'fitness.csv'), header=None)
             df.drop(df.tail(1).index,inplace=True)
 
             rows = df.tail(self.run_dict['population size']).to_numpy()
