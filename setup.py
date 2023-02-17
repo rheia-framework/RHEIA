@@ -29,7 +29,7 @@ setuptools.setup(name=NAME,
       ],       
       install_requires=[
       'pyDOE>=0.3.8',
-      'deap>=1.3.1',
+      'deap==1.3.1',
       'numpy>=1.24.1',
       'scipy>=1.10.0',
       'sobolsequence>=0.2.1',
