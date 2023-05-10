@@ -239,15 +239,14 @@ class NSGA2:
                     var_values=sample[-len(self.space_obj.var_dict):])
 
                 # array for the number of quantities of interest considered
-                self.objective_position = np.zeros(
-                    len(self.run_dict['objective names']))
+                self.objective_position = []
                 for index, obj in enumerate(
                         self.run_dict['objective of interest']):
 
                     # for each quantity of interest, determine its position
                     # in the list
-                    self.objective_position[index] = self.run_dict[
-                        'objective names'].index(obj)
+                    self.objective_position.append(self.run_dict[
+                        'objective names'].index(obj))
 
                 # generate a random experiment for the quantity of interest
                 self.my_experiment = uq.RandomExperiment(
