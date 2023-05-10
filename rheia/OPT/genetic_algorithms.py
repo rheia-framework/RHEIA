@@ -147,12 +147,12 @@ class NSGA2:
         df = pd.DataFrame(nests, columns=None)
         
         with open(file_dir, 'a') as f:
-             df.to_csv(f, header=False, index=False, line_terminator='\n')
+             df.to_csv(f, header=False, index=False, lineterminator='\n')
 
         df2 = pd.DataFrame(dummy, columns=None)
 
         with open(file_dir, 'a') as f:
-             df2.to_csv(f, header=False, index=False, line_terminator='\n')
+             df2.to_csv(f, header=False, index=False, lineterminator='\n')
         
         '''
         with open(file_dir, 'a') as file:
