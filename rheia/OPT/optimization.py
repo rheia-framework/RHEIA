@@ -146,10 +146,16 @@ def scale_samples_to_design_space(nondim_doe, space_obj):
     """
 
     dim_doe = np.zeros(nondim_doe.shape)
-    for j in range(space_obj.n_dim):
+    
+    for name in self.space_obj.names:
+    if self.space_obj.var_dict[name][2] == 'cont':
         dim_doe[:, j] = ((space_obj.u_b[j] - space_obj.l_b[j]) *
-                         nondim_doe[:, j] + space_obj.l_b[j])
-
+                             nondim_doe[:, j] + space_obj.l_b[j])
+    else:
+        varr = self.space_obj.var_dict[name][1]
+        res_inter = np.array([varr[int(k*(len(varr)-1))] for k in nondim_doe[:, j]])
+        dim_doe[:, j] = res_inter
+    print(dim_doe)
     return dim_doe
 
 

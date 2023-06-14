@@ -207,6 +207,8 @@ class NSGA2:
 
         # Attach parameters list to the given set of samples
         temp = np.tile(list(self.space_obj.par_dict.values()), (len(pop), 1))
+        
+        print(pop)
 
         # check if samples in population have the appropriate length
         for pop_sample in pop:
