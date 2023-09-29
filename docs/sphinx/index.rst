@@ -23,6 +23,8 @@
    glossary
    whatsnew
 
+latest stable version: **v1.1.10**
+
 Introduction
 ============
 

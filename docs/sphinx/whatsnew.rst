@@ -5,6 +5,11 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v1.1.10.
+-------
+
+This is the latest stable version of rheia. 
+
 v1.1.5.
 -------
 
