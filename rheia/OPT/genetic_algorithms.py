@@ -449,11 +449,11 @@ class NSGA2:
         """
 
         doe = []
-        file = open(doe_dir, 'rb')
+        file = open(doe_dir, 'r')
 
         # Read doe points
         for line in file:
-            doe.append([float(i) for i in line.split()])
+            doe.append([float(i)+2e-8 for i in line.split(",")[:-1]])
 
             # test if the doe points situate in between the variable bounds
             violate = False
@@ -507,7 +507,7 @@ class NSGA2:
             self.space_obj.n_dim)
 
         # the DoE file
-        file_doe = 'DOE_n%i' % self.run_dict['population size']
+        file_doe = 'DOE_n%i.csv' % self.run_dict['population size']
 
         # READ DoE file
         doe = self.read_doe(os.path.join(path_doe, file_doe))
