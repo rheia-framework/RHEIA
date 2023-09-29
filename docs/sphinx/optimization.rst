@@ -167,11 +167,11 @@ The default configuration for this item is the generation of the first populatio
 Alternatively, when information on the starting population is available, the :py:data:`pop_type` should be defined by :py:data:`'CUSTOM'`. 
 In that case, the starting population should be provided in a separate file,
 located in the case folder. The name of the file corresponds to the string that defines :py:data:`pop_method`. 
-To illustrate for :py:data:`'CASE_1'`, with a starting population saved in :file:`CASES\\CASE_1\\x0_start`, the item is defined as::
+To illustrate for :py:data:`'CASE_1'`, with a starting population saved in :file:`CASES\\CASE_1\\x0_start.csv`, the item is defined as::
 
-	'x0': ('CUSTOM', 'x0_start')
+	'x0': ('CUSTOM', 'x0_start.csv')
 
-This extensionless file should contain a number of samples equal to the population size. 
+This CSV file should contain a number of samples equal to the population size. 
 Each sample is characterized by a number of values equal to the number of design variables, delimited by a white space.
 Each value should situate between the lower bound and upper bound of the corresponding design variable, 
 in the order of appearance of the design variables in the :file:`design_space.csv` file.
@@ -180,17 +180,20 @@ Example:
 
 The following design variables are defined in :file:`design_space.csv`::
 
-	var_1 var 1 3
-	var_2 var 0.4 0.9
-	var_3 var 12 15
+	var_1,var,1,3
+	var_2,var,0.4,0.9
+	var_3,var,12,15
 
 Then, for a population size of 5, a suitable characterization of the starting population file is::
 
-	1.43 0.78 13.9
-	2.97 0.44 12.1
-	1.12 0.64 14.2
-	2.31 0.51 14.5
-	2.05 0.88 13.6
+	1.43,0.78,13.9,
+	2.97,0.44,12.1,
+	1.12,0.64,14.2,
+	2.31,0.51,14.5,
+	2.05,0.88,13.6,
+	
+For instance, the optimized population retrieved from a previous run can be copied from the :file:`population_final_sorted.csv` file, 
+and pasted in the :file:`x0_start.csv` file.
 
 'cx prob': c_prob
 ~~~~~~~~~~~~~~~~~
@@ -253,7 +256,7 @@ When combining the examples in the previous section, a fully-defined optimizatio
 
    rheia_opt.run_opt(dict_opt)
 
-In the example below, parallel processing is considered, the optimization starts from a predefined population, defined in :py:data:`'x0_start'`, 
+In the example below, parallel processing is considered, the optimization starts from a predefined population, defined in :py:data:`'x0_start.csv'`, 
 and the crossover probability is decreased to 0.85:
 
 .. code-block:: python
@@ -267,7 +270,7 @@ and the crossover probability is decreased to 0.85:
                'population size':     20,
                'stop':                ('BUDGET', 1440),
                'results dir':         'results_1',
-               'x0':                  ('CUSTOM', 'x0_start'), 
+               'x0':                  ('CUSTOM', 'x0_start.csv'), 
                'cx prob':             0.85,
                'n jobs':              int(mp.cpu_count() / 2),
                }
