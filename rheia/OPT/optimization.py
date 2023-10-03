@@ -171,7 +171,7 @@ def write_starting_samples(doe, filename):
             if not isinstance(x_in, list):
                 x_in = x_in.tolist()
             for item in x_in:
-                file.write('%.8f ' % item)
+                file.write('%.8f, ' % item)
             file.write('\n')
 
 
