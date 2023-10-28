@@ -66,7 +66,7 @@ class Data:
             df = pd.DataFrame([self.stoch_data['names'] + 
                            self.inputs['objective names']])
             with open(self.filename_samples, 'w') as f:
-                 df.to_csv(f, header=False, index=False, line_terminator='\n')
+                 df.to_csv(f, header=False, index=False, lineterminator='\n')
         
         
     def read_stoch_parameters(self, var_values=[]):
@@ -360,7 +360,7 @@ class RandomExperiment(Data):
 
             df = pd.DataFrame(self.x_u, columns=None)
             with open(self.my_data.filename_samples, 'a+') as f:
-                df.to_csv(f, header=False, index=False, line_terminator='\n')
+                df.to_csv(f, header=False, index=False, lineterminator='\n')
 
     def evaluate(self, eval_func, params):
         """
@@ -435,7 +435,7 @@ class RandomExperiment(Data):
 
             # append new samples and model outputs to samples file
             with open(self.my_data.filename_samples, 'a+') as f:
-                df3.to_csv(f, header=False, index=False, line_terminator='\n')
+                df3.to_csv(f, header=False, index=False, lineterminator='\n')
             
         # check that the quantity of interest exists
         if isinstance(res[0], float):
@@ -938,7 +938,7 @@ class PCE(RandomExperiment):
                                ("data_pdf_%s.csv"
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as f:
-            df1.to_csv(f, index=False, line_terminator='\n')
+            df1.to_csv(f, index=False, lineterminator='\n')
                 
         # generate the cdf
         cdf = np.cumsum(density * np.diff(bins))
@@ -950,4 +950,4 @@ class PCE(RandomExperiment):
                                ("data_cdf_%s.csv"
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as f:
-            df1.to_csv(f, index=False, line_terminator='\n')
+            df1.to_csv(f, index=False, lineterminator='\n')

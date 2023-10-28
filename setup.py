@@ -8,7 +8,7 @@ DESCRIPTION = 'Robust design optimization of renewable Hydrogen and dErIved ener
 URL = 'https://github.com/rheia-framework/RHEIA'
 EMAIL = 'rheia.framework@gmail.com'
 AUTHOR = 'Diederik Coppitters, Panagiotis Tsirikoglou, Ward De Paepe, Konstantinos Kyprianidis, Anestis Kalfas, Francesco Contino'
-VERSION = '1.1.11'
+VERSION = '1.1.12'
 
 with open("README.md", "r", encoding="utf-8") as fh:
     LONG_DESCRIPTION = fh.read()
@@ -28,16 +28,16 @@ setuptools.setup(name=NAME,
                 "Operating System :: OS Independent",
       ],       
       install_requires=[
+      'deap>=1.4.1',
+      'h5py>=3.9.0',
+      'matplotlib>=3.7.2',
+      'numpy>=1.24.3',
+      'pandas>=2.0.3',
+      'pvlib>=0.10.2',
       'pyDOE>=0.3.8',
-      'deap==1.3.1',
-      'numpy>=1.24.1',
-      'scipy>=1.10.0',
+      'scipy>=1.11.1',
       'sobolsequence>=0.2.1',
-      'pandas>=1.5.3',
-      'matplotlib>=3.2.2',
-      'pvlib>=0.9.4',
-      'h5py>=3.8.0'
       ],
-      python_requires = ">=3.6",
+      python_requires = ">=3.10",
       include_package_data=True,
       zip_safe=False)

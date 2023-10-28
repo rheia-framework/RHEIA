@@ -41,7 +41,7 @@ def check_dictionary(run_dict, uq_bool=False):
     
     rob = False
 
-    if not isinstance(run_dict, collections.Mapping):
+    if not isinstance(run_dict, collections.abc.Mapping):
         raise TypeError('The input dictionary should be a dictionary.')
 
     requirements = ['case',
@@ -102,7 +102,7 @@ def check_dictionary(run_dict, uq_bool=False):
                     '"%s" is missing in the input dictionary.' %
                     key)
 
-        if not isinstance(run_dict['objectives'], collections.Mapping):
+        if not isinstance(run_dict['objectives'], collections.abc.Mapping):
             raise TypeError(
                 'The value of the key "objectives" should be a dictionary.')
 
