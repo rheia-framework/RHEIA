@@ -66,8 +66,8 @@ boat_knots,par,17.5
 trip_length,par,2796
 price_hfo,par,361
 e_refr,par,0.0378
-eff_ch4_turb,par,0.64
-capex_turb,par,0.8
+eff_ch4_turb,par,0.63
+capex_turb,par,0.83
 opex_turb,par,0.02
 e_boat,par,2450
 e_ratio_ng_h2,par,1.3

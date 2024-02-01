@@ -54,6 +54,6 @@ boat_knots,par,17.5
 trip_length,par,2796
 price_hfo,par,361
 eff_fc,par,0.5
-capex_fc,par,0.450
+capex_fc,par,1.1
 opex_fc,par,0.02
 e_boat,par,2250

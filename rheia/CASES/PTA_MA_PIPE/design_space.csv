@@ -65,9 +65,8 @@ price_hfo,par,361
 e_refr,par,0.0378
 capex_liq,par,49927
 opex_liq,par,0.08
-eff_nh3_turb,par,0.48
 eff_fc,par,0.5
-capex_turb,par,0.8
+capex_turb,par,1.1
 opex_turb,par,0.02
 e_boat,par,2450
 capex_pipeline,par,617
