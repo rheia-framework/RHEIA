@@ -35,6 +35,7 @@ To characterize and configure a deterministic design optimization, the following
                 'mut prob':            mut_prob,               #optional, default is 0.1
                 'eta':                 eta,                    #optional, default is 0.2
                 'n jobs':              n_jobs,                 #optional, default is 1 
+				'algo':                algo,                   #optional, default is 'NSGA2' 
                 }
 
 This dictionary is used as the argument for the :py:func:`run_opt()` function, 
@@ -235,6 +236,23 @@ Alternatively, the number of parallel processes can be retreived through the :py
 After importing multiprocessing, the item can be defined by::
 
     'n jobs': int(multiprocessing.cpu_count()/2)
+	
+'algo': algo
+~~~~~~~~~~~~~~~~
+
+The optimisation algorithm. 
+NSGA-II is employed by default (more information in :ref:`lab:ssnsga2`)::
+
+	'algo': 'NSGA2'
+	
+Alternatively, NSGA-III and SPEA-II can also be used.
+The item can be defined by::
+
+    'algo': 'NSGA3'
+	
+or by::
+
+	'algo': 'SPEA2'
 
 Example of a dictionary for deterministic design optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
