@@ -320,7 +320,7 @@ def run_opt(run_dict, design_space='design_space.csv'):
     run_dict['evaluate'] = eval_func
 
     # load optimizer class
-    opt_class = load_optimizer('NSGA2')
+    opt_class = load_optimizer(run_dict['algo'])
 
     # check if previous results in this result directory exist
     start_from_last_gen = check_existing_results(run_dict, space_obj)

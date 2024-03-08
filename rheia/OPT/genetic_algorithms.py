@@ -1,6 +1,6 @@
 """
 The :py:mod:`genetic_algorithms` module contains a class that performs
-the NSGA-II optimization algorithm.
+the optimization algorithms.
 """
 
 import multiprocessing as mp
@@ -726,6 +726,405 @@ class NSGA2:
             logbook.record(gen=ite, evals=evals, **record)
             print(logbook.stream)
 
+from scipy.special  import binom
+from scipy.optimize import minimize
+from math           import floor
+
+class NSGA3(NSGA2):
+    """
+
+    The NSGAIII class includes methods to perform a deterministic and
+    robust optimization using NSGA-III optimizer.
+    
+    It heritates from NSGAII.
+
+    Parameters
+    ----------
+    run_dict : dict
+        The dictionary with user-defined values for
+        the characterization of the optimization.
+    space_obj : object
+        The object with information on the design space
+        and stochastic space
+    start_from_last_gen : bool
+      Boolean that indicates if results exist in the considered result
+      directory.
+    params : list
+        Fixed parameters used during the model evaluation.
+
+    """
+    
+    ########################
+    # result files methods #
+    ########################
+
+    # heritage from NSGA2()
+
+    ##########################################
+    # sample creation and evaluation methods #
+    ##########################################
+
+    # heritage from NSGA2()
+
+    ####################
+    # NSGA-III methods #
+    ####################
+
+    def nsga3_1iter(self, current_pop):
+        """
+
+        Run one iteration of the NSGA-III optimizer.
+        
+        Based on the crossover and mutation probabilities, the
+        offsprings are created and evaluated. Based on the fitness
+        of these offsprings and of the current population,
+        a new population is created.
+
+        Parameters
+        ----------
+        current_pop : list
+            The initial population.
+
+        Returns
+        -------
+        new_pop : list
+            The updated population.
+
+        """
+
+        # create offspring, clone of current population
+        offspring = [deepcopy(ind) for ind in current_pop]
+
+        # perform crossover
+        for ind1, ind2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() < self.run_dict['cx prob']:
+
+                # apply crossover operator
+                # in place editing of individuals
+                tools.cxSimulatedBinaryBounded(ind1, ind2,
+                                                self.run_dict['eta'],
+                                                self.space_obj.l_b,
+                                                self.space_obj.u_b)
+
+                # set the fitness to an empty tuple of modified individuals
+                del ind1.fitness.values
+                del ind2.fitness.values
+
+        # perform mutation
+        for mutant in offspring:
+
+            if random.random() < self.run_dict['mut prob']:
+
+                # apply mutation operator
+                # in place editing of individuals
+                tools.mutPolynomialBounded(mutant, self.run_dict['eta'],
+                                            self.space_obj.l_b,
+                                            self.space_obj.u_b,
+                                            self.run_dict['mut prob'])
+
+                # set fitness to empty tuple of modified individuals
+                del mutant.fitness.values
+
+        # evaluate the modified individuals
+        n_eval = 0
+        invalid_indices = []
+        invalid_fit_individuals = []
+        for i, ind in enumerate(offspring):
+
+            if not ind.fitness.valid:
+
+                invalid_indices.append(i)
+                invalid_fit_individuals.append(ind)
+
+        if len(invalid_fit_individuals) > 0:
+
+            # create samples to evaluate
+            individuals_to_eval, unc_samples = self.define_samples_to_eval(
+                invalid_fit_individuals)
+
+            # evaluate samples
+            fitnesses = self.evaluate_samples(individuals_to_eval)
+            n_eval += len(individuals_to_eval)
+
+            # assign fitness to the orginal samples list
+            individuals_to_assign = self.assign_fitness_to_population(
+                invalid_fit_individuals,
+                fitnesses,
+                unc_samples)
+
+            # construct offspring list
+            for i, ind in zip(invalid_indices, individuals_to_assign):
+
+                offspring[i] = deepcopy(ind)
+
+        # !!! key difference with NSGA-II is here
+        
+        # reference points: we want H reference points s.t. H ~ pop. size
+        # H = binom(M+p-1, p), where M is the #objectives and p must be found
+        opt_type   = list(self.run_dict['objectives'].keys())[0]
+        M          =  len(self.run_dict['objectives'][opt_type]) # n. obj.
+        H_target   =  len(current_pop) # pop. size
+        p          = self.find_p(H_target,M)
+        ref_points = tools.uniform_reference_points(nobj=M, p=p)
+        
+        # select next population using the NSGA-III operator
+        new_pop    = tools.selNSGA3(current_pop+offspring,H_target,ref_points,
+                                    nd='log')
+        
+        # update the population and fitness files
+        self.append_points_to_file(new_pop, 'population.csv')
+
+        fitness_values = [x.fitness.values for x in new_pop]
+        self.append_points_to_file(fitness_values, 'fitness.csv')
+
+        # update the STATUS file
+        ite, evals = self.parse_status()
+        self.write_status('%8i%8i' % (ite + 1, evals + n_eval))
+
+        return new_pop
+
+    def run_optimizer(self):
+        """
+
+        Run an optimization using the NSGA-III algorithm.
+
+        """
+
+        weigth = list(self.space_obj.obj.values())[0]
+        creator.create('Fitness', base.Fitness, weights=weigth)
+        creator.create('Individual', list, fitness=creator.Fitness)
+
+        if not self.start_from_last_gen:
+            self.init_opt()
+
+        # set up the STATUS file
+        ite, init_evals = self.parse_status()
+
+        # set up the logbook
+        logbook = tools.Logbook()
+        logbook.header = 'gen', 'evals', 'min', 'max'
+        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register('min', np.min, axis=0)
+        stats.register('max', np.max, axis=0)
+
+        # evaluate the DoE
+        temp_output_pop = self.eval_doe()
+
+        # run the generations
+        evals = 0
+        while evals < self.run_dict['stop'][1]:
+
+            # perform one NSGA-III iteration
+            temp_output_pop = self.nsga3_1iter(temp_output_pop)
+
+            # update the evaluations counter
+            ite, current_evals = self.parse_status()
+            evals = current_evals - init_evals
+
+            # update the logbook record
+            record = stats.compile(temp_output_pop)
+            logbook.record(gen=ite, evals=evals, **record)
+            print(logbook.stream)
+            
+    def find_p(self,H,M):
+        p_guess = 4
+        p_sol   = minimize(self.resi_p, x0=p_guess, args=(H,M)).x[0]
+        p_sol   = floor(p_sol)
+        return p_sol
+        
+    def resi_p(self,p,*args):
+        H, M = args
+        n = M + p - 1
+        k =     p
+        res = abs(H - binom(n, k))
+        return res
+    
+class SPEA2(NSGA2):
+    """
+
+    The SPEAII class includes methods to perform a deterministic and
+    robust optimization using SPEA-II optimizer.
+    
+    It heritates from NSGAII.
+
+    Parameters
+    ----------
+    run_dict : dict
+        The dictionary with user-defined values for
+        the characterization of the optimization.
+    space_obj : object
+        The object with information on the design space
+        and stochastic space
+    start_from_last_gen : bool
+      Boolean that indicates if results exist in the considered result
+      directory.
+    params : list
+        Fixed parameters used during the model evaluation.
+
+    """
+    
+    ########################
+    # result files methods #
+    ########################
+
+    # heritage from NSGA2()
+
+    ##########################################
+    # sample creation and evaluation methods #
+    ##########################################
+
+    # heritage from NSGA2()
+
+    ###################
+    # SPEA-II methods #
+    ###################
+
+    def spea2_1iter(self, current_pop):
+        """
+
+        Run one iteration of the SPEA-II optimizer.
+        
+        Based on the crossover and mutation probabilities, the
+        offsprings are created and evaluated. Based on the fitness
+        of these offsprings and of the current population,
+        a new population is created.
+
+        Parameters
+        ----------
+        current_pop : list
+            The initial population.
+
+        Returns
+        -------
+        new_pop : list
+            The updated population.
+
+        """
+
+        # create offspring, clone of current population
+        offspring = [deepcopy(ind) for ind in current_pop]
+
+        # perform crossover
+        for ind1, ind2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() < self.run_dict['cx prob']:
+
+                # apply crossover operator
+                # in place editing of individuals
+                tools.cxSimulatedBinaryBounded(ind1, ind2,
+                                                self.run_dict['eta'],
+                                                self.space_obj.l_b,
+                                                self.space_obj.u_b)
+
+                # set the fitness to an empty tuple of modified individuals
+                del ind1.fitness.values
+                del ind2.fitness.values
+
+        # perform mutation
+        for mutant in offspring:
+
+            if random.random() < self.run_dict['mut prob']:
+
+                # apply mutation operator
+                # in place editing of individuals
+                tools.mutPolynomialBounded(mutant, self.run_dict['eta'],
+                                            self.space_obj.l_b,
+                                            self.space_obj.u_b,
+                                            self.run_dict['mut prob'])
+
+                # set fitness to empty tuple of modified individuals
+                del mutant.fitness.values
+
+        # evaluate the modified individuals
+        n_eval = 0
+        invalid_indices = []
+        invalid_fit_individuals = []
+        for i, ind in enumerate(offspring):
+
+            if not ind.fitness.valid:
+
+                invalid_indices.append(i)
+                invalid_fit_individuals.append(ind)
+
+        if len(invalid_fit_individuals) > 0:
+
+            # create samples to evaluate
+            individuals_to_eval, unc_samples = self.define_samples_to_eval(
+                invalid_fit_individuals)
+
+            # evaluate samples
+            fitnesses = self.evaluate_samples(individuals_to_eval)
+            n_eval += len(individuals_to_eval)
+
+            # assign fitness to the orginal samples list
+            individuals_to_assign = self.assign_fitness_to_population(
+                invalid_fit_individuals,
+                fitnesses,
+                unc_samples)
+
+            # construct offspring list
+            for i, ind in zip(invalid_indices, individuals_to_assign):
+
+                offspring[i] = deepcopy(ind)
+
+        # !!! key difference with NSGA-II is here
+        
+        # select next population using the SPEA-II operator
+        new_pop    = tools.selSPEA2(current_pop+offspring,len(current_pop))
+        
+        # update the population and fitness files
+        self.append_points_to_file(new_pop, 'population.csv')
+
+        fitness_values = [x.fitness.values for x in new_pop]
+        self.append_points_to_file(fitness_values, 'fitness.csv')
+
+        # update the STATUS file
+        ite, evals = self.parse_status()
+        self.write_status('%8i%8i' % (ite + 1, evals + n_eval))
+
+        return new_pop
+
+    def run_optimizer(self):
+        """
+
+        Run an optimization using the SPEA-II algorithm.
+
+        """
+
+        weigth = list(self.space_obj.obj.values())[0]
+        creator.create('Fitness', base.Fitness, weights=weigth)
+        creator.create('Individual', list, fitness=creator.Fitness)
+
+        if not self.start_from_last_gen:
+            self.init_opt()
+
+        # set up the STATUS file
+        ite, init_evals = self.parse_status()
+
+        # set up the logbook
+        logbook = tools.Logbook()
+        logbook.header = 'gen', 'evals', 'min', 'max'
+        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register('min', np.min, axis=0)
+        stats.register('max', np.max, axis=0)
+
+        # evaluate the DoE
+        temp_output_pop = self.eval_doe()
+
+        # run the generations
+        evals = 0
+        while evals < self.run_dict['stop'][1]:
+
+            # perform one SPEA-II iteration
+            temp_output_pop = self.spea2_1iter(temp_output_pop)
+
+            # update the evaluations counter
+            ite, current_evals = self.parse_status()
+            evals = current_evals - init_evals
+
+            # update the logbook record
+            record = stats.compile(temp_output_pop)
+            logbook.record(gen=ite, evals=evals, **record)
+            print(logbook.stream)
 
 def return_opt_methods():
     """
@@ -739,7 +1138,7 @@ def return_opt_methods():
 
     """
 
-    name_list = ['NSGA2']
+    name_list = ['NSGA2','NSGA3','SPEA2']
 
     return name_list
 
@@ -762,6 +1161,8 @@ def return_opt_obj(name):
     """
 
     switcher = {'NSGA2': NSGA2,
+                'NSGA3': NSGA3,
+                'SPEA2': SPEA2,
                 }
 
     return switcher.get(name)

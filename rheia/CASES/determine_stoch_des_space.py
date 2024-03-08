@@ -76,6 +76,7 @@ def check_dictionary(run_dict, uq_bool=False):
                          'cx prob',
                          'mut prob',
                          'eta',
+                         'algo',
                          ]
 
         if 'x0' not in run_dict:
@@ -93,6 +94,8 @@ def check_dictionary(run_dict, uq_bool=False):
         if 'eta' not in run_dict:
             run_dict['eta'] = 0.2
             warnings.warn("The eta parameter is defined automatically at 0.2")
+        if 'algo' not in run_dict:
+            run_dict['algo'] = 'NSGA2'
 
         for key in requirements[3:]:
             try:
