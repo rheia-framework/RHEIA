@@ -13,6 +13,7 @@ from scipy import stats, special
 import sobol
 import warnings
 import pandas as pd
+import math
 
 class Data:
     """
@@ -184,7 +185,7 @@ class RandomExperiment(Data):
         mmin = min(n_par, p_order)
         for i in range(mmin):
             result *= p_order + n_par - i
-        result_terms = int(result / np.math.factorial(mmin))
+        result_terms = int(result / math.factorial(mmin))
 
         # number of samples for training the PCE
         self.n_samples = 2 * result_terms
@@ -574,7 +575,7 @@ class PCE(RandomExperiment):
         sol = np.linalg.lstsq(a_matrix, b_matrix, rcond=None)
         sol_2 = np.column_stack(1.0 / deg_of_freedom * sol[1])
 
-        var = np.dot(np.row_stack(np.diag(np.linalg.inv(
+        var = np.dot(np.vstack(np.diag(np.linalg.inv(
             np.dot(np.transpose(a_matrix), a_matrix)))), sol_2)
 
         return np.column_stack((sol[0], var))
@@ -807,7 +808,7 @@ class PCE(RandomExperiment):
 
         size = self.my_experiment.size
         y_res = self.my_experiment.y
-        y_hat = np.row_stack((np.dot(self.a_matrix, self.coefficients[:, 0])))
+        y_hat = np.vstack((np.dot(self.a_matrix, self.coefficients[:, 0])))
 
         # acquire the diagonal matrix D
         b_matrix = np.linalg.inv(np.dot(np.transpose(self.a_matrix),
@@ -923,7 +924,7 @@ class PCE(RandomExperiment):
 
         # generate A matrix and the coefficients u
         a_matrix = self.calc_a(self.basis['multi-indices'])
-        x_u_scaled = np.row_stack((self.coefficients[:, 0]))
+        x_u_scaled = np.vstack((self.coefficients[:, 0]))
 
         data = np.dot(a_matrix, x_u_scaled)
 

@@ -4,7 +4,7 @@ create the starting samples and run the optimization.
 """
 
 import os
-import imp
+import importlib.util
 from shutil import copyfile
 from pyDOE import lhs
 from rheia.CASES.determine_stoch_des_space import load_case, check_dictionary
@@ -37,11 +37,23 @@ def parse_available_opt():
     files = [f for f in os.listdir(opt_dir) if f.endswith('algorithms.py')]
     methods = []
     for file in files:
-        obj = imp.load_source(file.split('.')[0], os.path.join(opt_dir, file))
+        # Construct the full path to the file
+        file_path = os.path.join(opt_dir, file)
+        module_name = file.split('.')[0]
+
+        # Create a module spec from the file
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        
+        # Create a module object from the spec
+        obj = importlib.util.module_from_spec(spec)
+        
+        # Execute the module
+        spec.loader.exec_module(obj)
+        
+        # Retrieve optimization methods from the module
         tmp = obj.return_opt_methods()
         for method in tmp:
             methods.append((method, obj))
-
     return methods
 
 
@@ -320,7 +332,7 @@ def run_opt(run_dict, design_space='design_space.csv'):
     run_dict['evaluate'] = eval_func
 
     # load optimizer class
-    opt_class = load_optimizer(run_dict['algo'])
+    opt_class = load_optimizer('NSGA2')
 
     # check if previous results in this result directory exist
     start_from_last_gen = check_existing_results(run_dict, space_obj)
