@@ -171,7 +171,7 @@ def write_starting_samples(doe, filename):
             if not isinstance(x_in, list):
                 x_in = x_in.tolist()
             for item in x_in:
-                file.write('%.8f ' % item)
+                file.write('%.8f, ' % item)
             file.write('\n')
 
 
@@ -210,7 +210,7 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
 
     # create the doe set of samples
     doe_filename = os.path.join(doe_path,
-                                'DOE_n%i' % run_dict['population size'])
+                                'DOE_n%i.csv' % run_dict['population size'])
 
     if not start_from_last_gen:
         # if the starting population needs to be created
@@ -263,7 +263,7 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
             run_dict['results dir'],
             'population.csv')
             
-        df = pd.read_csv(doe_custom)
+        df = pd.read_csv(doe_custom, header=None)
         df.drop(df.tail(1).index,inplace=True)
 
         rows = df.tail(run_dict['population size']).to_numpy()

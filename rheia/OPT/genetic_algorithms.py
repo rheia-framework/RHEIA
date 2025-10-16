@@ -147,12 +147,12 @@ class NSGA2:
         df = pd.DataFrame(nests, columns=None)
         
         with open(file_dir, 'a') as f:
-             df.to_csv(f, header=False, index=False, line_terminator='\n')
+             df.to_csv(f, header=False, index=False, lineterminator='\n')
 
         df2 = pd.DataFrame(dummy, columns=None)
 
         with open(file_dir, 'a') as f:
-             df2.to_csv(f, header=False, index=False, line_terminator='\n')
+             df2.to_csv(f, header=False, index=False, lineterminator='\n')
         
         '''
         with open(file_dir, 'a') as file:
@@ -239,15 +239,14 @@ class NSGA2:
                     var_values=sample[-len(self.space_obj.var_dict):])
 
                 # array for the number of quantities of interest considered
-                self.objective_position = np.zeros(
-                    len(self.run_dict['objective names']))
+                self.objective_position = []
                 for index, obj in enumerate(
                         self.run_dict['objective of interest']):
 
                     # for each quantity of interest, determine its position
                     # in the list
-                    self.objective_position[index] = self.run_dict[
-                        'objective names'].index(obj)
+                    self.objective_position.append(self.run_dict[
+                        'objective names'].index(obj))
 
                 # generate a random experiment for the quantity of interest
                 self.my_experiment = uq.RandomExperiment(
@@ -450,11 +449,11 @@ class NSGA2:
         """
 
         doe = []
-        file = open(doe_dir, 'rb')
+        file = open(doe_dir, 'r')
 
         # Read doe points
         for line in file:
-            doe.append([float(i) for i in line.split()])
+            doe.append([float(i)+2e-8 for i in line.split(",")[:-1]])
 
             # test if the doe points situate in between the variable bounds
             violate = False
@@ -508,7 +507,7 @@ class NSGA2:
             self.space_obj.n_dim)
 
         # the DoE file
-        file_doe = 'DOE_n%i' % self.run_dict['population size']
+        file_doe = 'DOE_n%i.csv' % self.run_dict['population size']
 
         # READ DoE file
         doe = self.read_doe(os.path.join(path_doe, file_doe))
@@ -549,7 +548,7 @@ class NSGA2:
 
         else:
 
-            df = pd.read_csv(os.path.join(self.opt_res_dir, 'fitness.csv'))
+            df = pd.read_csv(os.path.join(self.opt_res_dir, 'fitness.csv'), header=None)
             df.drop(df.tail(1).index,inplace=True)
 
             rows = df.tail(self.run_dict['population size']).to_numpy()

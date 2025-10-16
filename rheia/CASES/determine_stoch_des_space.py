@@ -41,7 +41,7 @@ def check_dictionary(run_dict, uq_bool=False):
     
     rob = False
 
-    if not isinstance(run_dict, collections.Mapping):
+    if not isinstance(run_dict, collections.abc.Mapping):
         raise TypeError('The input dictionary should be a dictionary.')
 
     requirements = ['case',
@@ -419,8 +419,8 @@ def load_case(run_dict, design_space, uq_bool=False, create_only_samples=False):
 
     else:
         eval_func = None
-        params = []
-        
+        params = None
+
     params.append({'results dir': run_dict['results dir']})
 
     return space_obj, eval_func, params

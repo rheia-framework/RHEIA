@@ -1,0 +1,23 @@
+AMPL_path: null
+GWP_limit: 85000
+all_data: {}
+ampl_options:
+  _log_input_only: false
+  gurobi_options: predual=-1 method=2 crossover=0 prepasses=3 barconvtol=1e-6 presolve=-1
+  log_file: output/log.txt
+  presolve: 10
+  presolve_eps: 1e-7
+  presolve_fixeps: 1e-7
+  show_boundtol: 0
+  show_stats: 3
+  solver: gurobi
+case_study: opt_design_tutorial/Run_4
+cs_path: case_studies
+data_dir: Data/2020
+es_path: energyscope/energy_model
+nbr_td: 12
+print_hourly_data: true
+print_sankey: true
+printing: true
+printing_td: true
+step1_path: energyscope/preprocessing/td_selection

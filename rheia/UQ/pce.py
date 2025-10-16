@@ -13,6 +13,7 @@ from scipy import stats, special
 import sobol
 import warnings
 import pandas as pd
+import math
 
 class Data:
     """
@@ -66,7 +67,7 @@ class Data:
             df = pd.DataFrame([self.stoch_data['names'] + 
                            self.inputs['objective names']])
             with open(self.filename_samples, 'w') as f:
-                 df.to_csv(f, header=False, index=False, line_terminator='\n')
+                 df.to_csv(f, header=False, index=False, lineterminator='\n')
         
         
     def read_stoch_parameters(self, var_values=[]):
@@ -184,7 +185,7 @@ class RandomExperiment(Data):
         mmin = min(n_par, p_order)
         for i in range(mmin):
             result *= p_order + n_par - i
-        result_terms = int(result / np.math.factorial(mmin))
+        result_terms = int(result / math.factorial(mmin))
 
         # number of samples for training the PCE
         self.n_samples = 2 * result_terms
@@ -360,7 +361,7 @@ class RandomExperiment(Data):
 
             df = pd.DataFrame(self.x_u, columns=None)
             with open(self.my_data.filename_samples, 'a+') as f:
-                df.to_csv(f, header=False, index=False, line_terminator='\n')
+                df.to_csv(f, header=False, index=False, lineterminator='\n')
 
     def evaluate(self, eval_func, params):
         """
@@ -435,7 +436,7 @@ class RandomExperiment(Data):
 
             # append new samples and model outputs to samples file
             with open(self.my_data.filename_samples, 'a+') as f:
-                df3.to_csv(f, header=False, index=False, line_terminator='\n')
+                df3.to_csv(f, header=False, index=False, lineterminator='\n')
             
         # check that the quantity of interest exists
         if isinstance(res[0], float):
@@ -892,14 +893,14 @@ class PCE(RandomExperiment):
                                filename_res[:-4] + '_Sobol_indices.csv'), "w") as file:                               
 
             file.write(
-                '%30s,%30s,%30s.  \n' %
+                '%s,%s,%s  \n' %
                 ('name',
                  'First-order Sobol indices',
                  'Total-order Sobol indices'))
             indices = np.argsort(self.sensitivity['s_tot_i'])[::-1]
             for i in indices:
                 file.write(
-                    '%30s,%30f,%30f  \n' %
+                    '%s,%f,%f  \n' %
                     (self.my_experiment.my_data.stoch_data['names'][i],
                      self.sensitivity['s_i'][i],
                      self.sensitivity['s_tot_i'][i]))
@@ -938,7 +939,7 @@ class PCE(RandomExperiment):
                                ("data_pdf_%s.csv"
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as f:
-            df1.to_csv(f, index=False, line_terminator='\n')
+            df1.to_csv(f, index=False, lineterminator='\n')
                 
         # generate the cdf
         cdf = np.cumsum(density * np.diff(bins))
@@ -950,4 +951,4 @@ class PCE(RandomExperiment):
                                ("data_cdf_%s.csv"
                                 % (self.my_experiment.my_data.inputs[
                                     'objective of interest']))), "w") as f:
-            df1.to_csv(f, index=False, line_terminator='\n')
+            df1.to_csv(f, index=False, lineterminator='\n')
