@@ -16,15 +16,15 @@ the installation of many common packages in data science (and used in RHEIA), su
 Installing RHEIA
 ----------------
 
-From PyPi
+From PyPI
 ^^^^^^^^^
 
-RHEIA is available on PyPi, and can be downloaded via the `pip <https://pip.pypa.io/en/stable/>`_ package manager.
+RHEIA is available on PyPI, and can be downloaded via the `pip <https://pip.pypa.io/en/stable/>`_ package manager.
 The following command installs the most recent version of RHEIA and the package dependencies::
 
 	pip install rheia
 	
-Specific from a Jupyter Kernel::
+From a specific Jupyter kernel::
 
 	import sys
 	!{sys.executable} -m pip install rheia
@@ -54,7 +54,7 @@ From the rheia directory, the unit tests can be conveniently performed using ``p
 
 	pytest
 	
-A set of unit sets can be selected individually, e.g. the ones to test the energy system models::
+A set of unit tests can be selected individually, e.g. the ones to test the energy system models::
 
 	pytest TESTS\test_models.py
 

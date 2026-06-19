@@ -3,13 +3,15 @@
 Details on the methods
 ======================
 
-A brief backround, including some math when necessary ,for the different methods used in RHEIA, is provided below.
+A brief background, including the core equations where useful, is provided
+below for the methods used in RHEIA.
 
 Uncertainty quantification
 --------------------------
 
-Uncertainty quantification is performed using, the Polynomial Chaos Expansion method is applied in RHEIA. 
-In the section below, the method is briefly introduced. Additional details on the method are provided by Sudret et al. :cite:`Sudret2014`. 
+Uncertainty quantification in RHEIA is based on Polynomial Chaos Expansion
+(PCE). The section below introduces the method. Additional details are
+provided by Sudret et al. :cite:`Sudret2014`.
 
 .. _lab:pce:
 
@@ -29,18 +31,67 @@ A typical truncation scheme is adopted, which limits the polynomial order up to 
 
 where :math:`p` corresponds to the polynomial order and :math:`M = |\pmb{X}|` is the stochastic dimension, i.e. number of uncertainties (parameters and variables).
 Consequently, :math:`|\mathcal{A}^{M,p}|` coefficients are present in a full PCE. To quantify these coefficients, least-square minimization is applied, based on actual system model evaluations.
-RHEIA also provides a sparse PCE option. The sparse PCE starts from the same full candidate basis, but selects a reduced set of active basis terms from the available training samples. This is useful when the full basis contains many terms and the corresponding number of model evaluations is too expensive.
 To ensure a well-posed Least-Square Minimization, :math:`2|\mathcal{A}^{M,p}|` model evaluations are required. 
-When the coefficients are quantified, the mean (:math:`\mu`) and standard deviation (:math:`\sigma`) of the model output of interested are analytically derived:
+When the coefficients are quantified, the mean (:math:`\mu`) and standard deviation (:math:`\sigma`) of the model output of interest are analytically derived:
 
 :math:`\mu = u_0`,
 
 :math:`\sigma^2 = \sum_{i=1}^P u_i^2`.
 
+Sparse Polynomial Chaos Expansion
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RHEIA also provides a sparse PCE option based on the stepwise regression
+method of Abraham et al. :cite:`Abraham2017`. The method starts from the same
+full candidate basis :math:`\mathcal{A}^{M,p}`, but it does not fit all basis
+terms at once. Instead, it searches for the terms that contribute most to the
+response and constructs a reduced active basis from the available training
+samples. This is useful when the full basis is large and the
+:math:`2|\mathcal{A}^{M,p}|` full-PCE sampling rule is too expensive.
+
+The implementation follows this workflow:
+
+.. list-table::
+   :widths: 22 78
+   :header-rows: 1
+
+   * - Step
+     - Description
+   * - Candidate basis
+     - Build all multi-indices up to the requested polynomial order. The
+       constant term is kept in the model.
+   * - Forward selection
+     - Add the candidate with the largest coefficient-to-uncertainty ratio
+       when fitted against the current residual.
+   * - Backward check
+     - Refit the current model and remove non-constant terms whose confidence
+       interval includes zero.
+   * - Truncation
+     - Sort the selected terms by relative coefficient uncertainty, test nested
+       sparse bases, and retain the basis with the lowest leave-one-out (LOO)
+       error.
+
+The number of sparse-PCE training samples is selected by the user with the
+``'n samples'`` option. In the current implementation this is a budget, not an
+automatic convergence target. RHEIA runs a fixed number of stepwise iterations
+equal to half of the requested sample count, unless the candidate pool is
+exhausted first. The final sparse basis is then chosen by minimizing the LOO
+error over the truncation sweep.
+
+.. important::
+
+   A low final LOO error is the main built-in accuracy indicator, but RHEIA
+   does not enforce a universal LOO threshold. Whether the PCE is sufficient
+   depends on the model, quantity of interest and intended use. In practice,
+   check that the LOO error, mean, standard deviation and dominant Sobol'
+   indices are stable when increasing ``'n samples'`` and/or the polynomial
+   order. For high-stakes decisions, reserve independent model evaluations for
+   validation.
+
 
 Next to these statistical moments, the contribution of each stochastic parameter to the variance of the model outputs provides valuable information on the model behavior under uncertainties. 
 Generally, this contribution is quantified through Sobol' indices. 
-Hence, the total-order Sobol' indices enable to perform a global sensitivity analysis on the stochastic parameters
+Hence, the total-order Sobol' indices enable a global sensitivity analysis on the stochastic parameters.
 PCE provides an analytical solution to quantify these Sobol' indices through post-processing of the coefficients (i.e. no additional model evaluations required). 
 The total-order Sobol' indices (:math:`S_i^{T,\mathrm{PC}}`) quantify the total impact of a stochastic input parameter, including all mutual interactions. 
 
@@ -51,7 +102,7 @@ For every coefficient that is characterized by considering input parameter :math
 Optimization
 ------------
 
-The Nondominated Sorting Genetic Algorithm (NSGA-II) is adopted to perform the deterministic and robust design optimization task. In the latter case, NSGA-II is coupled to PCE method in order to propagate the uncertaintes for each set of model parameters captured by the optimizer.
+The Nondominated Sorting Genetic Algorithm (NSGA-II) is adopted to perform the deterministic and robust design optimization task. In the latter case, NSGA-II is coupled to the PCE method in order to propagate the uncertainties for each set of model parameters captured by the optimizer.
 A brief introduction to the algorithm is provided below. The details on the method are described in :cite:`Deb2002a`.
 Finally, a guideline towards setting the optimization parameters is provided, based on our experience.
 
@@ -100,7 +151,7 @@ The surrogate-assisted RDO algorithm consists of NSGA-II to perform the optimiza
 Like in NSGA-II, the first step consists of generating a first population of design samples. 
 For each design sample in this first population, a full or sparse PCE is constructed for each quantity of interest. 
 To illustrate, if the optimization problem consists of two quantities of interest (e.g.\ the efficiency and total cost of a system), 
-then two PCEs are created to quantify the mean and standard deviation for each quantity of interest. 
+then two PCEs are created to estimate the mean and standard deviation for each quantity of interest. 
 To quantify the coefficients for each PCE, a set of random samples is generated, based on the distributions of the random parameters. 
 These random samples are evaluated in the deterministic model and in the basis functions in the information matrix. Out of the coefficients, 
 the mean and standard deviation is derived. Note that only one set of training samples is required to generate all the required PCEs for a design sample, 
@@ -121,7 +172,7 @@ This process is repeated until the computational budget is spent.
    a design sample :math:`\pmb{d}_i` is selected out of the offspring, which contains :math:`a+b` values. 
    Design variables :math:`d_{1},...,d_{a}` are considered uncertain, which means that the values in :math:`d_{i,1},...,d_{i,a}` are used as mean value for the distributions :math:`X_{i,M-a+1},...,X_{i,M}`. 
    From the :math:`M` distributions, the training samples are generated and each training sample is appended with the values from the deterministic design variables :math:`d_{i,a+1},...,d_{i,b}`. 
-   After evaluating the training samples in the deterministic model, the fitness values and constraint values (i.e. mean :math:`\mu$` and standard deviation :math:`\sigma` from each PCE) are stored. 
+   After evaluating the training samples in the deterministic model, the fitness values and constraint values (i.e. mean :math:`\mu` and standard deviation :math:`\sigma` from each PCE) are stored. 
    This process is repeated until all :math:`N` design samples in :math:`Q_t` are processed. 
    The offspring :math:`Q_t` is combined with the population :math:`P_t` and the new population :math:`P_{t+1}` is generated using the NSGA-II selection procedure. 
    As long as the user-defined computational budget is not spent, a new offspring is generated and the entire process is repeated. 

@@ -291,7 +291,7 @@ Uncertainty quantification
 Following the robust design optimization, a single optimized design is characterized that optimizes both mean and standard deviation of the LCOH.
 The Sobol' indices for this design can illustrate the main drivers of the uncertainty on the LCOH, which can provide guidelines 
 to effectively reduce the uncertainty by gathering more information on the dominant parameters.
-To evaluate the Sobol' indices of this design, the design design variables should be transformed in the following model parameters in :file:`design_space.csv`::
+To evaluate the Sobol' indices of this design, the design variables should be transformed into the following model parameters in :file:`design_space.csv`::
 
 	name,type,value,upper_bound
 	n_dcdc_pv,par,1.68,

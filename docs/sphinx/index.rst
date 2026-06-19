@@ -31,7 +31,7 @@ Introduction
 The Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems (RHEIA) framework provides 
 multi-objective optimization (deterministic and stochastic) and uncertainty quantification algorithms. 
 These algorithms can be applied on hydrogen-based energy systems, which are included in RHEIA.
-In addition, RHEIA allows to connect your own models to the algorithms as well.
+In addition, RHEIA can connect user-defined models to the algorithms.
 
 A brief overview on the features of RHEIA is provided in :ref:`lab:functionalities`,
 followed by a detailed illustration on how to connect your own model (Python based, open source or closed source) in :ref:`lab:connectingyourownmodel`.

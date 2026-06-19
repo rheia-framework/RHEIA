@@ -117,7 +117,7 @@ the samples are present.
    rheia.UQ.pce.RandomExperiment.create_only_samples
    rheia.UQ.pce.RandomExperiment.evaluate
 
-The PCE class enables to construct a PCE.
+The PCE class constructs a full or sparse PCE.
 
 .. autosummary::
    :toctree: generated/
@@ -154,7 +154,7 @@ result files.
    rheia.UQ.pce.PCE.draw
 
 To screen the design space (i.e. generate a PCE for a set of design samples),
-the following functions allows to retrieve the bounds for the design variables,
+the following functions retrieve the bounds for the design variables,
 to determine the design samples and to generate :file:`design_space` files 
 to store the input for the different design samples to be evaluated.
 
