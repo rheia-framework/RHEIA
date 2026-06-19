@@ -264,29 +264,40 @@ class RandomExperiment(Data):
         with open(self.my_data.filename_samples, 'r') as file:
             lines = file.readlines()
 
-        n_previous = len(lines) - 1
+        previous_lines = [line.strip().split(",") for line in lines[1:]]
+        n_previous = len(previous_lines)
+
         self.x_prev = np.zeros((n_previous, n_inputs))
         self.y_prev = np.zeros((n_previous, 1))
 
         if n_previous == 0:
             return
 
-        last_line = lines[-1].strip().split(",")
-        if len(last_line) != n_inputs + n_outputs:
-            raise SyntaxError(
-                """The samples file is not properly formatted
-                   or it already contains samples without model output.""")
+        row_lengths = {len(line) for line in previous_lines}
+        input_only = row_lengths == {n_inputs}
+        evaluated = row_lengths == {n_inputs + n_outputs}
 
-        if create_only_samples:
+        if not input_only and not evaluated:
+            raise SyntaxError(
+                """The samples file is not properly formatted.""")
+
+        if create_only_samples and evaluated:
             raise ValueError(
                 """The samples file already contains samples with model output.
                    Consider changing the result directory or switching
                    "create only samples" to False.""")
 
-        for i, line in enumerate(lines[1:]):
-            line_split = line.strip().split(",")
+        if not create_only_samples and input_only:
+            raise SyntaxError(
+                """The samples file already contains samples without model output.
+                   Evaluate these samples first or use a different result
+                   directory.""")
+
+        for i, line_split in enumerate(previous_lines):
             self.x_prev[i] = [float(el) for el in line_split[:n_inputs]]
-            self.y_prev[i] = float(line_split[n_inputs + self.objective_position])
+            if evaluated:
+                self.y_prev[i] = float(
+                    line_split[n_inputs + self.objective_position])
             
     def create_distributions(self):
         """
@@ -408,8 +419,12 @@ class RandomExperiment(Data):
         """
 
         if create_only_samples and self.size > 0:
+            n_previous = len(self.x_prev)
+            samples = self.x_u[n_previous:]
+            if len(samples) == 0:
+                return
 
-            df = pd.DataFrame(self.x_u, columns=None)
+            df = pd.DataFrame(samples, columns=None)
             with open(self.my_data.filename_samples, 'a+') as f:
                 df.to_csv(f, header=False, index=False, lineterminator='\n')
 

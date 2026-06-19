@@ -1,0 +1,11 @@
+name,type,value,upper_bound
+A_1,par,2,
+A_2,par,2,
+A_3,par,2,
+A_4,par,2,
+L,par,200,
+F,par,10,
+E_1,par,20000,
+E_2,par,20000,
+E_3,par,20000,
+E_4,par,20000,

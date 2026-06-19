@@ -7,6 +7,7 @@ dictionary.
 
 import os
 import importlib.util
+import sys
 import collections.abc
 import warnings
 import pandas as pd
@@ -424,9 +425,11 @@ def load_case(run_dict, design_space, uq_bool=False, create_only_samples=False):
     if not create_only_samples:
         case_description_path = os.path.join(
             case_path, run_dict['case'], 'case_description.py')
+        module_name = 'rheia.CASES.%s.case_description' % run_dict['case']
         spec = importlib.util.spec_from_file_location(
-            '%s_case_description' % run_dict['case'], case_description_path)
+            module_name, case_description_path)
         case_description = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = case_description
         spec.loader.exec_module(case_description)
 
         # determine the evaluate function from the considered case directory

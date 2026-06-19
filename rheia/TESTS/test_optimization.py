@@ -2,6 +2,8 @@
 Module to test the det_stoch_des_space module.
 '''
 
+import importlib
+import pickle
 import pytest
 import numpy as np
 import rheia.OPT.optimization as opt
@@ -73,6 +75,18 @@ def test_load_optimizer():
 
     opt_obj = opt.load_optimizer('NSGA2')
     assert opt_obj.__name__ == 'NSGA2'
+
+
+def test_loaded_case_evaluate_is_importable(input_case):
+    """
+    Assert the case evaluation function can be imported by module name.
+    This is required by multiprocessing with spawned worker processes.
+    """
+
+    eval_func = input_case[1]
+    module = importlib.import_module(eval_func.__module__)
+    assert eval_func is module.evaluate
+    assert pickle.loads(pickle.dumps(eval_func)) is eval_func
 
 
 def test_check_existing_results(run_dict, input_case):
