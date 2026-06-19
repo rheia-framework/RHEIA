@@ -181,6 +181,7 @@ Example:
 
 The following design variables are defined in :file:`design_space.csv`::
 
+	name,type,value,upper_bound
 	var_1,var,1,3
 	var_2,var,0.4,0.9
 	var_3,var,12,15
@@ -322,6 +323,8 @@ and uncertainty quantification should be provided::
                 'mut prob':              mut_prob,               #optional, default is 0.1
                 'eta':                   eta,                    #optional, default is 0.2
                 'n jobs':                n_jobs,                 #optional, default is 1 
+                'uq method':             uq_method,              #optional, default is 'full'
+                'n samples':             n_samples_pce,          #required only for sparse PCE
                 'sampling method':       sampling_method         #optional, default is 'SOBOL'
                 }
 
@@ -333,8 +336,8 @@ The necessary and optional items in the dictionary for deterministic design opti
 These items are described in :ref:`lab:ssrundetopt`.
 The additional necessary and optional items for robust design optimization are described in the following subsections. 
 
-Necessary items
-^^^^^^^^^^^^^^^
+Necessary robust optimization items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the following subsections, the additional necessary items for robust design optimization are described.
 If one of these items is not provided, the code will return an error.
@@ -377,12 +380,37 @@ Instead, if a robust design optimization is desired with :py:data:`'output_3'` a
 
 	'objective of interest': ['output_3']
 
-Optional items
-^^^^^^^^^^^^^^
+Optional robust optimization items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When running robust design optimization, only one additional optional item exists, in addition to the 
+When running robust design optimization, the following additional optional items exist, in addition to the 
 optional items presented in the deterministic design optimization section (:ref:`lab:optitemsdet`).
-The item is described below.
+The items are described below.
+
+'uq method': uq_method
+~~~~~~~~~~~~~~~~~~~~~~
+
+The PCE used inside the robust design optimization can be a full PCE or a sparse PCE. The full PCE is the
+default and is selected with::
+
+   'uq method': 'full'
+
+The sparse PCE is selected with::
+
+   'uq method': 'sparse'
+
+For a full PCE, the number of model evaluations per design sample is determined automatically from the
+polynomial order and the number of stochastic parameters. For a sparse PCE, the number of model evaluations
+is provided with :py:data:`'n samples'`.
+
+'n samples': n_samples_pce
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The key :py:data:`'n samples'` is required when :py:data:`'uq method'` is :py:data:`'sparse'`. It defines the
+number of training samples used to build the sparse PCE for each design sample. For example::
+
+   'uq method': 'sparse',
+   'n samples': 80
 
 'sampling method': sampling_method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -440,6 +468,27 @@ An additional example, where parallel processing is considered, the mutation pro
    if __name__ == '__main__':
        rheia_opt.run_opt(dict_opt)
 
+For a robust design optimization with sparse PCEs, add the sparse method and the selected number of training samples:
+
+.. code-block:: python
+   :linenos:
+
+   import rheia.OPT.optimization as rheia_opt
+
+   dict_opt = {'case':                  'CASE_1',
+               'objectives':            {'ROB': (-1,-1)}, 
+               'population size':       20,
+               'stop':                  ('BUDGET', 1440),
+               'results dir':           'results_sparse',
+               'pol order':             3,
+               'objective names':       ['output_1', 'output_2', 'output_3'],
+               'objective of interest': ['output_2'],
+               'uq method':             'sparse',
+               'n samples':             80,
+               }
+
+   rheia_opt.run_opt(dict_opt)
+
 The post-processing of the results is described in :ref:`lab:optimizationresults`.
 
 .. _lab:detpolorder:
@@ -448,7 +497,7 @@ Screening of the design space
 -----------------------------
 
 Considering the current truncation scheme, the polynomial order and the number of stochastic parameters define the number of model evaluations 
-required to construct the PCE (see :ref:`labpce`). In robust design optimization, a PCE is constructed for each design sample evaluated during the optimization.
+required to construct the PCE (see :ref:`lab:pce`). In robust design optimization, a PCE is constructed for each design sample evaluated during the optimization.
 Hence, the polynomial order should be sufficient over the entire design space. In addition, only the stochastic parameters which have a significant
 impact on the standard deviation on the quantity of interest. To determine the polynomial order and the significant stochastic parameters, a screening of
 the design space is performed as follows:
@@ -497,7 +546,8 @@ Considering the specific dictionary determined above, the results for the differ
                 sample_3
                 sample_4
 	
-Where in each folder, the LOO error is stored in :file:`full_PCE_order_1_obj_1`.
+Where in each folder, the LOO error is stored in :file:`full_pce_order_1_obj_1.txt` for a full PCE or
+:file:`sparse_pce_order_1_obj_1_n_samples_80.txt` for a sparse PCE with 80 training samples.
 
 Determine the polynomial order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -571,6 +621,8 @@ where a threshold for the Sobol' index is set at 1/number of uncertain parameter
 	Therefore, the stochastic parameters with negligible Sobol' index are not removed automatically. It is suggested to evaluate the feasibility of
 	this result, based on the knowledge of the user on the considered system model.
 	
+.. _lab:optimizationresults:
+
 Post-processing of the results
 ------------------------------
 

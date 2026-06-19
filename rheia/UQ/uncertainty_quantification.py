@@ -5,8 +5,10 @@ execute uncertainty quantification.
 """
 
 import os
-from pyDOE import lhs
-from rheia.CASES.determine_stoch_des_space import load_case, check_dictionary
+import pandas as pd
+from scipy.stats import qmc
+from rheia.CASES.determine_stoch_des_space import (
+    DESIGN_SPACE_COLUMNS, load_case, check_dictionary)
 import rheia.UQ.pce as uq
 
 
@@ -39,12 +41,21 @@ def get_design_variables(case):
         case,
         'design_space.csv')
 
-    # read in the design variable bounds
-    with open(path_to_read, 'r') as file:
-        for line in file:
-            tmp = line.split(",")
-            if tmp[1] == 'var':
-                var_dict[tmp[0]] = [float(tmp[2]), float(tmp[3])]
+    data = pd.read_csv(path_to_read, dtype=str, keep_default_na=False,
+                       na_filter=False)
+    missing_columns = [column for column in DESIGN_SPACE_COLUMNS
+                       if column not in data.columns]
+    if missing_columns:
+        raise ValueError(
+            """The design_space file should contain the columns: %s."""
+            % ', '.join(DESIGN_SPACE_COLUMNS))
+
+    data = data[DESIGN_SPACE_COLUMNS]
+    data = data.apply(lambda col: col.str.strip())
+
+    for row in data.itertuples(index=False):
+        if row.type == 'var':
+            var_dict[row.name] = [float(row.value), float(row.upper_bound)]
 
     return var_dict
 
@@ -69,8 +80,9 @@ def set_design_samples(var_dict, n_samples):
 
     """
 
-    # generate the samples through Latin Hypercube Sampling
-    samples = lhs(len(var_dict), samples=n_samples)
+    # generate unit-hypercube samples through SciPy's maintained LHS sampler
+    sampler = qmc.LatinHypercube(d=len(var_dict))
+    samples = sampler.random(n=n_samples)
 
     bounds = list(var_dict.values())
 
@@ -82,7 +94,7 @@ def set_design_samples(var_dict, n_samples):
     return samples
 
 
-def write_design_space(case, iteration, var_dict, sample, ds = 'design_space.csv'):
+def write_design_space(case, iteration, var_dict, sample, ds='design_space.csv'):
     """
     A new design space file is created. In this file,
     the model parameters are copied from the original file,
@@ -127,22 +139,23 @@ def write_design_space(case, iteration, var_dict, sample, ds = 'design_space.csv
 
     # write the new design_space file if it does not exist already
     if not os.path.isfile(new_des_var_file):
-        with open(des_var_file, 'r') as file:
-            text = []
-            for line in file.readlines():
-                found = False
-                tmp = line.split(",")
-                for index, name in enumerate(list(var_dict.keys())):
+        data = pd.read_csv(des_var_file, dtype=str, keep_default_na=False,
+                           na_filter=False)
+        missing_columns = [column for column in DESIGN_SPACE_COLUMNS
+                           if column not in data.columns]
+        if missing_columns:
+            raise ValueError(
+                """The design_space file should contain the columns: %s."""
+                % ', '.join(DESIGN_SPACE_COLUMNS))
 
-                    if name == tmp[0]:
-                        text.append('%s,par,%f \n' % (name, sample[index]))
-                        found = True
-                if not found:
-                    text.append(line)
+        data = data[DESIGN_SPACE_COLUMNS]
+        for index, name in enumerate(var_dict):
+            mask = data['name'] == name
+            data.loc[mask, 'type'] = 'par'
+            data.loc[mask, 'value'] = '%f' % sample[index]
+            data.loc[mask, 'upper_bound'] = ''
 
-        with open(new_des_var_file, 'w') as file:
-            for item in text:
-                file.write("%s" % item)
+        data.to_csv(new_des_var_file, index=False, lineterminator='\n')
 
 
 def run_uq(run_dict, design_space='design_space.csv'):
@@ -165,7 +178,7 @@ def run_uq(run_dict, design_space='design_space.csv'):
 
     """
 
-    # check if the UQ dictionary is properly characterized
+    # Validate and complete optional UQ settings before any objects are built.
     check_dictionary(run_dict, uq_bool=True)
 
     objective_position = run_dict['objective names'].index(
@@ -192,48 +205,41 @@ def run_uq(run_dict, design_space='design_space.csv'):
     # polynomials
     my_experiment.create_distributions()
 
-    # calculate the number of terms in the PCE according to the
-    # truncation scheme
+    # calculate the full basis size and the required number of samples
     my_experiment.n_terms()
 
     # read in the previously generated samples
     my_experiment.read_previous_samples(run_dict['create only samples'])
 
-    # create a design of experiment for the remaining samples
-    # to be evaluated
-    my_experiment.create_samples(
-        size=my_experiment.n_samples - len(my_experiment.x_prev))
+    n_existing = len(my_experiment.x_prev)
+    n_to_create = my_experiment.n_samples - n_existing
 
-    # check if the samples need to be evaluated or not
-    my_experiment.create_only_samples(run_dict['create only samples'])
+    # In create-only mode, only append new input samples to samples.csv.
+    if run_dict['create only samples']:
+        my_experiment.create_samples(size=n_to_create)
+        my_experiment.create_only_samples(True)
+        return
 
-    # when the PCE needs to be constructed
-    if not run_dict['create only samples']:
+    # Evaluate only the new samples needed to reach the requested DOE size.
+    # If enough previous samples exist, select the required subset instead.
+    if n_to_create > 0:
+        my_experiment.evaluate(eval_func, params)
+    else:
+        my_experiment.create_samples(size=n_to_create)
+        my_experiment.y = my_experiment.y_prev[:my_experiment.n_samples]
 
-        # evaluate the samples remaining to reach the required
-        # number of samples for the PCE
-        if my_experiment.n_samples > len(my_experiment.x_prev):
-            my_experiment.evaluate(eval_func, params)
-        elif my_experiment.n_samples == len(my_experiment.x_prev):
-            my_experiment.y = my_experiment.y_prev
-        else:
-            my_experiment.y = my_experiment.y_prev[:my_experiment.n_samples]
+    # create and fit PCE object
+    my_pce = uq.PCE(my_experiment)
+    my_pce.run(run_dict['uq method'])
 
-        # create PCE object
-        my_pce = uq.PCE(my_experiment)
+    # calculate final accuracy and sensitivity metrics
+    my_pce.calc_loo()
+    my_pce.calc_sobol()
 
-        # evaluate the PCE
-        my_pce.run()
+    # print a summary and write result files
+    my_pce.print_res()
 
-        # calculate the LOO error
-        my_pce.calc_loo()
+    # generate the pdf and cdf when desired
+    if run_dict['draw pdf cdf'][0]:
+        my_pce.draw(int(run_dict['draw pdf cdf'][1]))
 
-        # calculate the Sobol' indices
-        my_pce.calc_sobol()
-
-        # extract and print results
-        my_pce.print_res()
-
-        # generate the pdf and cdf when desired
-        if run_dict['draw pdf cdf'][0]:
-            my_pce.draw(int(run_dict['draw pdf cdf'][1]))

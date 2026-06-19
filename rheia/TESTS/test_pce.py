@@ -4,6 +4,7 @@ Module to test the det_stoch_des_space module.
 
 import pytest
 import numpy as np
+from types import SimpleNamespace
 import rheia.UQ.pce as pce
 from rheia.CASES.determine_stoch_des_space import load_case
 
@@ -356,6 +357,73 @@ def test_ols(input_pce):
 
     test_res = input_pce.ols(a, b)[0][0]
     assert round(test_res, 3) == 6.996
+
+
+def test_normalize_outputs_accepts_numpy_and_nested_scalars():
+    """
+    Assert model outputs are normalized to scalar floats.
+    """
+
+    res = pce._normalize_outputs([np.float64(1.2), [[3.4]]])
+
+    assert res == [[1.2], [3.4]]
+
+
+def test_ols_rejects_underdetermined_system(input_pce):
+    """
+    Assert OLS fails clearly when there are not enough samples.
+    """
+
+    a = np.array([[1., 0.], [1., 1.]])
+    b = np.array([[1.], [2.]])
+
+    with pytest.raises(ValueError, match="more samples than basis terms"):
+        input_pce.ols(a, b)
+
+
+def test_sparse_pce_keeps_intercept_and_scalar_moments():
+    """
+    Assert sparse PCE remains well-shaped for NumPy scalar arithmetic.
+    """
+
+    x_u_scaled = np.array([
+        [-1.0, -1.0],
+        [-0.8, -0.4],
+        [-0.6, 0.2],
+        [-0.4, 0.8],
+        [-0.2, -0.7],
+        [0.0, -0.1],
+        [0.2, 0.5],
+        [0.4, -0.9],
+        [0.6, -0.3],
+        [0.8, 0.3],
+        [1.0, 0.9],
+        [0.1, 0.7],
+    ])
+    y = 3.0 + 2.0 * x_u_scaled[:, [0]] - 0.5 * x_u_scaled[:, [1]]
+    experiment = SimpleNamespace(
+        dimension=2,
+        size=len(x_u_scaled),
+        x_u_scaled=x_u_scaled,
+        y=y,
+        polytypes=['Legendre', 'Legendre'],
+        n_terms_full=None,
+        n_samples=len(x_u_scaled),
+        n_terms=lambda: None,
+        my_data=SimpleNamespace(inputs={
+            'pol order': 2,
+            'uq method': 'sparse',
+            'n samples': len(x_u_scaled),
+        }),
+    )
+    experiment.n_terms_full = 6
+
+    pce_obj = pce.PCE(experiment)
+    pce_obj.run('sparse')
+
+    assert pce_obj.basis['model'][0] == 0
+    assert np.isscalar(pce_obj.moments['mean'])
+    assert np.isfinite(pce_obj.coefficients).all()
 
 
 def test_calc_a(input_random_experiment, input_pce):

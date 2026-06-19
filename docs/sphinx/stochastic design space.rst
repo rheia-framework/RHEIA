@@ -34,14 +34,14 @@ Characterizing the design variables
  
 To define a design variable, the set-up in the :file:`design_space.csv` file is as follows::
 
-	name,feature_type,lb,ub
+	name,type,value,upper_bound
 
 where:
 
 - name: name of the variable;
-- feature_type: a design variable is indicated with `var`;
-- lb: lower bound value for the design variable;
-- ub: upper bound value for the design variable. 
+- type: a design variable is indicated with `var`;
+- value: lower bound value for the design variable;
+- upper_bound: upper bound value for the design variable. 
 
 An example for a configured design variable `des_var_1` with a range between 10 and 50 is::
 
@@ -56,17 +56,18 @@ Characterizing the model parameters
 In this file :file:`design_space.csv`, the deterministic value (or mean value when the parameter is considered uncertain) is provided.
 The configuration of a model parameter is similar to the configuration of a design variable::
 
-    name,feature_type,value
+    name,type,value,upper_bound
 
 where:
 
 - name: name of the variable;
-- feature_type: a parameter is indicated with `par`;
+- type: a parameter is indicated with `par`;
 - value: deterministic value (or mean value when the parameter is stochastic).
+- upper_bound: left empty for model parameters.
 
 An example of a configured model parameter `par_1` with a mean value of 0.03 is::
 
-	par_1,par,0.03
+	par_1,par,0.03,
 
 .. _lab:ssexampleds:
 
@@ -74,11 +75,12 @@ Example of design_space.csv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 An example of a configured :file:`design_space.csv` file, which consists of 3 model parameters (par_1, par_2 and par_3) and 2 design variables (design_var_1 and design_var_2), is presented::
 
+	name,type,value,upper_bound
 	design_var_1,var,1,3
 	design_var_2,var,10,100
-	par_1,par,4
-	par_2,par,2.5
-	par_3,par,175
+	par_1,par,4,
+	par_2,par,2.5,
+	par_3,par,175,
 
 .. _lab:ssstochastic_space:
 
@@ -94,12 +96,12 @@ Characterizing the uncertainties
 
 Defining the uncertainty can be done as follows::
 
-	name,abs_rel,distribution,deviation
+	name,relation,distribution,deviation
 
 where:
 
 	- name: name of the parameter or variable, equal to the name of the parameter or variable in :file:`design_space.csv`;
-	- abs_rel: absolute or relative uncertainty to the mean, defined with `absolute` or `relative`, respectively;
+	- relation: absolute or relative uncertainty to the mean, defined with `absolute` or `relative`, respectively;
 	- distribution: The distribution of the uncertainty;
 	- deviation: uncertainty on the mean.
 
@@ -126,8 +128,9 @@ Example of stochastic_space.csv
 
 In summary, a :file:`stochastic_space.csv` file corresponding to the illustrative :file:`design_space.csv` example file in :ref:`lab:ssexampleds` looks like this::
 
-	par_1,relative Gaussian,0.5
-	par_2,absolute Uniform,1
+	name,relation,distribution,deviation
+	par_1,relative,Gaussian,0.5
+	par_2,absolute,Uniform,1
 	design_var_2,relative,Uniform,0.1
 
 Where the model parameter `par_3` and design variable `design_var_1` are considered deterministic, 

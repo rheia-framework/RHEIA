@@ -1,3 +1,4 @@
+name,relation,distribution,deviation
 F,absolute,Gaussian,1
 E_1,absolute,Uniform,1000
 E_2,absolute,Uniform,1000

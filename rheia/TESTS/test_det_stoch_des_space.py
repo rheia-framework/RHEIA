@@ -2,8 +2,11 @@
 Module to test the det_stoch_des_space module.
 '''
 
+import os
 import pytest
-from rheia.CASES.determine_stoch_des_space import StochasticDesignSpace
+import pandas as pd
+from rheia.CASES.determine_stoch_des_space import (
+    DESIGN_SPACE_COLUMNS, STOCHASTIC_SPACE_COLUMNS, StochasticDesignSpace)
 
 
 @pytest.fixture
@@ -80,6 +83,35 @@ def test_design_space_name(input_case):
     """
 
     assert input_case.design_space == 'design_space.csv'
+
+
+def test_design_space_has_header():
+    """
+    Assert that design_space files use the named four-column schema.
+    """
+
+    path = os.path.join(os.path.dirname(__file__), os.pardir, 'CASES',
+                        'H2_FUEL', 'design_space.csv')
+    data = pd.read_csv(path, dtype=str, keep_default_na=False,
+                       na_filter=False)
+
+    assert list(data.columns) == DESIGN_SPACE_COLUMNS
+    assert data.loc[data['type'] == 'par', 'upper_bound'].eq('').all()
+    assert data.loc[data['type'] == 'var', 'upper_bound'].ne('').all()
+
+
+def test_stochastic_space_has_header():
+    """
+    Assert that stochastic_space files use the named four-column schema.
+    """
+
+    path = os.path.join(os.path.dirname(__file__), os.pardir, 'CASES',
+                        'H2_FUEL', 'stochastic_space.csv')
+    data = pd.read_csv(path, dtype=str, keep_default_na=False,
+                       na_filter=False)
+
+    assert list(data.columns) == STOCHASTIC_SPACE_COLUMNS
+    assert data.ne('').all().all()
 
 
 def test_opt_type(input_case):

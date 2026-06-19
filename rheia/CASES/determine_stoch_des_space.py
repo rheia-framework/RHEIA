@@ -6,9 +6,14 @@ dictionary.
 """
 
 import os
-import sys
-import collections
+import importlib.util
+import collections.abc
 import warnings
+import pandas as pd
+
+DESIGN_SPACE_COLUMNS = ['name', 'type', 'value', 'upper_bound']
+STOCHASTIC_SPACE_COLUMNS = ['name', 'relation', 'distribution', 'deviation']
+
 
 def custom_formatwarning(msg, *args, **kwargs):
     """
@@ -38,109 +43,124 @@ def check_dictionary(run_dict, uq_bool=False):
     """
 
     warnings.formatwarning = custom_formatwarning
-    
-    rob = False
 
     if not isinstance(run_dict, collections.abc.Mapping):
         raise TypeError('The input dictionary should be a dictionary.')
 
-    requirements = ['case',
-                    'n jobs',
-                    'results dir',
-                    ]
+    required = {'case', 'n jobs', 'results dir'}
+    allowed = set(required)
+    defaults = {'n jobs': 1}
+    rob = False
+    weights = None
 
-    if 'n jobs' not in run_dict:
-        run_dict['n jobs'] = 1
+    if uq_bool:
+        required.update({'objective of interest', 'draw pdf cdf'})
+        allowed.update({'create only samples', 'objective of interest',
+                        'draw pdf cdf'})
+        defaults.update({'create only samples': False,
+                         'draw pdf cdf': [False]})
+    else:
+        required.update({'objectives', 'stop', 'population size'})
+        allowed.update({'objectives', 'stop', 'population size', 'x0',
+                        'cx prob', 'mut prob', 'eta'})
+        defaults.update({'x0': ('AUTO', 'LHS'),
+                         'cx prob': 0.9,
+                         'mut prob': 0.1,
+                         'eta': 0.2})
 
-    for key in requirements:
-        try:
-            run_dict[key]
-        except BaseException:
-            raise KeyError(
-                '"%s" is missing in the input dictionary.' %
-                key)
+    for key, value in defaults.items():
+        if key in run_dict:
+            continue
 
-    if not isinstance(run_dict['n jobs'], int):
+        run_dict[key] = value
+        if key == 'x0':
+            warnings.warn("If no previous results existed, the starting "
+                          "population is generated using Latin Hypercube sampling.")
+        elif key == 'cx prob':
+            warnings.warn("The crossover probability is defined automatically "
+                          "at 0.9")
+        elif key == 'mut prob':
+            warnings.warn("The mutation probability is defined automatically "
+                          "at 0.1")
+        elif key == 'eta':
+            warnings.warn("The eta parameter is defined automatically at 0.2")
+
+    for key in required:
+        if key not in run_dict:
+            raise KeyError('"%s" is missing in the input dictionary.' % key)
+
+    if (not isinstance(run_dict['n jobs'], int) or
+            isinstance(run_dict['n jobs'], bool)):
         raise TypeError(
+            'The value of the key "n jobs" should be a positive integer.')
+    if run_dict['n jobs'] <= 0:
+        raise ValueError(
             'The value of the key "n jobs" should be a positive integer.')
 
     if not isinstance(run_dict['results dir'], str):
         raise TypeError(
             'The value of the key "results dir" should be a string.')
+    if run_dict['results dir'] == '':
+        raise ValueError(
+            'The value of the key "results dir" should not be empty.')
 
     if not uq_bool:
-        requirements += ['objectives',
-                         'stop',
-                         'population size',
-                         'x0',
-                         'cx prob',
-                         'mut prob',
-                         'eta',
-                         ]
-
-        if 'x0' not in run_dict:
-            run_dict['x0'] = ('AUTO', 'LHS')
-            warnings.warn("If no previous results existed, the starting "
-                          "population is generated using Latin Hypercube sampling.")
-        if 'cx prob' not in run_dict:
-            run_dict['cx prob'] = 0.9
-            warnings.warn("The crossover probability is defined automatically "
-                          "at 0.9")
-        if 'mut prob' not in run_dict:
-            run_dict['mut prob'] = 0.1
-            warnings.warn("The mutation probability is defined automatically "
-                          "at 0.1")
-        if 'eta' not in run_dict:
-            run_dict['eta'] = 0.2
-            warnings.warn("The eta parameter is defined automatically at 0.2")
-
-        for key in requirements[3:]:
-            try:
-                run_dict[key]
-            except BaseException:
-                raise KeyError(
-                    '"%s" is missing in the input dictionary.' %
-                    key)
-
         if not isinstance(run_dict['objectives'], collections.abc.Mapping):
             raise TypeError(
                 'The value of the key "objectives" should be a dictionary.')
+        if len(run_dict['objectives']) != 1:
+            raise ValueError(
+                'The value of the key "objectives" should contain one run type.')
 
-        if not list(
-                run_dict['objectives'].keys())[0] == 'DET' and not list(
-                run_dict['objectives'].keys())[0] == 'ROB':
+        opt_type = next(iter(run_dict['objectives'].keys()))
+        weights = run_dict['objectives'][opt_type]
+        rob = opt_type == 'ROB'
+
+        if opt_type not in ['DET', 'ROB']:
             raise ValueError(
                 """Please select "DET" or "ROB" as a key
                 for the "objectives" value.""")
-        elif not isinstance(list(run_dict['objectives'].values())[0], tuple):
+        if not isinstance(weights, tuple):
             raise TypeError(
                 """The value of the key "DET" or "ROB" should be a tuple
                 with the weights for the objectives
                 (1 for maximization, -1 for minimization).""")
-        elif (not all(isinstance(weight, int) for weight in
-                      list(run_dict['objectives'].values())[0])):
+        if not weights:
+            raise ValueError('The objective weights tuple should not be empty.')
+        if not all(isinstance(weight, int) for weight in weights):
             raise TypeError('The weights should be equal to 1 or -1.')
-        elif (not all(abs(weight) == 1 for weight in
-                      list(run_dict['objectives'].values())[0])):
+        if not all(abs(weight) == 1 for weight in weights):
             raise ValueError('The weights should be equal to 1 or -1.')
 
         if not isinstance(run_dict['stop'], tuple):
             raise TypeError(
                 """The value of the key "stop" should be a tuple
                    with two elements.""")
-
-        if not run_dict['stop'][0] == 'BUDGET':
+        if len(run_dict['stop']) != 2:
+            raise ValueError(
+                """The value of the key "stop" should be a tuple
+                   with two elements.""")
+        if run_dict['stop'][0] != 'BUDGET':
             raise ValueError(
                 """The first element in the tuple related to the key "stop"
                    should be equal to "BUDGET".""")
-
-        if not isinstance(run_dict['stop'][1], int):
+        if (not isinstance(run_dict['stop'][1], int) or
+                isinstance(run_dict['stop'][1], bool)):
             raise TypeError(
                 """The second element in the tuple related to the key "stop"
                    should be a positive integer.""")
+        if run_dict['stop'][1] <= 0:
+            raise ValueError(
+                """The second element in the tuple related to the key "stop"
+                   should be a positive integer.""")
 
-        if not isinstance(run_dict['population size'], int):
+        if (not isinstance(run_dict['population size'], int) or
+                isinstance(run_dict['population size'], bool)):
             raise TypeError(
+                """The value of the key "population number"
+                   should be a positive integer.""")
+        if run_dict['population size'] <= 0:
+            raise ValueError(
                 """The value of the key "population number"
                    should be a positive integer.""")
 
@@ -148,77 +168,32 @@ def check_dictionary(run_dict, uq_bool=False):
             raise TypeError(
                 """The value of the key "x0" should be a tuple
                    with two elements.""")
-
-        if (not run_dict['x0'][0] == 'AUTO' and not
-                run_dict['x0'][0] == 'CUSTOM'):
+        if len(run_dict['x0']) != 2:
+            raise ValueError(
+                """The value of the key "x0" should be a tuple
+                   with two elements.""")
+        if run_dict['x0'][0] not in ['AUTO', 'CUSTOM']:
             raise ValueError(
                 """The first element in the tuple related to the key "x0"
                    should be equal to "AUTO" or "CUSTOM".""")
-        elif (run_dict['x0'][0] == 'AUTO' and not
-              run_dict['x0'][1] == 'RANDOM' and not
-              run_dict['x0'][1] == 'LHS'):
+        if (run_dict['x0'][0] == 'AUTO' and
+                run_dict['x0'][1] not in ['RANDOM', 'LHS']):
             raise ValueError(
                 """When selecting "AUTO", the second element in the tuple
                    related to the key "x0" should be equal
                    to "RANDOM" or "LHS".""")
 
-        if (not run_dict['x0'][0] == 'AUTO' and not
-                run_dict['x0'][0] == 'CUSTOM'):
-            raise ValueError(
-                """The first element in the tuple related to the key "x0"
-                   should be equal to "AUTO" or "CUSTOM".""")
-
-        if not isinstance(run_dict['cx prob'], float):
-            raise TypeError(
-                """The value of the key "cx prob" should be a positive float,
-                   lower or equal to 1.""")
-        elif run_dict['cx prob'] > 1.:
-            raise ValueError(
-                """The value of the key "cx prob" should be a positive float,
-                   lower or equal to 1.""")
-
-        if not isinstance(run_dict['mut prob'], float):
-            raise TypeError(
-                """The value of the key "mut prob" should be a positive float,
-                   lower or equal to 1.""")
-        elif run_dict['mut prob'] > 1.:
-            raise ValueError(
-                """The value of the key "mut prob" should be a positive float,
-                   lower or equal to 1.""")
-
-        if not isinstance(run_dict['eta'], float):
-            raise TypeError(
-                """The value of the key "eta" should be a positive float,
-                   lower or equal to 1.""")
-        elif run_dict['eta'] > 1.:
-            raise ValueError(
-                """The value of the key "eta" should be a positive float,
-                   lower or equal to 1.""")
-
-        if list(run_dict['objectives'].keys())[0] == 'ROB':
-            rob = True
+        for key in ['cx prob', 'mut prob', 'eta']:
+            if not isinstance(run_dict[key], float):
+                raise TypeError(
+                    """The value of the key "%s" should be a positive float,
+                       lower or equal to 1.""" % key)
+            if run_dict[key] <= 0. or run_dict[key] > 1.:
+                raise ValueError(
+                    """The value of the key "%s" should be a positive float,
+                       lower or equal to 1.""" % key)
 
     else:
-
-        requirements += ['create only samples',
-                         'objective of interest',
-                         'draw pdf cdf',
-                         ]
-
-        if 'create only samples' not in run_dict:
-            run_dict['create only samples'] = False
-
-        if 'draw pdf cdf' not in run_dict:
-            run_dict['draw pdf cdf'] = [False]
-
-        for key in requirements[-3:]:
-            try:
-                run_dict[key]
-            except BaseException:
-                raise KeyError(
-                    '"%s" is missing in the input dictionary.' %
-                    key)
-
         if not isinstance(run_dict['create only samples'], bool):
             raise TypeError(
                 """The value of the key "create only samples"
@@ -227,59 +202,88 @@ def check_dictionary(run_dict, uq_bool=False):
         if not isinstance(run_dict['draw pdf cdf'], list):
             raise TypeError(
                 'The value of the key "draw pdf cdf" should be a list.')
-
+        if not run_dict['draw pdf cdf']:
+            raise ValueError(
+                'The value of the key "draw pdf cdf" should not be empty.')
         if not isinstance(run_dict['draw pdf cdf'][0], bool):
             raise TypeError(
                 """The value of the first element in the list "draw pdf cdf"
                 should be a True or False.""")
-
-        if run_dict['draw pdf cdf'][0] and not len(
-                run_dict['draw pdf cdf']) == 2:
+        if run_dict['draw pdf cdf'][0] and len(run_dict['draw pdf cdf']) != 2:
             raise ValueError(
                 """When creating the distribution is desired,
                    provide the number of samples in the form of
                    a positive integer as the second list item""")
-
-            if not isinstance(run_dict['draw pdf cdf'][1], int):
+        if run_dict['draw pdf cdf'][0]:
+            n_draw_samples = run_dict['draw pdf cdf'][1]
+            if isinstance(n_draw_samples, bool):
                 raise TypeError(
                     """When creating the distribution is desired,
                     provide the number of samples in the form of
                     a positive integer as the second list item""")
-
-        if not any(name == run_dict['objective of interest']
-                   for name in run_dict['objective names']):
-            raise ValueError(
-                """The value of the key "objective of interest"
-                   should be a string equal to any element
-                   in the list with key "objective names".""")
+            if isinstance(n_draw_samples, float) and n_draw_samples.is_integer():
+                run_dict['draw pdf cdf'][1] = int(n_draw_samples)
+                n_draw_samples = run_dict['draw pdf cdf'][1]
+            if not isinstance(n_draw_samples, int):
+                raise TypeError(
+                    """When creating the distribution is desired,
+                    provide the number of samples in the form of
+                    a positive integer as the second list item""")
+            if n_draw_samples <= 0:
+                raise ValueError(
+                    """When creating the distribution is desired,
+                    provide the number of samples in the form of
+                    a positive integer as the second list item""")
 
     if rob or uq_bool:
-
-        requirements += ['pol order',
-                         'sampling method',
-                         'objective names',
-                         ]
+        required.update({'pol order', 'sampling method', 'objective names',
+                         'uq method'})
+        allowed.update({'pol order', 'sampling method', 'objective names',
+                        'uq method', 'n samples'})
 
         if 'sampling method' not in run_dict:
             run_dict['sampling method'] = 'SOBOL'
             warnings.warn("The Sobol' sequence is selected as "
                           "sampling method.")
+        if 'uq method' not in run_dict:
+            run_dict['uq method'] = 'full'
+            warnings.warn("A full conventional PCE is selected.")
+        if run_dict['uq method'] == 'sparse' and 'n samples' not in run_dict:
+            run_dict['n samples'] = 10
+            warnings.warn("The number of sparse PCE samples is defined "
+                          "automatically at 10.")
 
-        for key in requirements[-3:]:
-            try:
-                run_dict[key]
-            except BaseException:
+        for key in required:
+            if key not in run_dict:
                 raise KeyError(
-                    '"%s" is missing in the input dictionary.' %
-                    key)
+                    '"%s" is missing in the input dictionary.' % key)
 
-        if not isinstance(run_dict['pol order'], int):
+        if (not isinstance(run_dict['pol order'], int) or
+                isinstance(run_dict['pol order'], bool)):
             raise TypeError(
                 """The value of the key "pol order" should be a
                    positive integer.""")
+        if run_dict['pol order'] <= 0:
+            raise ValueError(
+                """The value of the key "pol order" should be a
+                   positive integer.""")
 
-        if (not run_dict['sampling method'] == 'RANDOM' and not
-                run_dict['sampling method'] == 'SOBOL'):
+        if run_dict['uq method'] not in ['full', 'sparse']:
+            raise ValueError(
+                """The value of the key "uq method" should be equal to
+                   "full" or "sparse".""")
+        if run_dict['uq method'] == 'sparse':
+            if (not isinstance(run_dict['n samples'], int) or
+                    isinstance(run_dict['n samples'], bool)):
+                raise TypeError(
+                    """The value of the key "n samples" should be a
+                       positive integer for sparse PCE.""")
+            if run_dict['n samples'] <= 0:
+                raise ValueError(
+                    """The value of the key "n samples" should be a
+                       positive integer for sparse PCE.""")
+
+        if run_dict['sampling method'] not in ['RANDOM', 'SOBOL']:
             raise ValueError(
                 """The value of the key "sampling method"
                    should be equal to "RANDOM" or "SOBOL".""")
@@ -289,39 +293,53 @@ def check_dictionary(run_dict, uq_bool=False):
                 """The value of the key "objective names"
                    should be a list with the names of the
                    quantities of interest as elements in string format.""")
+        if not run_dict['objective names']:
+            raise ValueError(
+                """The value of the key "objective names"
+                   should not be empty.""")
+        if not all(isinstance(name, str) for name in run_dict['objective names']):
+            raise TypeError(
+                """The value of the key "objective names"
+                   should be a list with the names of the
+                   quantities of interest as elements in string format.""")
+
+    if uq_bool:
+        if not isinstance(run_dict['objective of interest'], str):
+            raise TypeError(
+                """The value of the key "objective of interest"
+                   should be a string.""")
+        if run_dict['objective of interest'] not in run_dict['objective names']:
+            raise ValueError(
+                """The value of the key "objective of interest"
+                   should be a string equal to any element
+                   in the list with key "objective names".""")
 
     if rob:
-        requirements += ['objective of interest']
+        required.add('objective of interest')
+        allowed.add('objective of interest')
 
-        try:
-            run_dict[requirements[-1]]
-        except BaseException:
+        if 'objective of interest' not in run_dict:
             raise KeyError(
-                '"%s" is missing in the input dictionary.' %
-                requirements[-1])
-
+                '"objective of interest" is missing in the input dictionary.')
         if not isinstance(run_dict['objective of interest'], list):
             raise TypeError(
                 """The value of the key "objective of interest"
                    should be a list with the names of the
                    quantities of interest as elements in string format.""")
-
-        if not isinstance(run_dict['objective names'], list):
+        if not all(isinstance(name, str)
+                   for name in run_dict['objective of interest']):
             raise TypeError(
-                """The value of the key "objective names"
+                """The value of the key "objective of interest"
                    should be a list with the names of the
                    quantities of interest as elements in string format.""")
-        else:
-            for name_qoi in run_dict['objective of interest']:
-                if not any(name == name_qoi
-                           for name in run_dict['objective names']):
-                    raise ValueError(
-                        """The value of the key "objective of interest"
-                           should be a list with strings equal to any element
-                           in the list with key "objective names".""")
+        for name_qoi in run_dict['objective of interest']:
+            if name_qoi not in run_dict['objective names']:
+                raise ValueError(
+                    """The value of the key "objective of interest"
+                       should be a list with strings equal to any element
+                       in the list with key "objective names".""")
 
-        if not len(list(run_dict['objectives'].values())[
-                   0]) == 2 * len(run_dict['objective of interest']):
+        if len(weights) != 2 * len(run_dict['objective of interest']):
             raise ValueError(
                 """The number of objectives of interest should be equal to
                            two times the number of weigths. Note that the
@@ -330,7 +348,7 @@ def check_dictionary(run_dict, uq_bool=False):
                            therefore be equal to -1 (minimization).""")
 
     for elem in list(run_dict.keys()):
-        if requirements.count(elem) == 0:
+        if elem not in allowed:
             raise ValueError("""" "%s" does not belong in the dictionary.
                                  Try renaming it, such that it corresponds to
                                  an expected dictionary item, or consider
@@ -404,8 +422,12 @@ def load_case(run_dict, design_space, uq_bool=False, create_only_samples=False):
         raise ValueError('Missing file: case_description.py not found!')
 
     if not create_only_samples:
-        sys.path.insert(0, os.path.join(case_path, run_dict['case']))
-        import case_description
+        case_description_path = os.path.join(
+            case_path, run_dict['case'], 'case_description.py')
+        spec = importlib.util.spec_from_file_location(
+            '%s_case_description' % run_dict['case'], case_description_path)
+        case_description = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(case_description)
 
         # determine the evaluate function from the considered case directory
         eval_func = case_description.evaluate
@@ -474,40 +496,54 @@ class StochasticDesignSpace(object):
                    not exist. Make sure that the name of the case is equal to
                    the name of the folder in CASES.""")
 
-        with open(path_to_read, 'r') as file:
-            for line in file:
-                tmp = line.split(",")
+        data = pd.read_csv(path_to_read, dtype=str, keep_default_na=False,
+                           na_filter=False)
+        missing_columns = [column for column in DESIGN_SPACE_COLUMNS
+                           if column not in data.columns]
+        if missing_columns:
+            raise ValueError(
+                """The design_space file should contain the columns: %s."""
+                % ', '.join(DESIGN_SPACE_COLUMNS))
 
-                # store model parameter names and deterministic value
-                if tmp[1] == 'par':
-                    if len(tmp) > 3 and tmp[3] != '\n' and tmp[3] != '':
-                        raise IndexError(
-                            """ Wrong characterization of the parameter %s.
-                                Is it supposed to be a variable?
-                                Change "par" into "var".""" % tmp[0])
+        data = data[DESIGN_SPACE_COLUMNS]
+        data = data.apply(lambda col: col.str.strip())
 
-                    self.par_dict[tmp[0]] = float(tmp[2])
+        for row in data.itertuples(index=False):
+            if row.name == '' or row.type == '' or row.value == '':
+                raise ValueError(
+                    """The design_space row %s is incomplete.""" %
+                    (row.Index if hasattr(row, 'Index') else row,))
 
-                # store design variable names and bounds
-                elif tmp[1] == 'var':
-                    if len(tmp) < 4:
-                        raise IndexError(
-                            """ Wrong characterization of the design variable %s.
-                                Is it supposed to be a parameter?
-                                Change "var" into "par".""" %
-                            tmp[0])
-                    self.var_dict[tmp[0]] = [float(tmp[2]), float(tmp[3])]
-                    self.l_b.append(float(tmp[2]))
-                    self.u_b.append(float(tmp[3]))
-                    if float(tmp[2]) >= float(tmp[3]):
-                        raise NameError(
-                            """The lower bound is equal or greater than the
-                            upper bound of %s""" % tmp[0])
-                else:
-                    raise ValueError(
-                        """ The line %s does not mention if the
-                            characterization corresponds to a parameter ("par")
-                            or a design variable ("var").""" % tmp)
+            if row.type == 'par':
+                if row.upper_bound != '':
+                    raise IndexError(
+                        """ Wrong characterization of the parameter %s.
+                            Is it supposed to be a variable?
+                            Change "par" into "var".""" % row.name)
+
+                self.par_dict[row.name] = float(row.value)
+
+            elif row.type == 'var':
+                if row.upper_bound == '':
+                    raise IndexError(
+                        """ Wrong characterization of the design variable %s.
+                            Is it supposed to be a parameter?
+                            Change "var" into "par".""" % row.name)
+
+                lower = float(row.value)
+                upper = float(row.upper_bound)
+                self.var_dict[row.name] = [lower, upper]
+                self.l_b.append(lower)
+                self.u_b.append(upper)
+                if lower >= upper:
+                    raise NameError(
+                        """The lower bound is equal or greater than the
+                        upper bound of %s""" % row.name)
+            else:
+                raise ValueError(
+                    """ The line %s does not mention if the
+                        characterization corresponds to a parameter ("par")
+                        or a design variable ("var").""" % (row,))
         self.n_dim = len(self.var_dict.keys())
         self.n_par = len(self.par_dict.keys())
 
@@ -530,11 +566,37 @@ class StochasticDesignSpace(object):
                 'ROB',
                 'UQ']) and os.path.isfile(path_to_read):
 
-            # get characteristics of stochastic parameters
-            with open(path_to_read, 'r') as file:
-                for line in file:
-                    tmp = line.split(",")
-                    self.upar_dict[tmp[0]] = [tmp[1], tmp[2], float(tmp[3])]
+            data = pd.read_csv(path_to_read, dtype=str,
+                               keep_default_na=False, na_filter=False)
+            missing_columns = [column for column in STOCHASTIC_SPACE_COLUMNS
+                               if column not in data.columns]
+            if missing_columns:
+                raise ValueError(
+                    """The stochastic_space file should contain the columns: %s."""
+                    % ', '.join(STOCHASTIC_SPACE_COLUMNS))
+
+            data = data[STOCHASTIC_SPACE_COLUMNS]
+            data = data.apply(lambda col: col.str.strip())
+
+            for row in data.itertuples(index=False):
+                if any(value == '' for value in row):
+                    raise ValueError(
+                        """The stochastic_space row %s is incomplete."""
+                        % (row,))
+
+                relation = row.relation
+                distribution = row.distribution.capitalize()
+                if relation not in ['absolute', 'relative']:
+                    raise ValueError(
+                        """The uncertainty relation for %s should be
+                           "absolute" or "relative".""" % row.name)
+                if distribution not in ['Uniform', 'Gaussian']:
+                    raise ValueError(
+                        """The uncertainty distribution for %s should be
+                           "Uniform" or "Gaussian".""" % row.name)
+
+                self.upar_dict[row.name] = [
+                    relation, distribution, float(row.deviation)]
 
         elif (any(x in self.opt_type for x in ['ROB', 'UQ'])
               and not os.path.isfile(path_to_read)):

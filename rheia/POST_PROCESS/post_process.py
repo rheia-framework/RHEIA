@@ -5,9 +5,10 @@ optimization and uncertainty quantification results.
 
 import os
 import numpy as np
+import pandas as pd
 
 
-class PostProcessOpt():
+class PostProcessOpt:
     """
     The PostProcessOpt class provides methods to retrieve the fitness and
     population for the generations provided during the optimization.
@@ -38,6 +39,36 @@ class PostProcessOpt():
         self.fitness_file = ''
         self.population_file = ''
         self.n_gen = 0
+        self._fitness_generations = []
+        self._population_generations = []
+
+    @staticmethod
+    def _read_generation_file(filename):
+        """
+        Read a generation-separated CSV file into one array per generation.
+        """
+        generations = []
+        current = []
+
+        with open(filename, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if not line:
+                    continue
+
+                if line == '-':
+                    if current:
+                        generations.append(np.asarray(current, dtype=float))
+                        current = []
+                    continue
+
+                current.append([float(value) for value in line.split(',')
+                                if value.strip() != ''])
+
+        if current:
+            generations.append(np.asarray(current, dtype=float))
+
+        return generations
 
     def determine_pop_gen(self):
         """
@@ -47,16 +78,23 @@ class PostProcessOpt():
 
         """
 
-        self.n_gen = 0
-        with open(self.fitness_file, 'r') as file:
-            self.y_lines = file.readlines()
-            for string in self.y_lines:
-                if string == '-\n':
-                    # count the number of generations
-                    self.n_gen += 1
+        self._fitness_generations = self._read_generation_file(self.fitness_file)
+        self._population_generations = self._read_generation_file(
+            self.population_file)
 
-            # determine the population size
-            self.n_pop = int(len(self.y_lines) / self.n_gen - 1)
+        self.n_gen = len(self._fitness_generations)
+        if self.n_gen == 0:
+            raise ValueError("No generations found in %s." % self.fitness_file)
+        if self.n_gen != len(self._population_generations):
+            raise ValueError(
+                "Fitness and population files contain a different number "
+                "of generations.")
+
+        self.n_pop = len(self._fitness_generations[0])
+        for generation, population in zip(self._fitness_generations,
+                                          self._population_generations):
+            if len(generation) != self.n_pop or len(population) != self.n_pop:
+                raise ValueError("Population size changes between generations.")
 
     def get_fitness_values(self, gen):
         """
@@ -76,19 +114,16 @@ class PostProcessOpt():
 
         """
 
-        fit_val = np.zeros((len(self.y_lines[0].split(",")), self.n_pop))
-        for index, line in enumerate(
-                self.y_lines[(gen - 1) * self.n_pop + gen -1:
-                             gen * self.n_pop-1 + gen]):
+        if gen <= 0:
+            gen = self.n_gen
+        if gen > self.n_gen:
+            raise ValueError("Generation %i does not exist." % gen)
 
-            # add fitness values for the desired generation
-            fit_val[:, index] = [float(i) for i in line.split(",")]
-
-        return fit_val
+        return self._fitness_generations[gen - 1].transpose()
 
     def get_population_values(self, gen):
         """
-        Returns the fitness values for the population
+        Returns the design variables for the population
         generated in the specified generation.
 
         Parameters
@@ -103,18 +138,12 @@ class PostProcessOpt():
 
         """
 
-        with open(self.population_file, 'r') as file:
-            self.x_lines = file.readlines()
+        if gen <= 0:
+            gen = self.n_gen
+        if gen > self.n_gen:
+            raise ValueError("Generation %i does not exist." % gen)
 
-        pop_val = np.zeros((len(self.x_lines[0].split(",")), self.n_pop))
-        for index, line in enumerate(
-                self.x_lines[(gen - 1) * self.n_pop + gen-1:
-                             gen * self.n_pop-1 + gen]):
-
-            # add population values for the desired generation
-            pop_val[:, index] = [float(i) for i in line.split(",")]
-
-        return pop_val
+        return self._population_generations[gen - 1].transpose()
 
     def sorted_result_file(self, y_val, x_val):
         """
@@ -132,19 +161,12 @@ class PostProcessOpt():
 
         """
 
-        # write sorted fitness values in corresponding file
-        with open(self.fitness_file[:-4] + "_final_sorted.csv", 'w') as file:
-            for sample in y_val:
-                for value in sample:
-                    file.write('%f,' % value)
-                file.write('\n')
-
-        # write sorted population values in corresponding file
-        with open(self.population_file[:-4] + "_final_sorted.csv", 'w') as file:
-            for sample in x_val:
-                for value in sample:
-                    file.write('%f, ' % value)
-                file.write('\n')
+        pd.DataFrame(y_val).to_csv(
+            self.fitness_file[:-4] + "_final_sorted.csv",
+            header=False, index=False, lineterminator='\n')
+        pd.DataFrame(x_val).to_csv(
+            self.population_file[:-4] + "_final_sorted.csv",
+            header=False, index=False, lineterminator='\n')
 
     def get_fitness_population(self, result_dir, gen=0):
         """
@@ -188,20 +210,12 @@ class PostProcessOpt():
         # get population values for desired generation
         x_unsorted = self.get_population_values(gen)
 
-        a, b = x_unsorted.shape
-        c, d = y_unsorted.shape
-
         # get indices when sorting the y_unsorted array,
         # sorting is based on first objective
         indices = np.argsort(y_unsorted[0])
 
-        x_gen = np.zeros((a, b))
-        y_gen = np.zeros((c, d))
-        for j, k in enumerate(indices):
-            for index, y_in in enumerate(y_gen):
-                y_gen[index][j] = y_unsorted[index][k]
-            for index, x_in in enumerate(x_gen):
-                x_gen[index][j] = x_unsorted[index][k]
+        y_gen = y_unsorted[:, indices]
+        x_gen = x_unsorted[:, indices]
 
         # print sorted results in separate files
         self.sorted_result_file(y_gen.transpose(), x_gen.transpose())
@@ -209,7 +223,7 @@ class PostProcessOpt():
         return y_gen, x_gen
 
 
-class PostProcessUQ():
+class PostProcessUQ:
     """
     The PostProcessUQ class provides methods to retrieve the LOO error,
     plot the Sobol indices, PDF and CDF.
@@ -223,7 +237,7 @@ class PostProcessUQ():
 
     """
 
-    def __init__(self, case, pol_order):
+    def __init__(self, case, pol_order, samples=1, method='full'):
         path_file = os.path.dirname(os.path.abspath(__file__))
         path_start = os.path.abspath(os.path.join(path_file, os.pardir))
         path = os.path.join(path_start,
@@ -235,6 +249,55 @@ class PostProcessUQ():
                                         )
 
         self.pol_order = pol_order
+        self.samples = samples
+        self.method = method.lower()
+        if self.method not in ('full', 'sparse'):
+            raise ValueError("Unknown PCE method '%s'." % method)
+
+    def _pce_prefix(self, objective):
+        """
+        Return the result file prefix for the selected PCE method.
+        """
+        if self.method == 'full':
+            return 'full_pce_order_%i_%s' % (self.pol_order, objective)
+        return 'sparse_pce_order_%i_%s_n_samples_%i' % (
+            self.pol_order, objective, self.samples)
+
+    def _pce_file(self, result_dir, objective, suffix):
+        """
+        Build a path to a PCE result file.
+        """
+        return os.path.join(
+            self.result_path,
+            result_dir,
+            self._pce_prefix(objective) + suffix)
+
+    @staticmethod
+    def _read_pce_summary(summary_file):
+        """
+        Read scalar metrics from a PCE summary text file.
+        """
+        summary = {}
+        with open(summary_file, 'r') as file:
+            for line in file:
+                parts = line.split()
+                if not parts:
+                    continue
+                label = ' '.join(parts[:-1]).strip().lower()
+                summary[label] = float(parts[-1])
+
+        return summary
+
+    @staticmethod
+    def _summary_value(summary, key, summary_file):
+        """
+        Return a scalar metric from a PCE summary with a clear error message.
+        """
+        try:
+            return summary[key]
+        except KeyError as exc:
+            raise ValueError("PCE summary file %s misses '%s'." %
+                             (summary_file, key)) from exc
 
     def read_distr_file(self, distr_file):
         """
@@ -259,15 +322,13 @@ class PostProcessUQ():
 
         """
 
-        # read the file with info on the CDF or PDF
-        with open(distr_file, 'r') as file:
-            lines = file.readlines()
-            x_val = np.ones(len(lines) - 1)
-            y_val = np.ones(len(lines) - 1)
-            for index, line in enumerate(lines[1:]):
-                tmp = line.split(",")
-                x_val[index] = float(tmp[0])
-                y_val[index] = float(tmp[1])
+        data = pd.read_csv(distr_file)
+        if data.shape[1] < 2:
+            raise ValueError("Distribution file %s must contain two columns." %
+                             distr_file)
+
+        x_val = data.iloc[:, 0].to_numpy(dtype=float)
+        y_val = data.iloc[:, 1].to_numpy(dtype=float)
 
         return x_val, y_val
 
@@ -293,19 +354,22 @@ class PostProcessUQ():
 
         """
 
-        sobol_file = os.path.join(self.result_path,
-                                  '%s' % result_dir,
-                                  'full_pce_order_%i_%s_Sobol_indices.csv' % (
-                                      self.pol_order, objective)
-                                  )
+        sobol_file = self._pce_file(
+            result_dir, objective, '_Sobol_indices.csv')
+        data = pd.read_csv(sobol_file)
 
-        # retrieve the parameter names and corresponding Sobol indices
-        res_tmp = []
-        with open(sobol_file, 'r') as file:
-            for line in file.readlines()[1:]:
-                res_tmp.append([i for i in line.split(",")])
-            names = [row[0] for row in res_tmp]
-            sobol = [float(row[2]) for row in res_tmp]
+        # Remove leading and trailing spaces from column names.
+        data.columns = data.columns.str.strip()
+
+        required_columns = ['name', 'Total-order Sobol indices']
+        missing = [column for column in required_columns
+                   if column not in data.columns]
+        if missing:
+            raise ValueError("Sobol file %s misses columns: %s." %
+                             (sobol_file, ', '.join(missing)))
+
+        names = data['name'].astype(str).tolist()
+        sobol = data['Total-order Sobol indices'].astype(float).tolist()
 
         return names, sobol
 
@@ -393,16 +457,9 @@ class PostProcessUQ():
 
         """
 
-        loo_file = os.path.join(self.result_path,
-                                '%s' % (result_dir),
-                                'full_pce_order_%i_%s.txt' % (
-                                    self.pol_order, objective)
-                                )
-
-        # retrieve the LOO error
-        with open(loo_file, 'r') as file:
-            line = file.readlines()[0]
-            loo = float(line.split()[1])
+        summary_file = self._pce_file(result_dir, objective, '.txt')
+        summary = self._read_pce_summary(summary_file)
+        loo = self._summary_value(summary, 'loo', summary_file)
 
         return loo
 
@@ -428,25 +485,12 @@ class PostProcessUQ():
 
         """
 
-        loo_file = os.path.join(self.result_path,
-                                '%s' % (result_dir),
-                                'full_pce_order_%i_%s.txt' % (
-                                    self.pol_order, objective)
-                                )
-
-        # retrieve the mean and standard deviation
-        with open(loo_file, 'r') as file:
-            line = file.readlines()[2]
-            mean = float(line.split()[1])
-
-        with open(loo_file, 'r') as file:
-            line = file.readlines()[3]
-            std = float(line.split()[2])
+        summary_file = self._pce_file(result_dir, objective, '.txt')
+        summary = self._read_pce_summary(summary_file)
+        mean = self._summary_value(summary, 'mean', summary_file)
+        std = self._summary_value(summary, 'std. dev.', summary_file)
 
         return mean, std
-
-
-
     def get_max_sobol(self, result_dirs, objective, threshold=0.05):
         """
 
@@ -469,20 +513,25 @@ class PostProcessUQ():
 
         """
 
-        # store the dictionary with parameter names and Sobol indices in a
-        # list for each result directory evaluated
-        n_samples = len(result_dirs)
-        res_dict = [{}] * n_samples
-        for index, result_dir in enumerate(result_dirs):
-            names, sobol = self.get_sobol(result_dir, objective)
-            res_dict[index] = dict(zip(names, sobol))
+        if not result_dirs:
+            raise ValueError("At least one result directory is required.")
 
-        # get the highest Sobol index for each parameter over the different
-        # dictionaries
-        max_dict = dict()
+        # Store one dictionary per result directory.
+        res_dict = []
+        names = []
+        for result_dir in result_dirs:
+            names, sobol = self.get_sobol(result_dir, objective)
+            res_dict.append(dict(zip(names, sobol)))
+
+        # Get the highest Sobol index for each parameter over all directories.
+        n_samples = len(res_dict)
+        max_dict = {}
         for name in names:
             sobol_res = np.zeros(n_samples)
             for j, dic in enumerate(res_dict):
+                if name not in dic:
+                    raise ValueError(
+                        "Sobol files do not contain the same parameters.")
                 sobol_res[j] = dic[name]
             max_dict[name] = max(sobol_res)
 

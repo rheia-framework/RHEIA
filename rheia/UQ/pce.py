@@ -10,10 +10,57 @@ from functools import partial
 import itertools
 import numpy as np
 from scipy import stats, special
-import sobol
+from scipy.stats import qmc
 import warnings
 import pandas as pd
 import math
+
+
+def _as_float_scalar(value, name):
+    """
+    Convert a scalar-like model value to float.
+    """
+    array = np.asarray(value)
+    if array.size != 1:
+        raise ValueError("%s should contain exactly one scalar value." % name)
+
+    return float(array.reshape(-1)[0].item())
+
+
+def _normalize_outputs(results):
+    """
+    Normalize model outputs to a rectangular list of floats.
+    """
+    normalized = []
+    for row_index, row in enumerate(results):
+        if np.isscalar(row) or np.asarray(row).ndim == 0:
+            normalized.append([
+                _as_float_scalar(row, "Model output %i" % row_index)])
+            continue
+
+        try:
+            values = list(row)
+        except TypeError as exc:
+            raise TypeError(
+                "Model output %i should be a scalar or a sequence." %
+                row_index) from exc
+
+        normalized.append([
+            _as_float_scalar(value, "Model output %i item %i" %
+                             (row_index, value_index))
+            for value_index, value in enumerate(values)])
+
+    if not normalized:
+        raise ValueError("No model outputs were returned.")
+
+    n_outputs = len(normalized[0])
+    if n_outputs == 0:
+        raise ValueError("Model outputs should not be empty.")
+    if any(len(row) != n_outputs for row in normalized):
+        raise ValueError("All model output rows should have the same length.")
+
+    return normalized
+
 
 class Data:
     """
@@ -45,10 +92,9 @@ class Data:
 
     def create_samples_file(self):
         """
-        Creating the file that saved the input samples and model outputs.
+        Create the result directory and samples file for the UQ run.
         """
 
-        # results directory
         self.path_res = os.path.join(self.path,
                                      'RESULTS',
                                      self.space_obj.case,
@@ -56,21 +102,18 @@ class Data:
                                      self.inputs['results dir'],
                                      )
 
-        # if results directory does not exist, create one
-        if not os.path.exists(self.path_res):
-            os.makedirs(self.path_res)
+        os.makedirs(self.path_res, exist_ok=True)
 
-        # file where evaluated samples are stored
         self.filename_samples = os.path.join(self.path_res, 'samples.csv')
         
         if not os.path.isfile(self.filename_samples):
-            df = pd.DataFrame([self.stoch_data['names'] + 
-                           self.inputs['objective names']])
+            columns = self.stoch_data['names'] + self.inputs['objective names']
+            df = pd.DataFrame([columns])
             with open(self.filename_samples, 'w') as f:
-                 df.to_csv(f, header=False, index=False, lineterminator='\n')
+                df.to_csv(f, header=False, index=False, lineterminator='\n')
         
         
-    def read_stoch_parameters(self, var_values=[]):
+    def read_stoch_parameters(self, var_values=None):
         """
         Read in the stochastic design space
         and save the information in a dictionary
@@ -86,6 +129,9 @@ class Data:
         # check that no design variables are defined in the design space,
         # for which no corresponding deterministic values are provided in
         # var_values (only when performing robust optimization)
+        if var_values is None:
+            var_values = []
+
         if len(var_values) != len(self.space_obj.var_dict):
             raise ValueError(
                 """When performing UQ, make sure that no design variableS
@@ -94,9 +140,7 @@ class Data:
 
         # add values in var_values list to the variable names defined in the
         # var dict (only when performing robust optimization)
-        tmp = {}
-        for i, key in enumerate(self.space_obj.var_dict):
-            tmp[key] = var_values[i]
+        tmp = {key: var_values[i] for i, key in enumerate(self.space_obj.var_dict)}
 
         # dictionary with the deterministic parameters and deterministic values
         # for the design variables
@@ -168,6 +212,7 @@ class RandomExperiment(Data):
         self.x_prev = None
         self.y_prev = None
         self.n_samples = None
+        self.n_terms_full = None
 
     def n_terms(self):
         '''
@@ -186,9 +231,19 @@ class RandomExperiment(Data):
         for i in range(mmin):
             result *= p_order + n_par - i
         result_terms = int(result / math.factorial(mmin))
+        self.n_terms_full = result_terms
 
-        # number of samples for training the PCE
-        self.n_samples = 2 * result_terms
+        uq_method = self.my_data.inputs.get('uq method', 'full')
+        self.my_data.inputs['uq method'] = uq_method
+
+        if uq_method == 'full':
+            # number of samples for training the PCE
+            self.n_samples = 2 * result_terms
+        elif uq_method == 'sparse':
+            self.n_samples = int(self.my_data.inputs['n samples'])
+        else:
+            raise ValueError("""The UQ method should be 'full' or 'sparse'.""")
+
 
     def read_previous_samples(self, create_only_samples):
         """
@@ -203,41 +258,35 @@ class RandomExperiment(Data):
 
         """
         
+        n_inputs = len(self.my_data.stoch_data['mean'])
+        n_outputs = len(self.my_data.inputs['objective names'])
+
         with open(self.my_data.filename_samples, 'r') as file:
             lines = file.readlines()
-            x_int = np.zeros((len(lines) - 1,
-                              len(self.my_data.stoch_data['mean'])))
-            y_int = np.zeros((len(lines) - 1, 1))
 
-            # if samples are present in the samples file
-            if len(lines) > 1:
-                if (len(lines[-1].split(",")) !=
-                    len(self.my_data.stoch_data['mean']) +
-                        len(self.my_data.inputs['objective names'])):
-                    raise SyntaxError(
-                        """The samples file is not properly formatted
-                           or it already contains samples
-                           without model output.""")
+        n_previous = len(lines) - 1
+        self.x_prev = np.zeros((n_previous, n_inputs))
+        self.y_prev = np.zeros((n_previous, 1))
 
-                if create_only_samples:
-                    raise ValueError(
-                        """The samples file already contains samples
-                           with model output.
-                           Consider changing the result directory
-                           or switching "create only samples" to False.""")
+        if n_previous == 0:
+            return
 
-                # read in samples and deterministic model output
-                for i, line in enumerate(lines[1:]):
-                    line_split = line.split(",")
-                    x_int[i] = [float(el) for el in line_split[:len(
-                        self.my_data.stoch_data['mean'])]]
-                    y_int[i] = float(
-                        line_split[len(self.my_data.stoch_data['mean']) +
-                                   self.objective_position])
+        last_line = lines[-1].strip().split(",")
+        if len(last_line) != n_inputs + n_outputs:
+            raise SyntaxError(
+                """The samples file is not properly formatted
+                   or it already contains samples without model output.""")
 
-        # store samples and deterministic output
-        self.y_prev = np.array(y_int)
-        self.x_prev = np.array(x_int)
+        if create_only_samples:
+            raise ValueError(
+                """The samples file already contains samples with model output.
+                   Consider changing the result directory or switching
+                   "create only samples" to False.""")
+
+        for i, line in enumerate(lines[1:]):
+            line_split = line.strip().split(",")
+            self.x_prev[i] = [float(el) for el in line_split[:n_inputs]]
+            self.y_prev[i] = float(line_split[n_inputs + self.objective_position])
             
     def create_distributions(self):
         """
@@ -247,8 +296,6 @@ class RandomExperiment(Data):
 
         """
 
-        polydists = [None] * len(self.my_data.stoch_data['types'])
-
         # iterate through the uncertain parameters defined in stochastic space
         for i, j in enumerate(self.my_data.stoch_data['types']):
             if j == 'Uniform':
@@ -256,9 +303,6 @@ class RandomExperiment(Data):
                     self.my_data.stoch_data['mean'][i] -
                     self.my_data.stoch_data['deviation'][i],
                     2. * self.my_data.stoch_data['deviation'][i])
-
-                # scaled distribution for polynomial
-                polydists[i] = stats.uniform(-1., 2.)
 
                 # Legendre polynomial for Uniform distributions
                 self.polytypes[i] = 'Legendre'
@@ -268,10 +312,7 @@ class RandomExperiment(Data):
                     self.my_data.stoch_data['mean'][i],
                     self.my_data.stoch_data['deviation'][i])
 
-                # scaled distribution for polynomial
-                polydists[i] = stats.norm(0., 1.)
-
-                # Legendre polynomial for Uniform distributions
+                # Hermite polynomial for Gaussian distributions
                 self.polytypes[i] = 'Hermite'
 
             else:
@@ -294,53 +335,62 @@ class RandomExperiment(Data):
             The number of newly created samples. The default is 0.
 
         """
-        l_b = self.my_data.stoch_data['l_b']
-        u_b = self.my_data.stoch_data['u_b']
+        l_b = np.asarray(self.my_data.stoch_data['l_b'], dtype=float)
+        u_b = np.asarray(self.my_data.stoch_data['u_b'], dtype=float)
         method = self.my_data.inputs['sampling method']
 
-        # when samples need to be created
+        size = int(size)
+
         if size > 0:
             self.x_u = np.zeros((size, self.dimension))
             if method == 'RANDOM':
-                # random generation
                 for i in range(self.dimension):
                     self.x_u[:, i] = self.dists[i].rvs(size)
 
             elif method == 'SOBOL':
-                # sobol sequence
-                skip = 123454
-                x_tr = sobol.sample(dimension=self.dimension,
-                                    n_points=size + len(self.x_prev),
-                                    skip=skip)
+                sampler = qmc.Sobol(
+                    d=self.dimension,
+                    scramble=True,
+                    rng=42,
+                )
+
+                n_previous = len(self.x_prev)
+
+                if n_previous > 0:
+                    sampler.fast_forward(n_previous)
+        
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message="The balance properties of Sobol' points")
+                    x_tr = sampler.random(n=size)
 
                 for i in range(self.dimension):
-                    self.x_u[:, i] = self.dists[i].ppf(
-                        x_tr[len(self.x_prev):, i])
+                    self.x_u[:, i] = self.dists[i].ppf(x_tr[:, i])
+
+            else:
+                raise ValueError("""The sampling method should be 'RANDOM'
+                                     or 'SOBOL'.""")
 
             if len(self.x_prev) > 0:
-                # when new samples are combined with previous samples
                 self.x_u = np.concatenate((self.x_prev, self.x_u))
 
-            self.size = (len(self.x_u))
+            self.size = len(self.x_u)
 
         elif size == 0:
-            # when no new samples are needed, get the ones from samples file
             self.x_u = self.x_prev
             self.size = len(self.x_u)
 
         else:
-            # less samples needed than available in samples file
-            self.x_u = np.split(self.x_prev,
-                                [len(self.x_prev) + size,
-                                 len(self.x_prev)])[0]
+            self.x_u = self.x_prev[:len(self.x_prev) + size]
             self.size = len(self.x_u)
 
-        # generate the scaled samples
-        self.x_u_scaled = np.zeros((self.size, self.dimension))
-        for i in range(self.dimension):
-            for j in range(self.size):
-                self.x_u_scaled[j, i] = ((self.x_u[j, i] - l_b[i]) /
-                                         (u_b[i] - l_b[i]) * 2. - 1.)
+        denom = u_b - l_b
+        if np.any(denom == 0.):
+            raise ValueError("At least one stochastic parameter has u_b == l_b.")
+
+        # map physical samples to the polynomial domain [-1, 1]
+        self.x_u_scaled = (self.x_u - l_b) / denom * 2. - 1.
 
     def create_only_samples(self, create_only_samples):
         """
@@ -357,7 +407,7 @@ class RandomExperiment(Data):
 
         """
 
-        if create_only_samples:
+        if create_only_samples and self.size > 0:
 
             df = pd.DataFrame(self.x_u, columns=None)
             with open(self.my_data.filename_samples, 'a+') as f:
@@ -370,94 +420,59 @@ class RandomExperiment(Data):
 
         """
 
-        # number of samples needed
         size = self.n_samples - len(self.x_prev)
+        if size <= 0:
+            return
 
-        # create Uniform/gaussian distributions and corresponding orthogonal
-        # polynomials
+        # Create only the new input samples. Previous samples remain in x_prev.
         self.create_samples(size=size)
 
         samples = self.x_u[-size:]
         unc_samples = np.tile(
             list(self.my_data.space_obj.par_dict.values()), (size, 1))
 
-        # list with names from variables and parameters
         par_var_list = list(self.my_data.space_obj.par_dict.keys())
         par_var_list += list(self.my_data.space_obj.var_dict.keys())
+
         for j, elem in enumerate(self.my_data.space_obj.upar_dict.keys()):
-            # get name from uncertain parameters out of upar_dict, and get the
-            # index for each name out of the complete par_var_list
-
             unc_idx = par_var_list.index(elem)
-
-            # based on the retrieved index, replace the deterministic value
-            # of the stochastic parameter with the random sample
             unc_samples[:, unc_idx] = samples[:, j]
 
-        eval_dict = []
-        for sample in unc_samples:
-
-            # bring parameter and variable names and values for each sample
-            # into a dictionary
-            eval_dict.append(
-                self.my_data.space_obj.convert_into_dictionary(sample))
+        eval_dict = [
+            self.my_data.space_obj.convert_into_dictionary(sample)
+            for sample in unc_samples]
 
         if self.my_data.inputs['n jobs'] == 1:
-            # linear processing
-            res = []
-            for index, sample in enumerate(eval_dict):
-                res.append(eval_func((index + len(self.x_prev), sample), params=params))
-                with open(self.my_data.filename_samples, 'a+') as file:
-                    if isinstance(res[0], float):
-                        line = list(samples[index]) + [res[-1]]
-                    else:
-                        line = list(samples[index]) + list(res[-1])
-
-                    for index,j in enumerate(line):
-                        if index != len(line)-1:
-                            file.write('%25f,' % j)
-                        else:
-                            file.write('%25f' % j)
-                    file.write('\n')
+            res = [
+                eval_func((index + len(self.x_prev), sample), params=params)
+                for index, sample in enumerate(eval_dict)]
 
         else:
-            # multiprocessing
-            pool = mp.Pool(processes=self.my_data.inputs['n jobs'])
-            res = pool.map(
-                partial(
-                    eval_func,
-                    params=params),
-                enumerate(eval_dict))
-            pool.close()
-
-            df = pd.DataFrame(samples, columns=None)
-            df2 = pd.DataFrame(res, columns=None)
-            df3 = pd.concat([df, df2], axis=1)
-
-            # append new samples and model outputs to samples file
-            with open(self.my_data.filename_samples, 'a+') as f:
-                df3.to_csv(f, header=False, index=False, lineterminator='\n')
+            with mp.Pool(processes=self.my_data.inputs['n jobs']) as pool:
+                res = pool.map(
+                    partial(eval_func, params=params),
+                    enumerate(eval_dict))
             
+        normalized_res = _normalize_outputs(res)
+
         # check that the quantity of interest exists
-        if isinstance(res[0], float):
-            len_res = 1
-        else:
-            len_res = len(res[0])
+        len_res = len(normalized_res[0])
         if self.objective_position > len_res - 1:
             raise IndexError(""" The objective "%s" falls out of
                                  the range of predefined quantities
                                  of interest. Only %i outputs are
                                  returned from the model""" %
                              (self.my_data.inputs['objective names'][
-                                 int(self.objective_position)], len(res[0])))
+                                 int(self.objective_position)], len_res))
 
-        # combine model output for quantity of interest with previous results
-        # available in samples file
-        
-        if len_res == 1:
-            y_res = [row for row in res]
-        else:
-            y_res = [row[self.objective_position] for row in res]
+        y_res = [row[self.objective_position] for row in normalized_res]
+
+        df = pd.DataFrame(samples, columns=None)
+        df2 = pd.DataFrame(normalized_res, columns=None)
+        df3 = pd.concat([df, df2], axis=1)
+        with open(self.my_data.filename_samples, 'a+') as f:
+            df3.to_csv(f, header=False, index=False, lineterminator='\n')
+
         if self.y_prev.size:
             self.y = np.vstack((self.y_prev, np.array(y_res).reshape((-1, 1))))
         else:
@@ -548,6 +563,97 @@ class PCE(RandomExperiment):
 
         return [multindices[i] for i in idx]
 
+    def forward(self, model, candidates, multindices):
+        # t = time.time()
+        T = np.zeros(len(candidates), )
+
+        '''
+        #if parallel
+        results = self.uq_multiprocessing(candidates,multindices)      
+        T = results[:]
+        '''
+        # if not parallel
+        n = self.my_experiment.size
+        dof = n - 1
+
+        for i, candidate in enumerate(candidates):
+            A = np.zeros([n, 1])
+            A[:, 0] = self.a_matrix[:, candidate]
+
+            dummy = np.linalg.inv(np.dot(np.transpose(A), A))
+            beta_OLS = np.dot(np.dot(dummy, np.transpose(A)), self.residu)
+
+            rhat = beta_OLS * A
+
+            s2 = 1.0 / dof * np.sum((self.residu[:, 0] - rhat[:, 0]) ** 2)
+            var_OLS = dummy * s2
+
+            T[i] = beta_OLS.item() / np.sqrt(var_OLS.item())
+            ###
+        # '''
+        jmax = np.argmax(np.abs(T))
+
+        #        print '     --- Term n°%d was added to the model %s'%(candidates[jmax], multindices[candidates[jmax]])
+
+        model.append(candidates[jmax])
+
+        candidates = list(candidates)  # Convert range to a list
+        candidates.remove(candidates[jmax])
+        # print time.time() - t
+
+        return model, candidates
+
+    def backward(self, model, candidates, multindices):
+        alpha = 0.05
+
+        n = self.my_experiment.size
+        p = len(model)
+
+        tstar = stats.t.ppf(1 - alpha / 2, n - p)
+
+        C = self.coefficients
+
+        A = np.sign(C[:, 0] - tstar * np.sqrt(C[:, 1])) * np.sign(C[:, 0] + tstar * np.sqrt(C[:, 1]))
+
+        ind2remove = np.where(A < 0)[0]
+        if len(ind2remove) != 0:
+            #       for i in range(len(ind2remove)):
+            #                print '     --- Term n°%d was removed from the model %s'%(model[ind2remove[i]], multindices[model[ind2remove[i]]])
+
+            ind2remove = [
+                index for index in ind2remove
+                if index < len(model) and model[index] != 0]
+            model = [x for i, x in enumerate(model) if i not in ind2remove]
+
+        return model, candidates
+
+    def truncate(self, model, coeff, nb):
+
+        if 0 in model:
+            intercept_pos = model.index(0)
+            keep_count = max(nb - 1, 0)
+        else:
+            intercept_pos = None
+            keep_count = nb
+
+        A = np.divide(
+            np.abs(np.sqrt(coeff[:, 1])),
+            np.abs(coeff[:, 0]),
+            out=np.full(len(coeff), np.inf),
+            where=coeff[:, 0] != 0.) * 100
+        if intercept_pos is not None:
+            A[intercept_pos] = np.inf
+
+        sortedA = np.argsort(A)
+
+        output = []
+        if intercept_pos is not None:
+            output.append(0)
+        output.extend(model[i] for i in sortedA[:keep_count])
+
+        return output
+
+
     def ols(self, a_matrix, b_matrix):
         """
 
@@ -571,11 +677,19 @@ class PCE(RandomExperiment):
 
         m, n = a_matrix.shape
         deg_of_freedom = m - n
+        if deg_of_freedom <= 0:
+            raise ValueError(
+                "OLS needs more samples than basis terms. "
+                "Received %i samples and %i basis terms." % (m, n))
 
         sol = np.linalg.lstsq(a_matrix, b_matrix, rcond=None)
-        sol_2 = np.column_stack(1.0 / deg_of_freedom * sol[1])
+        residual = sol[1]
+        if residual.size == 0:
+            residual = np.sum((b_matrix - np.dot(a_matrix, sol[0])) ** 2,
+                              axis=0)
+        sol_2 = np.atleast_2d(1.0 / deg_of_freedom * residual)
 
-        var = np.dot(np.vstack(np.diag(np.linalg.inv(
+        var = np.dot(np.vstack(np.diag(np.linalg.pinv(
             np.dot(np.transpose(a_matrix), a_matrix)))), sol_2)
 
         return np.column_stack((sol[0], var))
@@ -617,29 +731,107 @@ class PCE(RandomExperiment):
 
         return a_matrix
 
-    def run(self):
+    def run(self, uq_method=None):
         """
-
-        Solve Ordinary Least Squares problem
-        Full PC expansion is assumed containing n_terms(dimension,order)
-
+        Fit a full or sparse PCE to the evaluated random experiment.
 
         """
 
-        # number of terms in the PCE
-        n_terms = int(self.my_experiment.n_samples / 2)
+        # number of terms in the full PCE basis
+        if uq_method is None:
+            uq_method = self.my_experiment.my_data.inputs.get('uq method', 'full')
+        self.my_experiment.my_data.inputs['uq method'] = uq_method
 
-        self.basis['model'] = range(n_terms)
+        if self.my_experiment.n_terms_full is None:
+            self.my_experiment.n_terms()
 
-        # full PCE basis
-        self.basis['multi-indices'] = self.multindices(self.basis['model'])
-        self.basis['polytypes'] = self.my_experiment.polytypes
+        n_terms = int(self.my_experiment.n_terms_full)
+        self.full_basis = n_terms
 
-        # determine the A matrix
-        self.a_matrix = self.calc_a(self.basis['multi-indices'])
+        self.residu = self.my_experiment.y
 
-        # get the coefficient through OLS
-        self.coefficients = self.ols(self.a_matrix, self.my_experiment.y)
+        if uq_method == 'full':
+
+            self.basis['model'] = range(n_terms)
+
+            # full PCE basis
+            self.basis['multi-indices'] = self.multindices(self.basis['model'])
+            self.basis['polytypes'] = self.my_experiment.polytypes
+
+            # determine the A matrix
+            self.a_matrix = self.calc_a(self.basis['multi-indices'])
+
+            # get the coefficient through OLS
+            self.coefficients = self.ols(self.a_matrix, self.my_experiment.y)
+
+        elif uq_method == 'sparse':
+
+            candidates = list(range(1, n_terms))  # keep intercept in model
+            multindices = self.multindices(candidates)
+            all_multindices = self.multindices(range(n_terms))
+            full_a_matrix = self.calc_a(all_multindices)
+            self.a_matrix = full_a_matrix
+
+            niter = int(self.my_experiment.n_samples / 2)
+            model = [0]
+            self.coefficients = self.ols(full_a_matrix[:, model],
+                                         self.my_experiment.y)
+            y_hat = np.vstack(np.dot(full_a_matrix[:, model],
+                                     self.coefficients[:, 0]))
+            self.residu = self.my_experiment.y - y_hat
+
+            # Forward/backward selection builds a candidate sparse model.
+            for _ in range(niter):
+                if not candidates:
+                    break
+                model, candidates = self.forward(model, candidates, multindices)
+                self.coefficients = self.ols(full_a_matrix[:, model],
+                                             self.my_experiment.y)
+                model, candidates = self.backward(model, candidates, multindices)
+                self.coefficients = self.ols(full_a_matrix[:, model],
+                                             self.my_experiment.y)
+                y_hat = np.vstack(np.dot(full_a_matrix[:, model],
+                                         self.coefficients[:, 0]))
+                self.residu = self.my_experiment.y - y_hat
+
+            selected_model = list(model)
+            selected_coefficients = self.coefficients
+
+            best = 0
+            current = 10 ** 6
+            for i in range(len(selected_model)):
+
+                model = self.truncate(selected_model, selected_coefficients, i + 1)
+                model.sort()
+                self.a_matrix = full_a_matrix[:, model]
+                self.coefficients = self.ols(self.a_matrix, self.my_experiment.y)
+
+                self.basis['model'] = model
+                self.basis['multi-indices'] = [all_multindices[idx]
+                                               for idx in model]
+                self.basis['polytypes'] = self.my_experiment.polytypes
+
+                self.calc_loo(warn=False)
+                # print self.LOO
+                if self.loo < current:
+                    current = self.loo
+                    best = i + 1
+                    # break
+
+                self.a_matrix = full_a_matrix
+
+            model = self.truncate(selected_model, selected_coefficients, best)
+            model.sort()
+            self.a_matrix = full_a_matrix[:, model]
+
+            self.coefficients = self.ols(self.a_matrix, self.my_experiment.y)
+            self.basis['model'] = model
+            self.basis['multi-indices'] = [all_multindices[idx]
+                                           for idx in model]
+            self.basis['polytypes'] = self.my_experiment.polytypes
+
+        else:
+            raise ValueError("""The UQ method should be 'full' or 'sparse'.""")
 
         # acquire the statistics
         self.get_statistics(mean=True, variance=True)
@@ -661,9 +853,13 @@ class PCE(RandomExperiment):
         coeff = self.coefficients
 
         # quantify the mean
+        constant_position = (
+            self.basis['model'].index(0) if 0 in self.basis['model'] else None)
+
         if mean:
-            if self.basis['model'][0] == 0:
-                self.moments['mean'] = coeff[0, 0]
+            self.moments['mean'] = (
+                coeff[constant_position, 0]
+                if constant_position is not None else 0.0)
 
         if variance:
             # the term <psi_i, psi_j>
@@ -671,9 +867,10 @@ class PCE(RandomExperiment):
 
             # quantify the variance
             var = 0.0
-            if self.basis['model'][0] == 0:
-                for i in range(1, len(self.basis['model'])):
-                    var += self.psi_sq[i] * coeff[i, 0]**2
+            for i in range(len(self.basis['model'])):
+                if i == constant_position:
+                    continue
+                var += self.psi_sq[i] * coeff[i, 0]**2
 
             self.moments['variance'] = var
 
@@ -766,16 +963,23 @@ class PCE(RandomExperiment):
         for i in range(1, self.order + 1):
             terms.extend(list(itertools.combinations(range(dimension), i)))
 
-        copy = self.basis['multi-indices'][:]
-        del copy[0]
+        indexed_terms = [
+            (index, multindex)
+            for index, multindex in enumerate(self.basis['multi-indices'])
+            if any(multindex)]
+
+        if var == 0.:
+            raise ValueError(
+                "Sobol' indices cannot be calculated for zero variance.")
 
         # Compute the Sobol' indices
         s_i = np.zeros(len(terms),)
-        for i, multindex in enumerate(copy):
+        for coeff_index, multindex in indexed_terms:
             for j, term in enumerate(terms):
                 if (len(np.nonzero(multindex)[0]) == len(term)) and (
                         np.nonzero(multindex)[0] == term).all():
-                    s_i[j] += 1.0 / var * coeff[i + 1][0]**2 * psi_sq[i + 1]
+                    s_i[j] += (1.0 / var * coeff[coeff_index][0]**2 *
+                               psi_sq[coeff_index])
 
                     break
 
@@ -795,7 +999,7 @@ class PCE(RandomExperiment):
     # accuracy evaluation module #
     ##############################
 
-    def calc_loo(self):
+    def calc_loo(self, warn=True):
         '''
         This method evaluates the Leave-One-Out (LOO) error for the
         constructed PCE. The formula is adopted from Sudret et al. [1].
@@ -806,31 +1010,45 @@ class PCE(RandomExperiment):
 
         '''
 
-        size = self.my_experiment.size
         y_res = self.my_experiment.y
         y_hat = np.vstack((np.dot(self.a_matrix, self.coefficients[:, 0])))
+        y_var = np.var(y_res)
+        if y_var == 0.:
+            raise ValueError("LOO error cannot be calculated for zero variance.")
 
         # acquire the diagonal matrix D
-        b_matrix = np.linalg.inv(np.dot(np.transpose(self.a_matrix),
-                                        self.a_matrix))
+        b_matrix = np.linalg.pinv(np.dot(np.transpose(self.a_matrix),
+                                         self.a_matrix))
         c_matrix = np.dot(b_matrix, np.transpose(self.a_matrix))
         h_matrix = np.dot(self.a_matrix, c_matrix)
         d_matrix = np.diag(h_matrix)
 
         # quantify the LOO error
-        self.loo = 0.
-        for i in range(size):
-            deltai = (y_res[i, 0] - y_hat[i, 0]) / (1 - d_matrix[i])
+        delta = (y_res[:, 0] - y_hat[:, 0]) / (1. - d_matrix)
+        self.loo = np.mean(delta**2.) / y_var
 
-            self.loo += 1.0 / float(size) * deltai**2. / (np.var(y_res))
-
-        if self.loo > 1.:
+        if warn and self.loo > 1.:
             warnings.warn("The LOO error is higher than 1. "
                           "Check the UQ characterization and results.")
 
     ##########################
     # result printing module #
     ##########################
+
+    def result_filename(self):
+        """
+        Return the base result filename for the fitted PCE.
+        """
+        method = self.my_experiment.my_data.inputs['uq method']
+        objective = self.my_experiment.my_data.inputs['objective of interest']
+
+        if method == 'sparse':
+            n_samples = self.my_experiment.my_data.inputs['n samples']
+            return "%s_pce_order_%d_%s_n_samples_%i.txt" % (
+                method, self.order, objective, n_samples)
+
+        return "%s_pce_order_%d_%s.txt" % (
+            method, self.order, objective)
 
     def print_res(self):
         """
@@ -848,7 +1066,7 @@ class PCE(RandomExperiment):
         print(' Maximal degree ::'.ljust(30) + '%d' %
               max([sum(i) for i in self.basis['multi-indices']]))
         print(' Size of full basis ::'.ljust(30) +
-              '%d' % self.my_experiment.n_samples)
+              '%d' % self.full_basis)
         print(' Size of sparse basis ::'.ljust(30) +
               '%d' % len(self.basis['multi-indices']) + '\n')
 
@@ -859,16 +1077,14 @@ class PCE(RandomExperiment):
         print(' Mean value ::'.ljust(30) + '%s' % mean)
         print(' Std. deviation ::'.ljust(30) + '%s' % np.sqrt(var))
         print(' First-order Sobol indices ::'.ljust(30) +
-              '%s' % np.around(self.sensitivity['s_i'], decimals=4) + '\n')
+              '%s' % np.around(self.sensitivity['s_i'][
+                  :len(self.sensitivity['s_tot_i'])], decimals=4) + '\n')
         print(' Total Sobol indices ::'.ljust(30) +
               '%s' % np.around(self.sensitivity['s_tot_i'], decimals=4) + '\n')
 
         print('-' * 65)
 
-        filename_res = (
-            "full_pce_order_%d_%s.txt" %
-            (self.order,
-             self.my_experiment.my_data.inputs['objective of interest']))
+        filename_res = self.result_filename()
 
         # write statistics in the result file
         with open(os.path.join(self.my_experiment.my_data.path_res,
@@ -882,12 +1098,6 @@ class PCE(RandomExperiment):
             file.write(
                 '%25s %25f \n' % ('std. dev.', np.sqrt(var)))
                 
-        total = np.array([self.my_experiment.my_data.stoch_data['names'],self.sensitivity['s_i'][:len(self.sensitivity['s_tot_i'])],self.sensitivity['s_tot_i']]).transpose()
-        
-        df1 = pd.DataFrame(total, columns=['name',
-                 'First-order Sobol indices',
-                 'Total-order Sobol indices'])
-
         # write sobol indices in the corresponding result file
         with open(os.path.join(self.my_experiment.my_data.path_res,
                                filename_res[:-4] + '_Sobol_indices.csv'), "w") as file:                               
@@ -918,15 +1128,33 @@ class PCE(RandomExperiment):
             number of samples to be created
 
         """
-
         # create samples to evaluate on the PCE
         self.my_experiment.create_samples(size=size)
 
-        # generate A matrix and the coefficients u
+        # generate A matrix and evaluate the fitted surrogate
         a_matrix = self.calc_a(self.basis['multi-indices'])
-        x_u_scaled = np.vstack((self.coefficients[:, 0]))
 
-        data = np.dot(a_matrix, x_u_scaled)
+        x = self.my_experiment.x_u
+        data = np.dot(a_matrix, np.vstack((self.coefficients[:, 0])))
+
+        # Concatenate along columns
+        combined = np.hstack((x, data))
+
+        # Prepare header
+        header = self.my_experiment.my_data.stoch_data['names'] + [self.my_experiment.my_data.inputs['objective of interest']]
+
+        # Open file and write everything
+        output_file = os.path.join(
+            self.my_experiment.my_data.path_res,
+            "output_%s.csv" %
+            self.my_experiment.my_data.inputs['objective of interest'])
+        with open(output_file, 'w') as f:
+            # Write header row
+            f.write(','.join(header) + '\n')
+
+            # Write data
+            df = pd.DataFrame(combined)
+            df.to_csv(f, header=False, index=False, lineterminator='\n')
 
         # generate the pdf
         density, bins = np.histogram(data, bins=100, density=1)

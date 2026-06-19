@@ -69,11 +69,11 @@ class ReadData:
         design_space = os.path.join(self.path, 'design_space.csv')
 
         # read the deterministic values for the parameters in `design_space`
-        with open(design_space, 'r') as file:
-            for line in file:
-                tmp = line.split(",")
-                if tmp[1] == 'par':
-                    param_dict[tmp[0]] = float(tmp[2])
+        data = pd.read_csv(design_space, dtype=str, keep_default_na=False,
+                           na_filter=False)
+        for row in data.itertuples(index=False):
+            if row.type == 'par':
+                param_dict[row.name] = float(row.value)
 
         return param_dict
 

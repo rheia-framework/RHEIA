@@ -6,10 +6,10 @@ create the starting samples and run the optimization.
 import os
 import importlib.util
 from shutil import copyfile
-from pyDOE import lhs
 from rheia.CASES.determine_stoch_des_space import load_case, check_dictionary
 import numpy as np
 import pandas as pd
+from scipy.stats import qmc
 #######################
 # optimizer functions #
 #######################
@@ -236,8 +236,8 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
             # generate the starting population
             # based on Latin Hypercube Sampling
             if 'LHS' in run_dict['x0'][1]:
-                ddoe = lhs(space_obj.n_dim,
-                           samples=run_dict['population size'])
+                sampler = qmc.LatinHypercube(d=space_obj.n_dim)
+                ddoe = sampler.random(n=run_dict['population size'])
 
             # scale the starting samples
             doe = scale_samples_to_design_space(ddoe, space_obj)

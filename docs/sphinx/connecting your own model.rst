@@ -140,27 +140,29 @@ More information on the characterization of the design space is presented in :re
 In the four-bar truss example, 4 design variables (the cross-sectional areas) and 6 model parameters (the force, length and 4 Young's moduli) exist.
 The corresponding :file:`design_space.csv` file for the four-bar truss is configured as::
 
-	A_1 var 1 3
-	A_2 var 1.414 3
-	A_3 var 1.414 3
-	A_4 var 1 3
-	L   par 200
-	F   par 10
-	E_1 par 20000
-	E_2 par 20000
-	E_3 par 20000
-	E_4 par 20000
+	name,type,value,upper_bound
+	A_1,var,1,3
+	A_2,var,1.414,3
+	A_3,var,1.414,3
+	A_4,var,1,3
+	L,par,200,
+	F,par,10,
+	E_1,par,20000,
+	E_2,par,20000,
+	E_3,par,20000,
+	E_4,par,20000,
 
 The uncertainty on the stochastic parameters should be defined in :file:`stochastic_space.csv`.
 More information on the uncertainty characterization is described in :ref:`lab:ssstochastic_space`.
 The exerted force and the Young's moduli are subject to uncertainty.
 The corresponding :file:`stochastic_space.csv` file for the four-bar truss file is configured as::
 
-	F   absolute Gaussian 1
-	E_1 absolute Uniform  1000
-	E_2 absolute Uniform  1000
-	E_3 absolute Uniform  1000
-	E_4 absolute Uniform  1000
+	name,relation,distribution,deviation
+	F,absolute,Gaussian,1
+	E_1,absolute,Uniform,1000
+	E_2,absolute,Uniform,1000
+	E_3,absolute,Uniform,1000
+	E_4,absolute,Uniform,1000
 
 To evaluate the system model in the optimization and uncertainty quantification algorithm, the model should be 
 connected to the algorithms. This connection is established in the module :py:mod:`case_description`.
@@ -281,20 +283,22 @@ This results in the following structure::
 
 The :file:`design_space.csv` file includes the mean values for the stochastic model parameters::
 
-	elec_demand par 34.3
-	COP         par 3
-	eff_H2      par 0.65
-	CHP_eff_el  par 0.41
-	CHP_eff_th  par 0.5
+	name,type,value,upper_bound
+	elec_demand,par,34.3,
+	COP,par,3,
+	eff_H2,par,0.65,
+	CHP_eff_el,par,0.41,
+	CHP_eff_th,par,0.5,
 
 More information on the characterization of the design space is presented in :ref:`lab:ssdesignspace`.
 The stochastic space is defined in :file:`stochastic_space.csv`::
 
-	elec_demand absolute Uniform 1
-	COP         absolute Uniform 0.5
-	eff_H2      absolute Uniform 0.05
-	CHP_eff_el  absolute Uniform 0.05
-	CHP_eff_th  absolute Uniform 0.05
+	name,relation,distribution,deviation
+	elec_demand,absolute,Uniform,1
+	COP,absolute,Uniform,0.5
+	eff_H2,absolute,Uniform,0.05
+	CHP_eff_el,absolute,Uniform,0.05
+	CHP_eff_th,absolute,Uniform,0.05
 
 More information on the uncertainty characterization is described in :ref:`lab:ssstochastic_space`.
 

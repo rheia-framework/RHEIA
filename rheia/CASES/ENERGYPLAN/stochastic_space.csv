@@ -1,3 +1,4 @@
+name,relation,distribution,deviation
 elec_demand,absolute,Uniform,1
 COP,absolute,Uniform,0.5
 eff_H2,absolute,Uniform,0.05

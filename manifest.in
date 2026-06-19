@@ -1,2 +1,10 @@
+include README.md
+include LICENSE
 recursive-include rheia/CASES *
 recursive-include rheia/RESULTS *
+prune rheia/RESULTS/H2_FUEL/UQ/run_2_sparse
+prune rheia/RESULTS/H2_FUEL/UQ/run_2_sparse_*
+recursive-exclude rheia __pycache__
+recursive-exclude rheia *.py[cod]
+recursive-exclude rheia/RESULTS fitness_final_sorted.csv
+recursive-exclude rheia/RESULTS population_final_sorted.csv

@@ -1,4 +1,4 @@
-.. _lab:contribution:
+.. _lab:bibliography:
 
 Bibliography
 ============

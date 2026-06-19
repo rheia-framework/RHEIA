@@ -1,9 +1,90 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "rheia"
+version = "2.0.0"
+description = "Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+    "hydrogen",
+    "renewable energy",
+    "robust design optimization",
+    "uncertainty quantification",
+]
+authors = [
+    {name = "Diederik Coppitters"},
+    {name = "Panagiotis Tsirikoglou"},
+    {name = "Ward De Paepe"},
+    {name = "Konstantinos Kyprianidis"},
+    {name = "Anestis Kalfas"},
+    {name = "Francesco Contino"},
+]
+maintainers = [
+    {name = "RHEIA framework", email = "rheia.framework@gmail.com"},
+]
+dependencies = [
+    "deap>=1.4.4",
+    "h5py>=3.16.0",
+    "matplotlib>=3.11.0",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "pvlib>=0.15.2",
+    "scipy>=1.17.1",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://github.com/rheia-framework/RHEIA"
+Documentation = "https://rheia.readthedocs.io/"
+Repository = "https://github.com/rheia-framework/RHEIA"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8",
+]
+docs = [
+    "sphinxcontrib-bibtex",
+    "sphinx-gallery",
+    "sphinx-copybutton",
+    "sphinx-rtd-theme",
+]
+
+[tool.setuptools.packages.find]
+include = ["rheia*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+rheia = [
+    "CASES/**/*",
+    "RESULTS/**/*",
+]
+
+[tool.setuptools.exclude-package-data]
+rheia = [
+    "**/__pycache__/*",
+    "**/*.pyc",
+    "**/*.pyo",
+    "RESULTS/H2_FUEL/UQ/run_2_sparse/*",
+    "RESULTS/H2_FUEL/UQ/run_2_sparse_*/*",
+    "RESULTS/**/fitness_final_sorted.csv",
+    "RESULTS/**/population_final_sorted.csv",
+]
 
 [tool.black]
 line-length = 88
@@ -12,6 +93,7 @@ exclude = '''
     \.git
   | \.mypy_cache
   | \.venv
+  | \.venv_latest
   | build
   | dist
 )/

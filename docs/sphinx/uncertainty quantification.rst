@@ -4,7 +4,7 @@ Run an uncertainty quantification
 =================================
 
 The uncertainty quantification procedure provides the mean and standard deviation of the quantity of interest and the Sobol' indices 
-by constructing a Polynomial Chaos Expansion (PCE). More information on PCE is available in :ref:`lab:PCE`.
+by constructing a Polynomial Chaos Expansion (PCE). More information on PCE is available in :ref:`lab:pce`.
 The mean value and the corresponding uncertainty of the model parameters are characterized in :file:`design_space.csv` and :file:`stochastic_space.csv`, respectively.
 More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively.  
 The model returns the values for the quantity of interest through the function :py:meth:`evaluate()` defined in :py:mod:`case_description`.
@@ -25,6 +25,8 @@ To characterize the uncertainty quantification, the following dictionary with pa
                'objective of interest': obj_of_interest,
                'results dir':           directory,      
 
+               'uq method':             uq_method,              #optional, default is 'full'
+               'n samples':             n_samples_pce,          #required only for sparse PCE
                'sampling method':       sampling_method,        #optional, default is 'SOBOL'
                'create only samples':   only_samples_bool,      #optional, default is False
                'draw pdf cdf':          [draw_bool, n_samples], #optional, default is [False]
@@ -98,10 +100,34 @@ The following items are optional items. If one of these items is not provided in
 a default value will be assigned to the key. If none of these are provided, the optional dictionary
 items are defined as follows::
 
+               'uq method':             'full',
                'sampling method':       'SOBOL',
                'create only samples':   False,
                'draw pdf cdf':          [False],
                'n jobs':                1,
+
+'uq method': uq_method
+~~~~~~~~~~~~~~~~~~~~~~
+
+The PCE can be constructed with a full polynomial basis or a sparse basis. The full PCE is selected with
+:py:data:`'full'` and is the default option. In this case, RHEIA creates :math:`2|\mathcal{A}^{M,p}|`
+training samples, where :math:`|\mathcal{A}^{M,p}|` is the number of terms in the full basis.
+
+The sparse PCE is selected with :py:data:`'sparse'`. It starts from the same full candidate basis, but builds
+a reduced basis from the available samples. This is useful when the full basis would require too many model
+evaluations. For example::
+
+   'uq method': 'sparse'
+
+'n samples': n_samples_pce
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The key :py:data:`'n samples'` defines the number of training samples used for a sparse PCE. It is required
+when :py:data:`'uq method'` is :py:data:`'sparse'` and ignored for a full PCE. To construct a sparse PCE with
+80 model evaluations::
+
+   'uq method': 'sparse',
+   'n samples': 80
 
 'sampling method': sampling_method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,6 +220,24 @@ Alternatively, an uncertainty quantification dictionary which considers random s
 
    rheia_uq.run_uq(dict_uq)
 
+Sparse PCEs are configured by adding :py:data:`'uq method'` and :py:data:`'n samples'`:
+
+.. code-block:: python
+   :linenos:
+
+   import rheia.UQ.uncertainty_quantification as rheia_uq
+
+   dict_uq = {'case': 'CASE_1',
+              'pol order': 3,
+              'objective names': ['output_1', 'output_2', 'output_3'],
+              'objective of interest': 'output_2',
+              'results dir': 'results_sparse',
+              'uq method': 'sparse',
+              'n samples': 80,
+              }
+
+   rheia_uq.run_uq(dict_uq)
+
 The post-processing of the results is described in :ref:`lab:uqresults`.
 	
 .. _lab:sscreateonlysamples:
@@ -249,15 +293,19 @@ To illustrate, for a PCE on 'output_2':
 .. warning::
 	Make sure that the result directory is equal to the result directory where the updated :file:`samples` file is saved.
 	
+.. _lab:uqresults:
+
 Post-processing of the results
 ------------------------------
 
 The results path depends on the case name (e.g. `CASE_1`), the analysis type (UQ)
 and the results directory (e.g. `results_1`), i.e. :file:`\\RESULTS\\CASE_1\\UQ\\results_1`.
-In this folder, at least 1 file is present: the :file:`samples`  file. This file includes the samples 
+In this folder, at least 1 file is present: the :file:`samples.csv` file. This file includes the samples 
 and the corresponding deterministic model response, when a system model is connected to the framework (i.e. 'create only samples' set to False).
 The second file and third file are named based on the selected maximum polynomial degree and the quantity of interest 
-(e.g. :file:`full_pce_order_2_output_2` and :file:`full_pce_order_2_output_2_Sobol_indices` for a polynomial order 2 PCE for the quantity of interest `output_2`).
+(e.g. :file:`full_pce_order_2_output_2.txt` and :file:`full_pce_order_2_output_2_Sobol_indices.csv` for a full polynomial order 2 PCE for the quantity of interest `output_2`).
+For a sparse PCE, the number of training samples is also included in the filename
+(e.g. :file:`sparse_pce_order_2_output_2_n_samples_80.txt` and :file:`sparse_pce_order_2_output_2_n_samples_80_Sobol_indices.csv`).
 These files respectively include the PCE information (LOO error, mean and standard deviation) and the Sobol indices (first order and total order).
 
 The Sobol' indices can be represented in a bar chart:
@@ -283,6 +331,12 @@ The Sobol' indices can be represented in a bar chart:
 
    plt.barh(names, sobol)
    plt.show()
+
+For sparse PCE results, instantiate the post-processor with the same method and number of samples used
+to create the result files::
+
+   my_post_process_uq = rheia_pp.PostProcessUQ(
+       case, pol_order, method='sparse', samples=80)
 
 The LOO-error can be extracted:
 

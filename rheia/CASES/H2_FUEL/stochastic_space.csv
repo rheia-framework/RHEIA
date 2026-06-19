@@ -1,3 +1,4 @@
+name,relation,distribution,deviation
 u_sol_irr,absolute,Uniform,0.1
 u_t_amb,absolute,Uniform,0.4
 capex_pv,absolute,Uniform,125

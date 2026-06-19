@@ -125,6 +125,9 @@ The PCE class enables to construct a PCE.
    rheia.UQ.pce.PCE
    rheia.UQ.pce.PCE.n_to_sum
    rheia.UQ.pce.PCE.multindices
+   rheia.UQ.pce.PCE.forward
+   rheia.UQ.pce.PCE.backward
+   rheia.UQ.pce.PCE.truncate
    rheia.UQ.pce.PCE.ols
    rheia.UQ.pce.PCE.calc_a
    rheia.UQ.pce.PCE.run
@@ -139,6 +142,7 @@ are extracted out of the PCE in the methods below.
    rheia.UQ.pce.PCE.get_psi_sq
    rheia.UQ.pce.PCE.calc_sobol
    rheia.UQ.pce.PCE.calc_loo
+   rheia.UQ.pce.PCE.result_filename
 	
 Finally, the results are printed and stored in corresponding
 result files.
@@ -187,6 +191,7 @@ The uncertainty quantification results are extracted with the methods in :py:cla
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_pdf
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_cdf
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_loo
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_mean_std
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_max_sobol
    
 Characterization of design space and stochastic space
@@ -407,13 +412,12 @@ The compressor module.
    rheia.CASES.H2_MOBILITY.h2_mobility.Evaluation.compressor
    rheia.CASES.H2_MOBILITY.h2_mobility.Evaluation.polyfit_pemel_compr
 
-The hydrogen tank and dispenser module.
+The hydrogen tank module.
 
 .. autosummary::
    :toctree: generated/
 
    rheia.CASES.H2_MOBILITY.h2_mobility.Evaluation.tank
-   rheia.CASES.H2_MOBILITY.h2_mobility.Evaluation.dispenser
 
 The power management strategy module.
 

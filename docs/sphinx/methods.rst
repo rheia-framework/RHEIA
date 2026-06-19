@@ -28,7 +28,8 @@ A typical truncation scheme is adopted, which limits the polynomial order up to 
 :math:`|\mathcal{A}^{M,p}| = \dfrac{(p + M)!}{p!M!}`,
 
 where :math:`p` corresponds to the polynomial order and :math:`M = |\pmb{X}|` is the stochastic dimension, i.e. number of uncertainties (parameters and variables).
-Consequently, :math:`|\mathcal{A}^{M,p}|` coefficients are present in a full PCE. To quantify these coefficients, least-square minimization is applied, based on actual system model evaluations. 
+Consequently, :math:`|\mathcal{A}^{M,p}|` coefficients are present in a full PCE. To quantify these coefficients, least-square minimization is applied, based on actual system model evaluations.
+RHEIA also provides a sparse PCE option. The sparse PCE starts from the same full candidate basis, but selects a reduced set of active basis terms from the available training samples. This is useful when the full basis contains many terms and the corresponding number of model evaluations is too expensive.
 To ensure a well-posed Least-Square Minimization, :math:`2|\mathcal{A}^{M,p}|` model evaluations are required. 
 When the coefficients are quantified, the mean (:math:`\mu`) and standard deviation (:math:`\sigma`) of the model output of interested are analytically derived:
 
@@ -97,7 +98,7 @@ Robust design optimization procedure
 
 The surrogate-assisted RDO algorithm consists of NSGA-II to perform the optimization, while PCE is applied on each design sample to provide the statistical moments as fitness values. 
 Like in NSGA-II, the first step consists of generating a first population of design samples. 
-For each design sample in this first population, a PCE is constructed for each quantity of interest. 
+For each design sample in this first population, a full or sparse PCE is constructed for each quantity of interest. 
 To illustrate, if the optimization problem consists of two quantities of interest (e.g.\ the efficiency and total cost of a system), 
 then two PCEs are created to quantify the mean and standard deviation for each quantity of interest. 
 To quantify the coefficients for each PCE, a set of random samples is generated, based on the distributions of the random parameters. 

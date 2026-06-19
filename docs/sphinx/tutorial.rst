@@ -293,8 +293,9 @@ The Sobol' indices for this design can illustrate the main drivers of the uncert
 to effectively reduce the uncertainty by gathering more information on the dominant parameters.
 To evaluate the Sobol' indices of this design, the design design variables should be transformed in the following model parameters in :file:`design_space.csv`::
 
-	n_dcdc_pv   par 1.68
-	n_elec      par 1.68
+	name,type,value,upper_bound
+	n_dcdc_pv,par,1.68,
+	n_pemel,par,1.68,
 
 This file can be saved as e.g. :file:`design_space_uq.csv`, to avoid losing the configuration for optimization.
 The uncertainty quantification dictionary is then characterized and evaluated as follows:
@@ -316,6 +317,12 @@ The uncertainty quantification dictionary is then characterized and evaluated as
 
    if __name__ == '__main__':
        rheia_uq.run_uq(dict_uq, design_space = 'design_space_tutorial_uq.csv')
+
+The same uncertainty quantification can be performed with a sparse PCE by adding
+:py:data:`'uq method'` and :py:data:`'n samples'` to the dictionary::
+
+   dict_uq['uq method'] = 'sparse'
+   dict_uq['n samples'] = 80
 
 **For this tutorial, the results of the uncertainty quantification are provided in** :file:`RESULTS\\PV_ELEC\\UQ\\opt_design_tutorial`
 
@@ -341,6 +348,12 @@ The resulting Sobol' indices can be plotted in a bar chart:
 
    plt.barh(names, sobol)
    plt.show()
+
+For sparse PCE results, instantiate the post-processing object with the sparse method and the number of
+training samples used to generate the files::
+
+   my_post_process_uq = rheia_pp.PostProcessUQ(
+       case, pol_order, method='sparse', samples=80)
 
 .. figure:: images/tut_sobol.png
    :width: 80%
