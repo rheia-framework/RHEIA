@@ -273,7 +273,9 @@ def evaluate(x_in, params=[]):
         assert np.allclose(lognormal_sobol, gaussian_sobol)
 
     finally:
-        pass
+        for path in [lognormal_case_path, gaussian_case_path,
+                     lognormal_result_case_path, gaussian_result_case_path]:
+            _cleanup(path)
 
 
 def test_uq_create_only_samples_can_continue_with_sobol():
