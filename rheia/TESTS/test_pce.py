@@ -2,6 +2,7 @@
 Module to test the det_stoch_des_space module.
 '''
 
+import csv
 import pytest
 import numpy as np
 from types import SimpleNamespace
@@ -319,6 +320,197 @@ def test_create_samples(input_random_experiment):
     assert input_random_experiment.size == 182
     assert len(input_random_experiment.x_u) == 182
     assert len(input_random_experiment.x_u_scaled) == 182
+
+
+def test_lognormal_samples_are_scaled_to_latent_gaussian(tmp_path):
+    """
+    Assert lognormal physical samples are transformed for Hermite PCE bases.
+    """
+
+    samples_file = tmp_path / 'samples.csv'
+    with open(samples_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['x', 'y'])
+        writer.writerow([10., 1.])
+
+    data_obj = SimpleNamespace(
+        inputs={
+            'objective names': ['y'],
+            'sampling method': 'SOBOL',
+            'n jobs': 1,
+        },
+        filename_samples=str(samples_file),
+        stoch_data={
+            'names': ['x'],
+            'types': ['Lognormal'],
+            'mean': [10.],
+            'deviation': [2.],
+            'l_b': [8.],
+            'u_b': [12.],
+        },
+    )
+
+    random_exp = pce.RandomExperiment(data_obj, 0)
+    random_exp.create_distributions()
+    random_exp.read_previous_samples(False)
+    random_exp.create_samples(size=0)
+
+    mu, sigma = pce._lognormal_to_normal(10., 2.)
+
+    assert random_exp.polytypes == ['Hermite']
+    assert random_exp.x_u[0, 0] == 10.
+    assert np.allclose(random_exp.x_u_scaled[:, 0],
+                       [(np.log(10.) - mu) / sigma])
+
+
+def test_lognormal_generated_samples_remain_physical_values(tmp_path):
+    """
+    Assert generated lognormal samples stay physical and scale separately.
+    """
+
+    data_obj = SimpleNamespace(
+        inputs={
+            'objective names': ['y'],
+            'sampling method': 'SOBOL',
+            'n jobs': 1,
+        },
+        filename_samples=str(tmp_path / 'samples.csv'),
+        stoch_data={
+            'names': ['x'],
+            'types': ['Lognormal'],
+            'mean': [10.],
+            'deviation': [2.],
+            'l_b': [8.],
+            'u_b': [12.],
+        },
+    )
+
+    random_exp = pce.RandomExperiment(data_obj, 0)
+    random_exp.x_prev = np.array([])
+    random_exp.y_prev = np.array([])
+    random_exp.create_distributions()
+    random_exp.create_samples(size=4)
+
+    mu, sigma = pce._lognormal_to_normal(10., 2.)
+
+    assert np.all(random_exp.x_u[:, 0] > 0.)
+    assert np.allclose(random_exp.x_u_scaled[:, 0],
+                       (np.log(random_exp.x_u[:, 0]) - mu) / sigma)
+
+
+def test_evaluate_appends_completed_samples_immediately(tmp_path):
+    """
+    Assert evaluated samples are written before the complete batch finishes.
+    """
+
+    samples_file = tmp_path / 'samples.csv'
+    with open(samples_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['x', 'y'])
+
+    def convert_into_dictionary(sample):
+        return {'x': sample[0]}
+
+    space_obj = SimpleNamespace(
+        par_dict={'x': 0.},
+        var_dict={},
+        upar_dict={'x': ('absolute', 'Uniform', 1.)},
+        convert_into_dictionary=convert_into_dictionary,
+    )
+
+    data_obj = SimpleNamespace(
+        inputs={
+            'objective names': ['y'],
+            'sampling method': 'RANDOM',
+            'n jobs': 1,
+        },
+        filename_samples=str(samples_file),
+        space_obj=space_obj,
+        stoch_data={
+            'types': ['Uniform'],
+            'mean': [0.],
+            'deviation': [1.],
+            'l_b': [-1.],
+            'u_b': [1.],
+        },
+    )
+
+    random_exp = pce.RandomExperiment(data_obj, 0)
+    random_exp.n_samples = 2
+    random_exp.x_prev = np.array([])
+    random_exp.y_prev = np.array([])
+    random_exp.create_distributions()
+
+    def failing_evaluate(x_in, params=None):
+        index, sample = x_in
+        if index == 1:
+            raise RuntimeError("stop after first sample")
+        return sample['x']
+
+    with pytest.raises(RuntimeError, match="stop after first sample"):
+        random_exp.evaluate(failing_evaluate, params=None)
+
+    with open(samples_file, newline='') as file:
+        rows = list(csv.reader(file))
+
+    assert len(rows) == 2
+    assert rows[0] == ['x', 'y']
+    assert len(rows[1]) == 2
+
+
+def test_evaluate_rejects_less_outputs_than_objective_names(tmp_path):
+    """
+    Assert model outputs must match the objective names in the run dictionary.
+    """
+
+    samples_file = tmp_path / 'samples.csv'
+    with open(samples_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['x', 'y_1', 'y_2'])
+
+    def convert_into_dictionary(sample):
+        return {'x': sample[0]}
+
+    space_obj = SimpleNamespace(
+        par_dict={'x': 0.},
+        var_dict={},
+        upar_dict={'x': ('absolute', 'Uniform', 1.)},
+        convert_into_dictionary=convert_into_dictionary,
+    )
+
+    data_obj = SimpleNamespace(
+        inputs={
+            'objective names': ['y_1', 'y_2'],
+            'sampling method': 'RANDOM',
+            'n jobs': 1,
+        },
+        filename_samples=str(samples_file),
+        space_obj=space_obj,
+        stoch_data={
+            'types': ['Uniform'],
+            'mean': [0.],
+            'deviation': [1.],
+            'l_b': [-1.],
+            'u_b': [1.],
+        },
+    )
+
+    random_exp = pce.RandomExperiment(data_obj, 0)
+    random_exp.n_samples = 1
+    random_exp.x_prev = np.array([])
+    random_exp.y_prev = np.array([])
+    random_exp.create_distributions()
+
+    def evaluate_one_output(x_in, params=None):
+        return 1.
+
+    with pytest.raises(ValueError, match="returned 1 outputs, but 2"):
+        random_exp.evaluate(evaluate_one_output, params=None)
+
+    with open(samples_file, newline='') as file:
+        rows = list(csv.reader(file))
+
+    assert rows == [['x', 'y_1', 'y_2']]
 
 
 def test_multindices(input_pce):

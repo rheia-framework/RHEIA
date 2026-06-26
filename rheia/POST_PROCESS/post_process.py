@@ -222,6 +222,129 @@ class PostProcessOpt:
 
         return y_gen, x_gen
 
+    @staticmethod
+    def _nondominated(points):
+        """
+        Return the nondominated points for a minimization problem.
+        """
+        points = np.unique(np.asarray(points, dtype=float), axis=0)
+        keep = np.ones(len(points), dtype=bool)
+
+        for i, point in enumerate(points):
+            if not keep[i]:
+                continue
+            dominated = np.all(points <= point, axis=1) & np.any(
+                points < point, axis=1)
+            if np.any(dominated):
+                keep[i] = False
+
+        return points[keep]
+
+    @staticmethod
+    def _hypervolume_minimization(points, reference_point):
+        """
+        Calculate the dominated hypervolume for minimization objectives.
+        """
+        points = np.asarray(points, dtype=float)
+        reference_point = np.asarray(reference_point, dtype=float)
+
+        if len(points) == 0:
+            return 0.
+
+        if np.any(points > reference_point):
+            raise ValueError(
+                "The reference point should be worse than all Pareto points.")
+
+        if points.shape[1] == 1:
+            return reference_point[0] - np.min(points[:, 0])
+
+        bounds = np.unique(np.concatenate((points[:, 0],
+                                           [reference_point[0]])))
+        bounds.sort()
+
+        volume = 0.
+        for i in range(len(bounds) - 1):
+            width = bounds[i + 1] - bounds[i]
+            if width <= 0.:
+                continue
+
+            active = points[points[:, 0] <= bounds[i], 1:]
+            if len(active) == 0:
+                continue
+
+            volume += width * PostProcessOpt._hypervolume_minimization(
+                active, reference_point[1:])
+
+        return volume
+
+    def get_hypervolume(self, result_dir, reference_point,
+                        objective_weights=None):
+        """
+        Calculate the hypervolume of the Pareto front of every generation.
+
+        Parameters
+        ----------
+        result_dir : str
+            The directory were the results are stored.
+        reference_point : list
+            The reference point in the original objective space. The point
+            should be worse than all Pareto points for each objective.
+        objective_weights : list, optional
+            The optimization weights of the objectives. Use negative values
+            for minimized objectives and positive values for maximized
+            objectives. When no weights are provided, all objectives are
+            assumed to be minimized.
+
+        Returns
+        -------
+        generations : ndarray
+            The generation numbers.
+        hypervolume : ndarray
+            The hypervolume of the Pareto front of each generation.
+
+        """
+
+        self.fitness_file = os.path.join(self.result_path,
+                                         result_dir,
+                                         'fitness.csv',
+                                         )
+
+        self.population_file = os.path.join(self.result_path,
+                                            result_dir,
+                                            'population.csv',
+                                            )
+
+        self.determine_pop_gen()
+
+        n_obj = self._fitness_generations[0].shape[1]
+        reference_point = np.asarray(reference_point, dtype=float)
+        if reference_point.shape != (n_obj,):
+            raise ValueError(
+                "The reference point should contain %i values." % n_obj)
+
+        if objective_weights is None:
+            objective_weights = -np.ones(n_obj)
+        objective_weights = np.asarray(objective_weights, dtype=float)
+        if objective_weights.shape != (n_obj,):
+            raise ValueError(
+                "The objective weights should contain %i values." % n_obj)
+        if np.any(objective_weights == 0.):
+            raise ValueError("Objective weights should not be zero.")
+
+        direction = -np.sign(objective_weights)
+        reference_min = reference_point * direction
+        hypervolume = np.zeros(self.n_gen)
+
+        for index, generation in enumerate(self._fitness_generations):
+            generation_min = generation * direction
+            pareto_front = self._nondominated(generation_min)
+            hypervolume[index] = self._hypervolume_minimization(
+                pareto_front, reference_min)
+
+        generations = np.arange(1, self.n_gen + 1)
+
+        return generations, hypervolume
+
 
 class PostProcessUQ:
     """

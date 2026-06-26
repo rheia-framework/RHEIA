@@ -179,6 +179,7 @@ The optimization results are extracted with the methods in :py:class:`PostProces
    rheia.POST_PROCESS.post_process.PostProcessOpt.get_population_values
    rheia.POST_PROCESS.post_process.PostProcessOpt.sorted_result_file
    rheia.POST_PROCESS.post_process.PostProcessOpt.get_fitness_population
+   rheia.POST_PROCESS.post_process.PostProcessOpt.get_hypervolume
 
 The uncertainty quantification results are extracted with the methods in :py:class:`PostProcessUQ`.
 

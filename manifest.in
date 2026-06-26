@@ -2,6 +2,9 @@ include README.md
 include LICENSE
 recursive-include rheia/CASES *
 recursive-include rheia/RESULTS *
+prune rheia/CASES/PYTEST_*
+prune rheia/RESULTS/PYTEST_*
+prune rheia/RESULTS/H2_FUEL/UQ/run_*
 prune rheia/RESULTS/H2_FUEL/UQ/run_2_sparse
 prune rheia/RESULTS/H2_FUEL/UQ/run_2_sparse_*
 recursive-exclude rheia __pycache__

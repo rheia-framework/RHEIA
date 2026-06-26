@@ -109,10 +109,14 @@ The following distributions are available:
 
 - Uniform
 - Gaussian
+- Lognormal
 
 The meaning of deviation at the end of the line depends on the distribution. When a Uniform distribution is considered,
 the deviation refers to the absolute (or relative) difference between the upper bound of the Uniform distribution and the mean: for :math:`\mathcal{U}(a,b)`, :math:`deviation = (b-a)/2`). 
 When a Gaussian distribution is considered, the value corresponds to the standard deviation: :math:`\mathcal{N}(mean,deviation)`.
+When a Lognormal distribution is considered, the mean and deviation are the physical mean and standard deviation of the lognormal variable.
+The generated samples in :file:`samples.csv` and the values passed to the model are lognormal physical values.
+For PCE construction, RHEIA transforms these values to the corresponding latent standard Gaussian variable and uses Hermite polynomials.
 Keep always in mind that the mean value of the design variables is the deterministic value assigned by the optimizer in each iteration. In the case of model fixed parameter the mean value corresponds to the fixed value as it is assigned in the model definition.
 
 An example of a configured uncertain parameter `par_2`, characterized by a Uniform distribution with a :math:`\pm 1` deviation from the mean value::

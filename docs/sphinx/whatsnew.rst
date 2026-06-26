@@ -5,6 +5,47 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v2.1.0.
+-------
+
+This release extends uncertainty quantification, improves optimization
+post-processing and makes sample generation for external models easier to use.
+
+Uncertainty quantification
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Lognormal stochastic inputs are now supported in :file:`stochastic_space.csv`
+  with :code:`Lognormal` as distribution type.
+- Lognormal samples written to :file:`samples.csv` and passed to the model
+  remain physical lognormal values. Internally, RHEIA transforms them to the
+  corresponding latent Gaussian variables for Hermite PCE construction.
+- Existing :file:`samples.csv` files with lognormal physical samples are
+  transformed in the same way before fitting the PCE.
+- Model evaluations are appended to :file:`samples.csv` one by one and flushed
+  immediately, so completed evaluations are preserved if a run stops early.
+- UQ now validates that the number of outputs returned by the model matches
+  the number of entries in :py:data:`'objective names'`.
+- A :file:`NO_MODEL` create-only workflow example was added to generate PCE
+  training samples without a connected model.
+
+Optimization and post-processing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- :py:meth:`PostProcessOpt.get_hypervolume` calculates the hypervolume of the
+  Pareto front for every generation.
+- Hypervolume post-processing supports mixed minimization and maximization
+  objectives through objective weights.
+- The deterministic optimization tutorial now includes a hypervolume
+  convergence plot.
+
+Testing
+^^^^^^^
+
+- Added workflow coverage for create-only PCE training samples with
+  :file:`NO_MODEL`.
+- Added an end-to-end lognormal equivalence test comparing a lognormal input
+  model against an equivalent latent-Gaussian model.
+
 v2.0.0.
 -------
 

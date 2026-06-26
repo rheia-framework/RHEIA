@@ -1,0 +1,4 @@
+name,relation,distribution,deviation
+u_1,absolute,Uniform,0.3
+u_2,absolute,Uniform,0.4
+x,absolute,Gaussian,0.1980422004353651

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rheia"
-version = "2.0.1"
+version = "2.1.0"
 description = "Robust design optimization of renewable Hydrogen and dErIved energy cArrier systems"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -80,6 +80,9 @@ rheia = [
     "**/__pycache__/*",
     "**/*.pyc",
     "**/*.pyo",
+    "CASES/PYTEST_*/*",
+    "RESULTS/PYTEST_*/*",
+    "RESULTS/H2_FUEL/UQ/run_*/*",
     "RESULTS/H2_FUEL/UQ/run_2_sparse/*",
     "RESULTS/H2_FUEL/UQ/run_2_sparse_*/*",
     "RESULTS/**/fitness_final_sorted.csv",

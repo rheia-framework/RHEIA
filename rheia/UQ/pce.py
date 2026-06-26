@@ -5,6 +5,7 @@ experiment and to construct the Polynomial Chaos Expansion.
 """
 
 import os
+import csv
 import multiprocessing as mp
 from functools import partial
 import itertools
@@ -60,6 +61,22 @@ def _normalize_outputs(results):
         raise ValueError("All model output rows should have the same length.")
 
     return normalized
+
+
+def _lognormal_to_normal(mean, deviation):
+    """
+    Return latent normal parameters from lognormal mean and standard deviation.
+    """
+    if mean <= 0.:
+        raise ValueError("A lognormal distribution requires a positive mean.")
+    if deviation <= 0.:
+        raise ValueError(
+            "A lognormal distribution requires a positive standard deviation.")
+
+    sigma = np.sqrt(np.log(1. + (deviation / mean) ** 2))
+    mu = np.log(mean) - 0.5 * sigma ** 2
+
+    return mu, sigma
 
 
 class Data:
@@ -203,6 +220,8 @@ class RandomExperiment(Data):
         self.dimension = len(my_data.stoch_data['types'])
         self.dists = [None] * len(my_data.stoch_data['types'])
         self.polytypes = [None] * len(my_data.stoch_data['types'])
+        self._lognorm_mu = [None] * len(my_data.stoch_data['types'])
+        self._lognorm_sigma = [None] * len(my_data.stoch_data['types'])
         self.size = None
         self.x_u = None
         self.x_u_scaled = None
@@ -303,7 +322,7 @@ class RandomExperiment(Data):
         """
         Create the distributions, polynomial distributions and polynomial types
         based on the stochastic design space. The available distributions
-        are Uniform and Gaussian distributions.
+        are Uniform, Gaussian and Lognormal distributions.
 
         """
 
@@ -326,10 +345,53 @@ class RandomExperiment(Data):
                 # Hermite polynomial for Gaussian distributions
                 self.polytypes[i] = 'Hermite'
 
+            elif j == 'Lognormal':
+                mu, sigma = _lognormal_to_normal(
+                    self.my_data.stoch_data['mean'][i],
+                    self.my_data.stoch_data['deviation'][i])
+                self._lognorm_mu[i] = mu
+                self._lognorm_sigma[i] = sigma
+                self.dists[i] = stats.lognorm(s=sigma, scale=np.exp(mu))
+
+                # Hermite polynomial for the latent Gaussian distribution
+                self.polytypes[i] = 'Hermite'
+
             else:
                 raise ValueError(""" Distribution for %s not found.
-                                     Choose between Uniform and Gaussian."""
+                                     Choose between Uniform, Gaussian and
+                                     Lognormal."""
                                  % self.my_data.stoch_data['types'][i])
+
+    def _scale_samples_for_pce(self):
+        """
+        Transform physical samples to the domain used by the PCE basis.
+        """
+        l_b = np.asarray(self.my_data.stoch_data['l_b'], dtype=float)
+        u_b = np.asarray(self.my_data.stoch_data['u_b'], dtype=float)
+        x_u_scaled = np.zeros_like(self.x_u, dtype=float)
+
+        for i, dist_type in enumerate(self.my_data.stoch_data['types']):
+            if dist_type == 'Lognormal':
+                if np.any(self.x_u[:, i] <= 0.):
+                    raise ValueError(
+                        "Lognormal samples should be strictly positive.")
+                mu = self._lognorm_mu[i]
+                sigma = self._lognorm_sigma[i]
+                if mu is None or sigma is None:
+                    mu, sigma = _lognormal_to_normal(
+                        self.my_data.stoch_data['mean'][i],
+                        self.my_data.stoch_data['deviation'][i])
+                    self._lognorm_mu[i] = mu
+                    self._lognorm_sigma[i] = sigma
+                x_u_scaled[:, i] = (np.log(self.x_u[:, i]) - mu) / sigma
+            else:
+                denom = u_b[i] - l_b[i]
+                if denom == 0.:
+                    raise ValueError(
+                        "At least one stochastic parameter has u_b == l_b.")
+                x_u_scaled[:, i] = (self.x_u[:, i] - l_b[i]) / denom * 2. - 1.
+
+        return x_u_scaled
 
     def create_samples(self, size=0):
         """
@@ -346,8 +408,6 @@ class RandomExperiment(Data):
             The number of newly created samples. The default is 0.
 
         """
-        l_b = np.asarray(self.my_data.stoch_data['l_b'], dtype=float)
-        u_b = np.asarray(self.my_data.stoch_data['u_b'], dtype=float)
         method = self.my_data.inputs['sampling method']
 
         size = int(size)
@@ -396,12 +456,8 @@ class RandomExperiment(Data):
             self.x_u = self.x_prev[:len(self.x_prev) + size]
             self.size = len(self.x_u)
 
-        denom = u_b - l_b
-        if np.any(denom == 0.):
-            raise ValueError("At least one stochastic parameter has u_b == l_b.")
-
-        # map physical samples to the polynomial domain [-1, 1]
-        self.x_u_scaled = (self.x_u - l_b) / denom * 2. - 1.
+        # Map physical samples to the domain used by the polynomial basis.
+        self.x_u_scaled = self._scale_samples_for_pce()
 
     def create_only_samples(self, create_only_samples):
         """
@@ -457,36 +513,55 @@ class RandomExperiment(Data):
             self.my_data.space_obj.convert_into_dictionary(sample)
             for sample in unc_samples]
 
-        if self.my_data.inputs['n jobs'] == 1:
-            res = [
-                eval_func((index + len(self.x_prev), sample), params=params)
-                for index, sample in enumerate(eval_dict)]
+        expected_n_outputs = len(self.my_data.inputs['objective names'])
 
-        else:
-            with mp.Pool(processes=self.my_data.inputs['n jobs']) as pool:
-                res = pool.map(
-                    partial(eval_func, params=params),
-                    enumerate(eval_dict))
-            
-        normalized_res = _normalize_outputs(res)
+        def normalize_result(result):
+            normalized = _normalize_outputs([result])[0]
 
-        # check that the quantity of interest exists
-        len_res = len(normalized_res[0])
-        if self.objective_position > len_res - 1:
-            raise IndexError(""" The objective "%s" falls out of
-                                 the range of predefined quantities
-                                 of interest. Only %i outputs are
-                                 returned from the model""" %
-                             (self.my_data.inputs['objective names'][
-                                 int(self.objective_position)], len_res))
+            if len(normalized) != expected_n_outputs:
+                raise ValueError(
+                    "The model returned %i outputs, but %i objective names "
+                    "were provided in the run dictionary." %
+                    (len(normalized), expected_n_outputs))
 
-        y_res = [row[self.objective_position] for row in normalized_res]
+            if self.objective_position > len(normalized) - 1:
+                raise IndexError(""" The objective "%s" falls out of
+                                     the range of predefined quantities
+                                     of interest. Only %i outputs are
+                                     returned from the model""" %
+                                 (self.my_data.inputs['objective names'][
+                                     int(self.objective_position)],
+                                  len(normalized)))
 
-        df = pd.DataFrame(samples, columns=None)
-        df2 = pd.DataFrame(normalized_res, columns=None)
-        df3 = pd.concat([df, df2], axis=1)
-        with open(self.my_data.filename_samples, 'a+') as f:
-            df3.to_csv(f, header=False, index=False, lineterminator='\n')
+            return normalized
+
+        y_res = []
+        with open(self.my_data.filename_samples, 'a+', newline='') as file:
+            writer = csv.writer(file, lineterminator='\n')
+
+            if self.my_data.inputs['n jobs'] == 1:
+                result_iter = (
+                    eval_func((index + len(self.x_prev), sample),
+                              params=params)
+                    for index, sample in enumerate(eval_dict))
+
+                for sample, result in zip(samples, result_iter):
+                    normalized = normalize_result(result)
+                    writer.writerow(list(sample) + normalized)
+                    file.flush()
+                    y_res.append(normalized[self.objective_position])
+
+            else:
+                with mp.Pool(processes=self.my_data.inputs['n jobs']) as pool:
+                    result_iter = pool.imap(
+                        partial(eval_func, params=params),
+                        enumerate(eval_dict))
+
+                    for sample, result in zip(samples, result_iter):
+                        normalized = normalize_result(result)
+                        writer.writerow(list(sample) + normalized)
+                        file.flush()
+                        y_res.append(normalized[self.objective_position])
 
         if self.y_prev.size:
             self.y = np.vstack((self.y_prev, np.array(y_res).reshape((-1, 1))))

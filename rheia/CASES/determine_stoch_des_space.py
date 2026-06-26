@@ -593,10 +593,11 @@ class StochasticDesignSpace(object):
                     raise ValueError(
                         """The uncertainty relation for %s should be
                            "absolute" or "relative".""" % row.name)
-                if distribution not in ['Uniform', 'Gaussian']:
+                if distribution not in ['Uniform', 'Gaussian', 'Lognormal']:
                     raise ValueError(
                         """The uncertainty distribution for %s should be
-                           "Uniform" or "Gaussian".""" % row.name)
+                           "Uniform", "Gaussian" or "Lognormal".""" %
+                        row.name)
 
                 self.upar_dict[row.name] = [
                     relation, distribution, float(row.deviation)]

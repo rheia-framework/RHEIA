@@ -690,3 +690,23 @@ generation 5, 15 and 25 can be done as follows:
 
 When calling the :py:meth:`get_fitness_population()` method, the design samples and fitness values are sorted based on the first objective and saved in :file:`population_final_sorted.csv` 
 and :file:`fitness_final_sorted.csv`, respectively, in the results directory.
+
+The evolution of the Pareto front can be quantified through the hypervolume
+of every generation. The reference point should be worse than the Pareto front
+for every objective. The objective weights use the same sign convention as the
+optimization dictionary, with negative values for minimization and positive
+values for maximization:
+
+.. code-block:: python
+   :lineno-start: 34
+
+   generations, hypervolume = my_opt_plot.get_hypervolume(
+       result_dir,
+       reference_point=[ref_obj_1, ref_obj_2],
+       objective_weights=[-1, -1],
+   )
+
+   plt.plot(generations, hypervolume, '-o')
+   plt.xlabel('generation')
+   plt.ylabel('hypervolume')
+   plt.show()

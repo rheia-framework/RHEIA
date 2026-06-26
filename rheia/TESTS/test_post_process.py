@@ -2,6 +2,7 @@
 Module to test the post_process module.
 '''
 
+import numpy as np
 import pytest
 
 from rheia.POST_PROCESS.post_process import PostProcessOpt, PostProcessUQ
@@ -42,6 +43,88 @@ def test_get_fitness_population():
     assert round(y[0][0], 3) == 1.933
     assert round(y[0][12], 3) == 4.382
     assert round(y[1][7], 3) == 2.959
+
+
+def test_get_hypervolume(tmp_path):
+    """
+    Assert the hypervolume is calculated for every generation.
+    """
+
+    result_path = tmp_path / 'run_hv'
+    result_path.mkdir()
+    with open(result_path / 'fitness.csv', 'w') as file:
+        file.write('1,4\n')
+        file.write('3,2\n')
+        file.write('4,1\n')
+        file.write('-\n')
+        file.write('1,3\n')
+        file.write('2,2\n')
+        file.write('3,1\n')
+    with open(result_path / 'population.csv', 'w') as file:
+        file.write('0,0\n')
+        file.write('0,0\n')
+        file.write('0,0\n')
+        file.write('-\n')
+        file.write('0,0\n')
+        file.write('0,0\n')
+        file.write('0,0\n')
+
+    test_obj = PostProcessOpt('dummy', 'DET')
+    test_obj.result_path = str(tmp_path)
+
+    generations, hypervolume = test_obj.get_hypervolume(
+        'run_hv', reference_point=[5., 5.])
+
+    assert np.array_equal(generations, np.array([1, 2]))
+    assert np.allclose(hypervolume, np.array([9., 13.]))
+
+
+def test_get_hypervolume_with_maximization_objective(tmp_path):
+    """
+    Assert maximization objectives are transformed before hypervolume.
+    """
+
+    result_path = tmp_path / 'run_hv_max'
+    result_path.mkdir()
+    with open(result_path / 'fitness.csv', 'w') as file:
+        file.write('1,1\n')
+        file.write('3,3\n')
+    with open(result_path / 'population.csv', 'w') as file:
+        file.write('0,0\n')
+        file.write('0,0\n')
+
+    test_obj = PostProcessOpt('dummy', 'DET')
+    test_obj.result_path = str(tmp_path)
+
+    generations, hypervolume = test_obj.get_hypervolume(
+        'run_hv_max',
+        reference_point=[5., 0.],
+        objective_weights=[-1., 1.])
+
+    assert np.array_equal(generations, np.array([1]))
+    assert np.allclose(hypervolume, np.array([8.]))
+
+
+def test_get_hypervolume_rejects_bad_reference_point(tmp_path):
+    """
+    Assert the reference point must be worse than the Pareto points.
+    """
+
+    result_path = tmp_path / 'run_hv_bad_reference'
+    result_path.mkdir()
+    with open(result_path / 'fitness.csv', 'w') as file:
+        file.write('1,4\n')
+        file.write('3,2\n')
+    with open(result_path / 'population.csv', 'w') as file:
+        file.write('0,0\n')
+        file.write('0,0\n')
+
+    test_obj = PostProcessOpt('dummy', 'DET')
+    test_obj.result_path = str(tmp_path)
+
+    with pytest.raises(ValueError, match="reference point"):
+        test_obj.get_hypervolume('run_hv_bad_reference',
+                                 reference_point=[2., 5.])
 
 
 def test_get_pdf(input_case_uq):

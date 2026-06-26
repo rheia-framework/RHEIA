@@ -23,7 +23,7 @@
    glossary
    whatsnew
 
-latest stable version: **v2.0.0**
+latest stable version: **v2.1.0**
 
 Introduction
 ============

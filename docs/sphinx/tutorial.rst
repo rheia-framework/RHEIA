@@ -97,6 +97,31 @@ on the same x-axis (LCOH).
    :align: center
      
    The capacities of the system components increases gradually to improve the hydrogen production, at the expense of an increase in LCOH.
+
+The convergence of the Pareto front can also be assessed by calculating the hypervolume of every generation.
+The reference point should be worse than the Pareto front for every objective. In this deterministic tutorial, the
+optimization minimizes the first objective and maximizes the second objective, which is indicated through the
+objective weights :py:data:`(-1, 1)`:
+
+.. code-block:: python
+   :linenos:
+
+   generations, hypervolume = my_opt_plot.get_hypervolume(
+       result_dir,
+       reference_point=[110., 0.],
+       objective_weights=(-1, 1),
+   )
+
+   plt.plot(generations, hypervolume, '-o')
+   plt.xlabel('generation')
+   plt.ylabel('hypervolume')
+   plt.show()
+
+.. figure:: images/tut_det_2000_hypervolume.png
+   :width: 80%
+   :align: center
+
+   The hypervolume evolution indicates the convergence of the deterministic optimization towards the final Pareto front.
 	
 Robust design optimization
 --------------------------
