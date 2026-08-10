@@ -223,6 +223,14 @@ def run_uq(run_dict, design_space='design_space.csv'):
     # Evaluate only the new samples needed to reach the requested DOE size.
     # If enough previous samples exist, select the required subset instead.
     if n_to_create > 0:
+        if eval_func is None:
+            raise ValueError(
+                'The case "%s" does not define an "evaluate" function in '
+                'case_description.py, but %d new sample(s) are still '
+                'needed to reach the requested sample size of %d. Provide '
+                'all samples as already-evaluated rows in samples.csv, or '
+                'add an "evaluate" function to case_description.py.'
+                % (run_dict['case'], n_to_create, my_experiment.n_samples))
         my_experiment.evaluate(eval_func, params)
     else:
         my_experiment.create_samples(size=n_to_create)

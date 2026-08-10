@@ -433,7 +433,9 @@ def load_case(run_dict, design_space, uq_bool=False, create_only_samples=False):
         spec.loader.exec_module(case_description)
 
         # determine the evaluate function from the considered case directory
-        eval_func = case_description.evaluate
+        # (None if case_description.py defines no model, e.g. when only
+        # already-evaluated samples will be used)
+        eval_func = getattr(case_description, 'evaluate', None)
 
         # if fixed parameters for model evaluation are present,
         # get the params list
