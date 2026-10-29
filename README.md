@@ -1,3 +1,8 @@
+[![tests](https://github.com/rheia-framework/RHEIA/actions/workflows/tests.yml/badge.svg)](https://github.com/rheia-framework/RHEIA/actions/workflows/tests.yml)
+[![PyPI](https://img.shields.io/pypi/v/rheia.svg)](https://pypi.org/project/rheia/)
+[![Python versions](https://img.shields.io/pypi/pyversions/rheia.svg)](https://pypi.org/project/rheia/)
+[![Documentation](https://readthedocs.org/projects/rheia/badge/?version=latest)](https://rheia.readthedocs.io/en/latest/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rheia-framework/RHEIA/blob/main/LICENSE)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04370/status.svg)](https://doi.org/10.21105/joss.04370)
 
 
