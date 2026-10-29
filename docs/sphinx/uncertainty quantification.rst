@@ -6,7 +6,8 @@ Run an uncertainty quantification
 The uncertainty quantification procedure provides the mean and standard deviation of the quantity of interest and the Sobol' indices 
 by constructing a Polynomial Chaos Expansion (PCE). More information on PCE is available in :ref:`lab:pce`.
 The mean value and the corresponding uncertainty of the model parameters are characterized in :file:`design_space.csv` and :file:`stochastic_space.csv`, respectively.
-More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively.  
+More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively.
+When the uncertainty on a parameter is estimated as two percentiles, both files can be generated from those estimates, as described in :ref:`lab:sscharacterizeuncertainty`.
 The model returns the values for the quantity of interest through the function :py:meth:`evaluate()` defined in :py:mod:`case_description`.
 More information on this Python wrapper is discussed in :ref:`lab:wrapper`. 
 
@@ -266,7 +267,11 @@ a :file:`design_space.csv` file and :file:`stochastic_space.csv` file have to be
 To generate the samples, use (or make a copy of) the :file:`NO_MODEL` folder in :file:`CASES`.
 In this folder, a :py:mod:`case_description` module is present, as well as :file:`design_space.csv` and :file:`stochastic_space.csv`.
 The :py:mod:`case_description` is empty, as no model evaluations are required.
-In :file:`design_space.csv` and :file:`stochastic_space.csv`, the stochastic design space of interest is defined. 
+In :file:`design_space.csv` and :file:`stochastic_space.csv`, the stochastic design space of interest is defined.
+When the uncertainty on the parameters is known as two percentiles rather than as a mean and a deviation,
+both files can be generated from those estimates instead (see :ref:`lab:sscharacterizeuncertainty`);
+a case folder holding only a filled-in :file:`uncertainty_characterization.csv` is then enough,
+as the empty :py:mod:`case_description` is copied in automatically.
 The samples can be generated as follows:
 
 .. code-block:: python

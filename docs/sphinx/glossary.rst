@@ -32,3 +32,9 @@ Glossary
    * - hydrogen-based energy system
      - An energy system that produces and uses hydrogen as an energy carrier.
 
+   * - percentile
+     - The value below which a given fraction of a distribution falls, i.e. the 99th percentile is the value that is exceeded in 1% of the cases.
+
+   * - uncertainty characterization
+     - The step that turns estimates of an uncertain model parameter into a distribution, i.e. fitting a distribution to two elicited percentiles.
+

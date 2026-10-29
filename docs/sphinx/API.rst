@@ -153,6 +153,26 @@ result files.
    rheia.UQ.pce.PCE.print_res
    rheia.UQ.pce.PCE.draw
 
+When the uncertainty on a model parameter is available as two percentiles instead of
+as a mean and a deviation, the functions below fit the corresponding distribution and
+write it into the case's :file:`design_space.csv` and :file:`stochastic_space.csv`.
+
+.. autosummary::
+   :toctree: generated/
+
+   rheia.UQ.characterize_uncertainty.characterize_from_csv
+   rheia.UQ.characterize_uncertainty.characterize_parameters
+
+The characterization file is read and validated in the following function, while the
+fit itself and its sanity-check plot are performed in the two functions below it.
+
+.. autosummary::
+   :toctree: generated/
+
+   rheia.UQ.characterize_uncertainty.read_characterization_csv
+   rheia.UQ.characterize_uncertainty.fit_distribution
+   rheia.UQ.characterize_uncertainty.plot_fit
+
 To screen the design space (i.e. generate a PCE for a set of design samples),
 the following functions retrieve the bounds for the design variables,
 to determine the design samples and to generate :file:`design_space` files 

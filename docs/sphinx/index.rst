@@ -23,7 +23,7 @@
    glossary
    whatsnew
 
-latest stable version: **v2.1.0**
+latest stable version: **v2.2.0**
 
 Introduction
 ============
@@ -40,6 +40,7 @@ As a first step, the :ref:`lab:tutorial` provides an initiation of using the fra
 Additional examples are illustrated in :ref:`lab:examples`. 
 The models are characterized by a design space, which defines the design variables, and a stochastic space when parameter uncertainty is considered.
 Those spaces are defined in two files, which are elaborated in :ref:`lab:stochasticdesignspace`.
+When the uncertainty on a parameter is known as two percentiles rather than as a mean and a deviation, both files can be generated from those estimates (:ref:`lab:sscharacterizeuncertainty`).
 The guides to perform the deterministic design optimization, robust design optimization and uncertainty quantification are present in :ref:`lab:optimization` and 
 :ref:`lab:uncertaintyquantification`, respectively.
 The hydrogen-based energy system models are described in :ref:`lab:energysystemmodels`, including the uncertainty characterization of the techno-economic and environmental parameters, a script to evaluate the performance of specific designs and a method to get the climate data and demand data for your location of interest. The documentation concludes with brief details on the optimization and uncertainty quantification algorithms (:ref:`lab:methods`), the :ref:`lab:APIref` and the details on how to contribute to the framework (:ref:`lab:contribution`).

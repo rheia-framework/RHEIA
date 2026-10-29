@@ -124,7 +124,7 @@ should be created in the general :file:`CASES` folder. In the :file:`CASES` fold
 files to characterize and connect a new system model. 
 Make a copy of the :file:`REF` folder, paste it in the :file:`CASES` folder and rename it, e.g. into :file:`FOUR_BAR_TRUSS`.
 Hence, a new case folder is present: :file:`CASES\\FOUR_BAR_TRUSS`.
-This folder includes :file:`design_space.csv`, :file:`stochastic_space.csv` and :py:mod:`case_description`.
+This folder includes :file:`design_space.csv`, :file:`stochastic_space.csv`, :file:`uncertainty_characterization.csv` and :py:mod:`case_description`.
 Finally, include the :py:mod:`four_bar_truss` module in the folder.
 The :file:`FOUR_BAR_TRUSS` folder now includes all necessary files and the structure looks as follows::
 
@@ -132,8 +132,15 @@ The :file:`FOUR_BAR_TRUSS` folder now includes all necessary files and the struc
         FOUR_BAR_TRUSS
             design_space.csv
             stochastic_space.csv
+            uncertainty_characterization.csv
             case_despcription.py
             four_bar_truss.py
+
+The :file:`uncertainty_characterization.csv` file is an empty template, and is only needed when the uncertainty
+on the model parameters is known as two percentiles rather than as a mean and a deviation.
+In that situation, filling it in generates :file:`design_space.csv` and :file:`stochastic_space.csv` from those estimates,
+instead of writing both files by hand as described below (see :ref:`lab:sscharacterizeuncertainty`).
+It can be deleted when it is not used.
 
 In :file:`design_space.csv`, the design variables and model parameters are defined.
 More information on the characterization of the design space is presented in :ref:`lab:ssdesignspace`.

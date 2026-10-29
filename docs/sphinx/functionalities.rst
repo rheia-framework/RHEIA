@@ -17,7 +17,12 @@ From the algorithmic standpoint, to determine the mean and standard deviation on
 Details on the robust design optimization procedure are provided in :ref:`lab:rdoprocedure`.
 In RHEIA the uncertainty quantification is facilitated through the Polynomial Chaos Expansion (PCE).
 In addition to the mean and standard deviation of any model output considered, PCE can provide a full characterization of the outputs' probability density function,
-cumulative distribution function. Ranking of the model parameters, in terms of their contribution to the variance of the model outputs is also feasible, using Sobol's indices metric.   
+cumulative distribution function. Ranking of the model parameters, in terms of their contribution to the variance of the model outputs is also feasible, using Sobol's indices metric.
+Before any of this, the uncertainty on each model parameter has to be characterized as a distribution.
+When that uncertainty is available as two percentiles instead of as a mean and a deviation
+(e.g. a declared value and a design value taken from a standard or a specification),
+RHEIA fits the corresponding distribution from those two estimates and writes it into the model's design space and stochastic space,
+as detailed in :ref:`lab:sscharacterizeuncertainty`.
 
 As regards the end-use of the RHEIA framework, RHEIA can be coupled to any well-defined computational model (a Python wrapper is provided to connect any open- or closed-source model). However, a clear focus towards hydrogen-based energy system models is adopted. This is due to our belief that, during the transformation of the energy sector to a decarbonized setting, deterministic and robust design optimization has a key role in providing optimal configurations and enabling robust transitions. 
 Despite its potential as an energy carrier, hydrogen is still sparsely integrated in design optimization studies of hybrid renewable energy systems.

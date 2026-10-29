@@ -8,7 +8,8 @@ The robust design optimization works under the same principle. The fundamental c
 The multi-objective optimization algorithm used in RHEIA is Nondominating Sorting Genetic Algorithm (NSGA-II). More information on NSGA-II is available in :ref:`lab:ssnsga2`.
 The design variables and model parameters are characterized in the :file:`design_space.csv` file.
 As per robust design optimization, the uncertainty on the respective design variables and model parameters is characterized in the :file:`stochastic_space.csv` file.
-More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively. 
+More information on characterizing these files is available in :ref:`lab:ssdesignspace` and :ref:`lab:ssstochastic_space`, respectively.
+When the uncertainty on a parameter is estimated as two percentiles, both files can be generated from those estimates, as described in :ref:`lab:sscharacterizeuncertainty`.
 The system model evaluations are coupled with the optimization algorithm in :py:mod:`case_description.`.
 More information on this Python wrapper is discussed in :ref:`lab:wrapper`. 
  

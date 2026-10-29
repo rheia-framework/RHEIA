@@ -12,6 +12,9 @@ Uncertainty quantification
 Uncertainty quantification in RHEIA is based on Polynomial Chaos Expansion
 (PCE). The section below introduces the method. Additional details are
 provided by Sudret et al. :cite:`Sudret2014`.
+Before the propagation itself, the uncertainty on each model parameter has to be
+characterized as a distribution; the method used when that uncertainty is
+available as two percentiles is described in :ref:`lab:ssquantilefit`.
 
 .. _lab:pce:
 
@@ -98,6 +101,54 @@ The total-order Sobol' indices (:math:`S_i^{T,\mathrm{PC}}`) quantify the total 
 :math:`S_i^{T,\mathrm{PC}} = \sum_{\alpha \in A_i^T}^{} u_\alpha^2/\sum_{i=1}^P u_i^2 ~~~~~~ A_i^T = \{\alpha \in A | \alpha_i > 0\}`.
 
 For every coefficient that is characterized by considering input parameter :math:`i`, among others, at an order :math:`> 0` is added to the total Sobol' index :math:`S_i`.
+
+.. _lab:ssquantilefit:
+
+Characterizing a distribution from two percentiles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The uncertainty on a model parameter is often elicited as two percentiles, rather
+than as the mean and deviation that :file:`stochastic_space.csv` expects.
+Since each of the distributions supported by RHEIA has two parameters, two
+percentiles determine it exactly: the two conditions
+:math:`F(x_{low}) = p_{low}` and :math:`F(x_{high}) = p_{high}`
+form a system of two equations in two unknowns.
+The approach for the Lognormal case is described by Cook :cite:`Cook2010`.
+
+For a Gaussian, the quantile function is linear in the standard normal quantile
+:math:`z_p = \Phi^{-1}(p)`, i.e. :math:`x_p = \mu + \sigma z_p`, so the two
+conditions solve directly:
+
+:math:`\sigma = \dfrac{x_{high} - x_{low}}{z_{high} - z_{low}}`,
+
+:math:`\mu = \dfrac{x_{low} z_{high} - x_{high} z_{low}}{z_{high} - z_{low}}`.
+
+For a Lognormal, :math:`\ln X` is Gaussian, so the same two expressions are
+applied to :math:`\ln x_{low}` and :math:`\ln x_{high}` to obtain the latent
+parameters :math:`\mu` and :math:`\sigma`. These are then converted into the
+physical mean and standard deviation that :file:`stochastic_space.csv` stores:
+
+:math:`\mathrm{mean} = e^{\mu + \sigma^2/2}`,
+
+:math:`\mathrm{deviation} = \mathrm{mean} \sqrt{e^{\sigma^2} - 1}`.
+
+Both percentiles must be strictly positive in this case, since a Lognormal
+variable is.
+
+For a Uniform distribution :math:`\mathcal{U}(a,b)`, the cumulative distribution
+function is linear, so the two percentiles interpolate the bounds:
+
+:math:`b - a = \dfrac{x_{high} - x_{low}}{p_{high} - p_{low}}`,
+
+:math:`a = x_{low} - p_{low} (b-a)`,
+
+from which the mean :math:`(a+b)/2` and the deviation :math:`(b-a)/2` follow.
+
+In all three cases the fit is exact rather than approximate: evaluating the
+cumulative distribution function of the resulting distribution at
+:math:`x_{low}` and :math:`x_{high}` returns :math:`p_{low}` and
+:math:`p_{high}` again. The practical use of this is described in
+:ref:`lab:sscharacterizeuncertainty`.
 
 Optimization
 ------------

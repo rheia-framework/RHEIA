@@ -5,6 +5,46 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v2.2.0.
+-------
+
+This release adds a step to characterize uncertain model parameters from
+percentile estimates, so the design space and stochastic space can be
+generated from elicited values rather than filled in by hand.
+
+Uncertainty characterization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- A new module :py:mod:`rheia.UQ.characterize_uncertainty` converts two
+  percentile estimates of a model parameter into the mean and deviation that
+  :file:`design_space.csv` and :file:`stochastic_space.csv` expect. Two
+  percentiles pin down a two-parameter distribution exactly; the Lognormal fit
+  follows Cook, J.D. (2010), *Determining distribution parameters from
+  quantiles*.
+- The estimates are provided in a new :file:`uncertainty_characterization.csv`
+  file in the case folder, with one row per uncertain parameter
+  (:code:`name,distribution,x_low,p_low,x_high,p_high`). A template is shipped
+  in :file:`CASES\\NO_MODEL`.
+- :py:func:`characterize_from_csv` reads that file and writes the fitted
+  parameters into the case. Both space files are created when absent, so a case
+  folder holding only the characterization file is enough to get started; a
+  :py:mod:`case_description` module is then copied from the :file:`NO_MODEL`
+  template, so the case runs immediately with
+  :py:data:`'create only samples': True`.
+- Parameters that are not characterized yet are appended, while parameters that
+  are already present are replaced by the updated estimate. Rows that the
+  characterization file does not mention are left untouched. Which parameters
+  were added and which were replaced is printed, so an update is never silent.
+- :py:data:`write=False` fits without touching disk, and :py:data:`plot=True`
+  renders the fitted probability density function with the two elicited
+  percentiles marked, to support iterating on the estimates before committing
+  them.
+- The percentile estimates can also be passed directly in Python with
+  :py:func:`characterize_parameters`, instead of through a file.
+- The supported distributions are the same three the PCE supports: Uniform,
+  Gaussian and Lognormal.
+- An :file:`examples/characterize_uncertainty.py` example was added.
+
 v2.1.0.
 -------
 
