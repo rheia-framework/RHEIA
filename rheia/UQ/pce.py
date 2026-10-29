@@ -233,6 +233,25 @@ class RandomExperiment(Data):
         self.n_samples = None
         self.n_terms_full = None
 
+        # Optional user-provided seed. When it is None, the samplers keep
+        # the behaviour they had before the key existed: the Sobol sequence
+        # stays on its fixed seed, and random sampling stays unseeded.
+        self.seed = my_data.inputs.get('seed')
+        self._rvs_rng = None
+
+    def _random_state(self):
+        """
+        Return the generator for random sampling, or None when no seed was
+        provided, in which case SciPy draws from the global NumPy state as
+        it did before.
+        """
+        if self.seed is None:
+            return None
+        if self._rvs_rng is None:
+            self._rvs_rng = np.random.default_rng(self.seed)
+
+        return self._rvs_rng
+
     def n_terms(self):
         '''
         This method sets the number of samples to 2*(p+n)!/p!n!,
@@ -415,14 +434,19 @@ class RandomExperiment(Data):
         if size > 0:
             self.x_u = np.zeros((size, self.dimension))
             if method == 'RANDOM':
+                random_state = self._random_state()
                 for i in range(self.dimension):
-                    self.x_u[:, i] = self.dists[i].rvs(size)
+                    if random_state is None:
+                        self.x_u[:, i] = self.dists[i].rvs(size)
+                    else:
+                        self.x_u[:, i] = self.dists[i].rvs(
+                            size, random_state=random_state)
 
             elif method == 'SOBOL':
                 sampler = qmc.Sobol(
                     d=self.dimension,
                     scramble=True,
-                    rng=42,
+                    rng=42 if self.seed is None else self.seed,
                 )
 
                 n_previous = len(self.x_prev)

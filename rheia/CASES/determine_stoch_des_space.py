@@ -49,7 +49,10 @@ def check_dictionary(run_dict, uq_bool=False):
         raise TypeError('The input dictionary should be a dictionary.')
 
     required = {'case', 'n jobs', 'results dir'}
-    allowed = set(required)
+    # "seed" is optional everywhere. It deliberately has no default: when it
+    # is absent, every random number generator keeps the behaviour it had
+    # before the key existed.
+    allowed = set(required) | {'seed'}
     defaults = {'n jobs': 1}
     rob = False
     weights = None
@@ -104,6 +107,17 @@ def check_dictionary(run_dict, uq_bool=False):
     if run_dict['results dir'] == '':
         raise ValueError(
             'The value of the key "results dir" should not be empty.')
+
+    if run_dict.get('seed') is not None:
+        if (not isinstance(run_dict['seed'], int) or
+                isinstance(run_dict['seed'], bool)):
+            raise TypeError(
+                'The value of the key "seed" should be a non-negative '
+                'integer, or None to leave the run unseeded.')
+        if run_dict['seed'] < 0:
+            raise ValueError(
+                'The value of the key "seed" should be a non-negative '
+                'integer, or None to leave the run unseeded.')
 
     if not uq_bool:
         if not isinstance(run_dict['objectives'], collections.abc.Mapping):

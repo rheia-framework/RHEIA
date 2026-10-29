@@ -26,9 +26,9 @@ copyright = u'2021'
 author = u'Diederik Coppitters, Panagiotis Tsirikoglou'
 
 # The short X.Y version
-version = u'2.1'
+version = u'2.3'
 # The full version, including alpha/beta/rc tags
-release = u'2.2.0'
+release = u'2.3.0'
 
 
 # -- General configuration ---------------------------------------------------

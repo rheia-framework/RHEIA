@@ -60,7 +60,7 @@ def get_design_variables(case):
     return var_dict
 
 
-def set_design_samples(var_dict, n_samples):
+def set_design_samples(var_dict, n_samples, seed=None):
     """
     Based on the design variable characteristics,
     a set of design samples is created through
@@ -72,6 +72,10 @@ def set_design_samples(var_dict, n_samples):
         A dictionary which includes the design variables and their bounds.
     n_samples : int
         The number of design samples to be created.
+    seed : int, optional
+        The seed for the sampler, which makes the generated design samples
+        reproducible. The default is None, which leaves the sampler
+        unseeded.
 
     Returns
     -------
@@ -81,7 +85,7 @@ def set_design_samples(var_dict, n_samples):
     """
 
     # generate unit-hypercube samples through SciPy's maintained LHS sampler
-    sampler = qmc.LatinHypercube(d=len(var_dict))
+    sampler = qmc.LatinHypercube(d=len(var_dict), rng=seed)
     samples = sampler.random(n=n_samples)
 
     bounds = list(var_dict.values())

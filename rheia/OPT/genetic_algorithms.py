@@ -702,6 +702,14 @@ class NSGA2:
 
         """
 
+        # Seed the global random module when a seed is provided. The
+        # crossover and mutation operators draw from it, inside DEAP as well
+        # as here, so seeding it is what makes an optimization run
+        # reproducible. Without a seed nothing is touched, and the run draws
+        # from the global stream exactly as it did before.
+        if self.run_dict.get('seed') is not None:
+            random.seed(self.run_dict['seed'])
+
         weigth = list(self.space_obj.obj.values())[0]
 
         # The classes are always (re)created, so that they carry the weights

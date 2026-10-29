@@ -32,7 +32,8 @@ To characterize the uncertainty quantification, the following dictionary with pa
                'create only samples':   only_samples_bool,      #optional, default is False
                'draw pdf cdf':          [draw_bool, n_samples], #optional, default is [False]
                'n jobs':                n_jobs,                 #optional, default is 1
-               }  
+               'seed':                  seed,                   #optional, default is None
+               }
 
 The items of the uncertainty quantification dictionary are described in the following subsections. 
 This dictionary is used as the argument for the :py:func:`run_uq` function, 
@@ -198,6 +199,24 @@ Alternatively, the number of parallel processes can be retrieved through the :py
 After importing multiprocessing, the item can be defined by::
 
     'n jobs': int(multiprocessing.cpu_count()/2)
+
+.. _lab:ssuqseed:
+
+'seed': seed
+~~~~~~~~~~~~
+
+The samples for the Polynomial Chaos Expansion are drawn randomly.
+Providing a seed fixes that draw, so that repeating a run reproduces it exactly::
+
+	'seed': 42
+
+The seed should be a non-negative integer, and applies to both sampling methods.
+When the item is omitted, the Sobol' sequence falls back on its own fixed seed and random sampling is left unseeded,
+which is the behaviour of earlier versions.
+
+Reproducibility also requires the model itself to be deterministic.
+A model that draws its own random numbers, or that depends on an external
+source that changes between runs, produces different results even with a seed.
 
 Example of a dictionary for uncertainty quantification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

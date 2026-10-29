@@ -228,15 +228,22 @@ def create_starting_samples(run_dict, space_obj, start_from_last_gen):
         # if the starting population needs to be created
         if 'AUTO' in run_dict['x0'][0]:
 
+            # When no seed is provided, both samplers stay unseeded, exactly
+            # as they were before the "seed" key existed.
+            seed = run_dict.get('seed')
+
             # generate the starting population randomly
             if 'RANDOM' in run_dict['x0'][1]:
-                ddoe = np.random.random(
-                    (run_dict['population size'], space_obj.n_dim))
+                shape = (run_dict['population size'], space_obj.n_dim)
+                if seed is None:
+                    ddoe = np.random.random(shape)
+                else:
+                    ddoe = np.random.default_rng(seed).random(shape)
 
             # generate the starting population
             # based on Latin Hypercube Sampling
             if 'LHS' in run_dict['x0'][1]:
-                sampler = qmc.LatinHypercube(d=space_obj.n_dim)
+                sampler = qmc.LatinHypercube(d=space_obj.n_dim, rng=seed)
                 ddoe = sampler.random(n=run_dict['population size'])
 
             # scale the starting samples

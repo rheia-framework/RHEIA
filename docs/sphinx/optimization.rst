@@ -35,8 +35,8 @@ To characterize and configure a deterministic design optimization, the following
                 'cx prob':             c_prob,                 #optional, default is 0.9
                 'mut prob':            mut_prob,               #optional, default is 0.1
                 'eta':                 eta,                    #optional, default is 0.2
-                'n jobs':              n_jobs,                 #optional, default is 1 
-				'algo':                algo,                   #optional, default is 'NSGA2' 
+                'n jobs':              n_jobs,                 #optional, default is 1
+                'seed':                seed,                   #optional, default is None
                 }
 
 This dictionary is used as the argument for the :py:func:`run_opt()` function, 
@@ -239,15 +239,29 @@ After importing multiprocessing, the item can be defined by::
 
     'n jobs': int(multiprocessing.cpu_count()/2)
 	
-'algo': algo
+.. _lab:ssoptseed:
+
+'seed': seed
 ~~~~~~~~~~~~~~~~
 
-The optimisation algorithm. 
-NSGA-II is employed by default (more information in :ref:`lab:ssnsga2`)::
+An optimization run draws random numbers in two places: when the starting population is generated,
+and when the crossover and mutation operators are applied in every generation.
+Providing a seed fixes both, so that repeating a run reproduces it exactly::
 
-	'algo': 'NSGA2'
-	
-Alternatively, NSGA-III and SPEA-II can also be used.
+	'seed': 42
+
+The seed should be a non-negative integer.
+When the item is omitted, the run is left unseeded and repeating it gives a different result each time,
+which is the behaviour of earlier versions.
+
+.. note::
+	Providing a seed sets the seed of Python's built-in :py:mod:`random` module,
+	since the crossover and mutation operators draw from it.
+	Other random numbers drawn in the same session are affected by this as well.
+
+Reproducibility also requires the model itself to be deterministic.
+A model that draws its own random numbers, or that depends on an external
+source that changes between runs, produces different results even with a seed.
 The item can be defined by::
 
     'algo': 'NSGA3'

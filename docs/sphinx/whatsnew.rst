@@ -5,6 +5,56 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v2.3.0.
+-------
+
+This release makes runs reproducible, fixes three defects that could affect
+users directly, and adds continuous integration.
+
+Reproducibility
+^^^^^^^^^^^^^^^
+
+- A new optional :py:data:`'seed'` item in the optimization and uncertainty
+  quantification dictionaries makes a run reproducible. It covers the
+  starting population, the crossover and mutation operators, and the samples
+  drawn for the Polynomial Chaos Expansion. See :ref:`lab:ssoptseed` and
+  :ref:`lab:ssuqseed`.
+- :py:func:`set_design_samples` accepts a :py:data:`seed` argument for the
+  same reason.
+- Omitting the item leaves every sampler behaving exactly as it did before,
+  so existing results are unchanged.
+
+Bug fixes
+^^^^^^^^^
+
+- A run dictionary can be reused. :py:func:`run_opt` attached the evaluation
+  function to the caller's own dictionary, which was then rejected on the
+  next call, so a script that ran two optimizations from one dictionary
+  failed on the second.
+- A starting population containing a design sample that sits exactly on a
+  design variable bound is loaded correctly. Such samples are produced by
+  the crossover and mutation operators, so restarting from a previous
+  population could fail.
+- The :file:`examples/run_uq_h2_fuel.py` example carried the objective names
+  of the four-bar truss case, so it reported hydrogen production under the
+  label :code:`displacement`.
+- The warning that DEAP emits when it overwrites its :py:data:`Fitness` and
+  :py:data:`Individual` classes, which happens on every optimization after
+  the first in a session, is no longer shown.
+
+Documentation
+^^^^^^^^^^^^^
+
+- The optimization dictionary no longer documents an :py:data:`'algo'` item.
+  That item was rejected as an unknown key, and the alternative optimizers it
+  referred to are not available; NSGA-II is the optimizer RHEIA provides.
+
+Development
+^^^^^^^^^^^
+
+- A continuous integration workflow runs the test suite on Python 3.11, 3.12
+  and 3.13 for Linux and Windows, together with a style check.
+
 v2.2.0.
 -------
 
