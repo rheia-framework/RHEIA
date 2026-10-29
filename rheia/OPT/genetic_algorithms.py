@@ -6,6 +6,7 @@ the NSGA-II optimization algorithm.
 import multiprocessing as mp
 import os
 import random
+import warnings
 from functools import partial
 from copy import deepcopy
 import numpy as np
@@ -449,22 +450,33 @@ class NSGA2:
         """
 
         doe = []
-        file = open(doe_dir, 'r')
+        with open(doe_dir, 'r') as file:
 
-        # Read doe points
-        for line in file:
-            doe.append([float(i)+2e-8 for i in line.split(",")[:-1]])
+            # Read doe points
+            for line in file:
+                sample = [float(i) for i in line.split(",")[:-1]]
 
-            # test if the doe points situate in between the variable bounds
-            violate = False
-            for index, elem in enumerate(doe[-1]):
-                if (elem < self.space_obj.l_b[index] or
-                        elem > self.space_obj.u_b[index]):
-                    violate = True
+                # test if the doe points situate in between the variable
+                # bounds
+                violate = False
+                for index, elem in enumerate(sample):
+                    if (elem < self.space_obj.l_b[index] or
+                            elem > self.space_obj.u_b[index]):
+                        violate = True
 
-            if violate:
-                raise TypeError("""Design sample %s violates the
-                                   design variable bounds. """ % str(doe[-1]))
+                if violate:
+                    raise TypeError("""Design sample %s violates the
+                                       design variable bounds. """
+                                    % str(sample))
+
+                # Nudge the sample off the bound, and clip the result back
+                # into the design space. The bounded crossover and mutation
+                # operators can return a sample that sits exactly on a bound,
+                # so without the clip the nudge would push it outside the
+                # bounds when such a population is read back on a restart.
+                doe.append([min(max(value + 2e-8, self.space_obj.l_b[index]),
+                                self.space_obj.u_b[index])
+                            for index, value in enumerate(sample)])
 
         # test if the doe size equals the number of the population size
         # provided in the optimization dictionary
@@ -691,8 +703,18 @@ class NSGA2:
         """
 
         weigth = list(self.space_obj.obj.values())[0]
-        creator.create('Fitness', base.Fitness, weights=weigth)
-        creator.create('Individual', list, fitness=creator.Fitness)
+
+        # The classes are always (re)created, so that they carry the weights
+        # of the run at hand. DEAP warns when it overwrites a class it
+        # created before, which happens whenever a second optimization runs
+        # in the same session; that warning is expected here and is silenced
+        # to keep the output readable.
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                'ignore',
+                message='A class named .* has already been created')
+            creator.create('Fitness', base.Fitness, weights=weigth)
+            creator.create('Individual', list, fitness=creator.Fitness)
 
         if not self.start_from_last_gen:
             self.init_opt()

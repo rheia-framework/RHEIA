@@ -328,6 +328,12 @@ def run_opt(run_dict, design_space='design_space.csv'):
     # and the params provided for each model evaluation
     space_obj, eval_func, params = load_case(run_dict, design_space)
 
+    # Continue on a copy of the dictionary. The evaluation function is
+    # attached below for internal use, but check_dictionary() rejects keys it
+    # does not recognise, so attaching it to the caller's own dictionary would
+    # make that dictionary unusable for a second run.
+    run_dict = dict(run_dict)
+
     # add the evaluation function to the optimization dictionary
     run_dict['evaluate'] = eval_func
 
