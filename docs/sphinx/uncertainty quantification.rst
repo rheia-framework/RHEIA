@@ -310,9 +310,27 @@ The samples can be generated as follows:
    rheia_uq.run_uq(dict_uq)
 
 For this example, the samples are written in :file:`RESULTS\\NO_MODEL\\UQ\\results_1\\samples`. Once these samples are evaluated in the model on an external location,
-the results can be added to the :file:`RESULTS\\NO_MODEL\\UQ\\results_1\\samples` file. When the results are added for 'output_1', 'output_2', 'output_3', 
+the results can be added to the :file:`RESULTS\\NO_MODEL\\UQ\\results_1\\samples` file. When the results are added for 'output_1', 'output_2', 'output_3',
 the PCE can be constructed for the three quantities of interest. In that case, the value for 'create only samples' is set back to False (i.e. the default value).
 To illustrate, for a PCE on 'output_2':
+
+.. _lab:sssamplescolumns:
+
+.. note::
+	The columns of the samples file are identified by the names on its header line.
+	A column holding 'output_2' is read as 'output_2' regardless of where it sits,
+	so the quantities of interest may be filled in in any order,
+	as long as the header names them correctly.
+
+	When the header does not name every stochastic parameter and quantity of interest exactly once,
+	for instance because a column was renamed, the columns are read in the order they appear instead,
+	and a warning reports what was expected and what was found.
+	In that situation the order of the columns has to match :py:data:`'objective names'` exactly.
+
+	New rows are always written in the order of the run dictionary.
+	Adding samples to a file whose columns are in a different order is therefore refused,
+	rather than leaving two column orders in one file;
+	reorder the columns to match, or use a separate result directory for the new samples.
 
 .. code-block:: python
    :linenos:

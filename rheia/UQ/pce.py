@@ -63,6 +63,41 @@ def _normalize_outputs(results):
     return normalized
 
 
+def _match_header_columns(header, expected):
+    """
+    Return the column index of every name in `expected`, looked up in the
+    header of a samples file.
+
+    Returns None when the header does not name all of them exactly once, in
+    which case the caller falls back on reading the columns in the order
+    they appear.
+
+    Parameters
+    ----------
+    header : list of str
+        The column names on the first line of the samples file.
+    expected : list of str
+        The names to look up, i.e. the stochastic parameters and, when the
+        samples are evaluated, the quantities of interest.
+
+    Returns
+    -------
+    list of int, or None
+        The column index of every expected name.
+
+    """
+    if not header:
+        return None
+
+    indices = []
+    for name in expected:
+        if header.count(name) != 1:
+            return None
+        indices.append(header.index(name))
+
+    return indices
+
+
 def _lognormal_to_normal(mean, deviation):
     """
     Return latent normal parameters from lognormal mean and standard deviation.
@@ -239,6 +274,25 @@ class RandomExperiment(Data):
         self.seed = my_data.inputs.get('seed')
         self._rvs_rng = None
 
+        # Set when the samples file holds its columns in a different order
+        # than the run dictionary. New rows are written in the order of the
+        # run dictionary, so appending to such a file is refused rather than
+        # mixing two column orders in one file.
+        self.columns_reordered = False
+
+    def _refuse_append_on_reordered_file(self):
+        if not self.columns_reordered:
+            return
+
+        raise ValueError(
+            'The columns of "%s" are in a different order than the run '
+            'dictionary. Its existing rows are read correctly, by name, but '
+            'new rows would be written in the order of the run dictionary '
+            'and the file would end up holding two different column orders. '
+            'Reorder the columns of the file to match "objective names", or '
+            'use a different result directory for the new samples.'
+            % self.my_data.filename_samples)
+
     def _random_state(self):
         """
         Return the generator for random sampling, or None when no seed was
@@ -288,6 +342,13 @@ class RandomExperiment(Data):
         Read the previously evaluated samples
         and store them for future PCE construction.
 
+        The columns are identified by the names on the header line, so that
+        a samples file whose columns are in a different order than the run
+        dictionary is still read correctly. When the header does not name
+        every stochastic parameter and quantity of interest exactly once,
+        the columns are read in the order they appear instead, and a
+        warning is issued.
+
         Parameters
         ----------
         create_only_samples : bool
@@ -295,12 +356,16 @@ class RandomExperiment(Data):
             should only be created.
 
         """
-        
+
         n_inputs = len(self.my_data.stoch_data['mean'])
         n_outputs = len(self.my_data.inputs['objective names'])
 
         with open(self.my_data.filename_samples, 'r') as file:
             lines = file.readlines()
+
+        header = []
+        if lines:
+            header = [name.strip() for name in lines[0].strip().split(',')]
 
         previous_lines = [line.strip().split(",") for line in lines[1:]]
         n_previous = len(previous_lines)
@@ -331,11 +396,38 @@ class RandomExperiment(Data):
                    Evaluate these samples first or use a different result
                    directory.""")
 
+        # Identify the columns by name, so that a file whose columns are in
+        # a different order than the run dictionary is read correctly.
+        names = list(self.my_data.stoch_data['names'])
+        if evaluated:
+            names += list(self.my_data.inputs['objective names'])
+
+        row_length = n_inputs + n_outputs if evaluated else n_inputs
+        columns = _match_header_columns(header, names)
+        if columns is not None and max(columns) >= row_length:
+            columns = None
+
+        if columns is None:
+            warnings.warn(
+                'The header of "%s" does not name every stochastic '
+                'parameter and quantity of interest exactly once, so its '
+                'columns are read in the order they appear. Make sure that '
+                'order matches the run dictionary. Expected: %s. Found: %s.'
+                % (self.my_data.filename_samples, ', '.join(names),
+                   ', '.join(header) if header else '(no header)'))
+            columns = list(range(len(names)))
+
+        self.columns_reordered = columns != list(range(len(names)))
+
+        input_columns = columns[:n_inputs]
+        output_columns = columns[n_inputs:]
+
         for i, line_split in enumerate(previous_lines):
-            self.x_prev[i] = [float(el) for el in line_split[:n_inputs]]
+            self.x_prev[i] = [float(line_split[column])
+                              for column in input_columns]
             if evaluated:
                 self.y_prev[i] = float(
-                    line_split[n_inputs + self.objective_position])
+                    line_split[output_columns[self.objective_position]])
             
     def create_distributions(self):
         """
@@ -504,6 +596,8 @@ class RandomExperiment(Data):
             if len(samples) == 0:
                 return
 
+            self._refuse_append_on_reordered_file()
+
             df = pd.DataFrame(samples, columns=None)
             with open(self.my_data.filename_samples, 'a+') as f:
                 df.to_csv(f, header=False, index=False, lineterminator='\n')
@@ -518,6 +612,8 @@ class RandomExperiment(Data):
         size = self.n_samples - len(self.x_prev)
         if size <= 0:
             return
+
+        self._refuse_append_on_reordered_file()
 
         # Create only the new input samples. Previous samples remain in x_prev.
         self.create_samples(size=size)

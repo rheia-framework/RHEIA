@@ -5,6 +5,26 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v2.3.1.
+-------
+
+- The columns of :file:`samples.csv` are identified by the names on its
+  header line. The header was written but never read back, so every column
+  was taken from a fixed position: a samples file filled in externally with
+  its quantities of interest in another order than :py:data:`'objective
+  names'` was read from the wrong column, without any error. The statistics
+  and Sobol' indices then described a different model output than the one
+  requested. See :ref:`how the columns are identified
+  <lab:sssamplescolumns>`.
+- When the header does not name every stochastic parameter and quantity of
+  interest exactly once, the columns are read in the order they appear, as
+  before, and a warning reports what was expected and what was found. Files
+  written by earlier versions are therefore read exactly as they were.
+- Adding samples to a file whose columns are in a different order than the
+  run dictionary is refused. New rows are written in the order of the run
+  dictionary, so appending would otherwise leave two column orders in one
+  file.
+
 v2.3.0.
 -------
 
