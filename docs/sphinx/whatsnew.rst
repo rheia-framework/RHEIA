@@ -5,6 +5,28 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v2.3.2.
+-------
+
+- :file:`population.csv`, :file:`fitness.csv` and their
+  :file:`_final_sorted` counterparts start with a line holding the column
+  names. The population columns carry the design variable names, the
+  fitness columns the objective names. Until now the design variables and
+  objectives could only be identified by their position. See
+  :ref:`the column names of the result files <lab:ssresultcolumns>`.
+- For a robust design optimization, every quantity of interest contributes
+  a :py:data:`<name>_mean` and a :py:data:`<name>_std` column, in the order
+  the fitness values are stored.
+- :py:data:`'objective names'` is now accepted for a deterministic design
+  optimization as well, where it names the fitness columns. It remains
+  optional there; without it the objectives are numbered. See
+  :ref:`lab:ssoptobjnames`.
+- Result directories written by earlier versions have no column names.
+  They are still read, and their sorted files are written without column
+  names too, so an existing result directory keeps the format it has.
+- A starting population supplied through :py:data:`'x0'` may carry the
+  design variable names on its first line.
+
 v2.3.1.
 -------
 

@@ -11,6 +11,7 @@ from functools import partial
 from copy import deepcopy
 import numpy as np
 from deap import creator, base, tools
+from rheia.CASES.determine_stoch_des_space import is_header_line
 import rheia.UQ.pce as uq
 import pandas as pd
 
@@ -124,7 +125,57 @@ class NSGA2:
         file.write(msg + '\n')
         file.close()
 
-    def append_points_to_file(self, nests, filename):
+    def population_header(self):
+        """
+
+        The column names of the population file, i.e. the names of the
+        design variables as defined in :file:`design_space.csv`.
+
+        Returns
+        -------
+        list
+            The design variable names.
+
+        """
+
+        return list(self.space_obj.var_dict.keys())
+
+    def fitness_header(self, n_values):
+        """
+
+        The column names of the fitness file.
+
+        For a robust design optimization, every quantity of interest
+        contributes a mean and a standard deviation, in that order. For a
+        deterministic design optimization, the names are taken from the
+        optional :py:data:`'objective names'` item. When no suitable names
+        are available, the objectives are numbered.
+
+        Parameters
+        ----------
+        n_values : int
+            The number of fitness values per design sample.
+
+        Returns
+        -------
+        list
+            The objective names.
+
+        """
+
+        if 'ROB' in self.space_obj.opt_type:
+            names = []
+            for name in self.run_dict.get('objective of interest', []):
+                names += ['%s_mean' % name, '%s_std' % name]
+        else:
+            names = list(self.run_dict.get('objective names', []))
+
+        if len(names) != n_values:
+            names = ['objective_%i' % (i + 1) for i in range(n_values)]
+
+        return names
+
+    def append_points_to_file(self, nests, filename, header=None):
         """
 
         This function is used to append the result (population or fitness)
@@ -137,39 +188,36 @@ class NSGA2:
         filename : str
             The filename where the points
             should be appended.
+        header : list, optional
+            The column names. They are written when the file is created,
+            i.e. on the first generation of a new result directory. The
+            default is None, which writes no column names.
 
         """
 
         # the directory to the file in the results directory
         file_dir = os.path.join(self.opt_res_dir, filename)
-                
+
+        # write the column names when the file is created, so that a result
+        # directory from an earlier run keeps the format it already has
+        if header is not None and not os.path.isfile(file_dir):
+            with open(file_dir, 'a') as f:
+                pd.DataFrame([header]).to_csv(
+                    f, header=False, index=False, lineterminator='\n')
+
         dummy = ['-']
 
         df = pd.DataFrame(nests, columns=None)
-        
+
         with open(file_dir, 'a') as f:
-             df.to_csv(f, header=False, index=False, lineterminator='\n')
+            df.to_csv(f, header=False, index=False, lineterminator='\n')
 
         df2 = pd.DataFrame(dummy, columns=None)
 
         with open(file_dir, 'a') as f:
-             df2.to_csv(f, header=False, index=False, lineterminator='\n')
-        
-        '''
-        with open(file_dir, 'a') as file:
+            df2.to_csv(f, header=False, index=False, lineterminator='\n')
 
-            for n_in in nests:
 
-                for item in n_in:
-
-                    file.write('%.10f ' % item)
-
-                file.write('\n')
-
-            file.write('- \n')
-        '''
-        
-        
     ##########################################
     # sample creation and evaluation methods #
     ##########################################
@@ -453,7 +501,15 @@ class NSGA2:
         with open(doe_dir, 'r') as file:
 
             # Read doe points
+            first = True
             for line in file:
+                if first:
+                    first = False
+                    # a starting population provided by the user may carry
+                    # the design variable names on its first line
+                    if is_header_line(line):
+                        continue
+
                 sample = [float(i) for i in line.split(",")[:-1]]
 
                 # test if the doe points situate in between the variable
@@ -550,10 +606,13 @@ class NSGA2:
                                                             
                                                             
             # update the population and fitness files
-            self.append_points_to_file(current_pop, 'population.csv')
-            
-            self.append_points_to_file([x.fitness.values for x in current_pop],
-                                       'fitness.csv')
+            self.append_points_to_file(current_pop, 'population.csv',
+                                       header=self.population_header())
+
+            fitness_values = [x.fitness.values for x in current_pop]
+            self.append_points_to_file(
+                fitness_values, 'fitness.csv',
+                header=self.fitness_header(len(fitness_values[0])))
 
             # update the STATUS file
             self.write_status('%8i%8i' % (1, n_eval))
@@ -684,10 +743,13 @@ class NSGA2:
         new_pop = tools.selNSGA2(current_pop + offspring, len(current_pop))
 
         # update the population and fitness files
-        self.append_points_to_file(new_pop, 'population.csv')
+        self.append_points_to_file(new_pop, 'population.csv',
+                                   header=self.population_header())
 
         fitness_values = [x.fitness.values for x in new_pop]
-        self.append_points_to_file(fitness_values, 'fitness.csv')
+        self.append_points_to_file(
+            fitness_values, 'fitness.csv',
+            header=self.fitness_header(len(fitness_values[0])))
 
         # update the STATUS file
         ite, evals = self.parse_status()

@@ -37,6 +37,7 @@ To characterize and configure a deterministic design optimization, the following
                 'eta':                 eta,                    #optional, default is 0.2
                 'n jobs':              n_jobs,                 #optional, default is 1
                 'seed':                seed,                   #optional, default is None
+                'objective names':     obj_names,              #optional, names the fitness columns
                 }
 
 This dictionary is used as the argument for the :py:func:`run_opt()` function, 
@@ -239,6 +240,24 @@ After importing multiprocessing, the item can be defined by::
 
     'n jobs': int(multiprocessing.cpu_count()/2)
 	
+.. _lab:ssoptobjnames:
+
+'objective names': obj_names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The names of the objectives, used as the column names of :file:`fitness.csv`
+and :file:`fitness_final_sorted.csv`
+(see :ref:`the column names of the result files <lab:ssresultcolumns>`)::
+
+	'objective names': ['volume', 'displacement']
+
+The list should contain one name per objective, i.e. as many names as there are weights.
+For a deterministic design optimization the item is optional;
+when it is not provided, the objectives are numbered.
+For a robust design optimization the item is required,
+and it lists all model outputs rather than only the optimized ones,
+as described in :ref:`lab:secobjofint`.
+
 .. _lab:ssoptseed:
 
 'seed': seed
@@ -654,10 +673,26 @@ and the results directory (e.g. :py:data:`'results_1'`), is defined as follows: 
 In this folder, 3 folder are present: :file:`STATUS.txt`, :file:`fitness.csv` and :file:`population.csv`.
 The :file:`STATUS.txt` file consists of two columns: ITER and EVALS. In ITER, the finished generation number is saved, while the corresponding number in EVALS
 provides the actual computational budget spent after completing that generation.
-The :file:`population.csv` and :file:`fitness.csv` files contain the design samples and results, respectively. 
-This information is stored for every design sample in every generation. 
-The design sample on line :math:`j` in :file:`population.csv` corresponds to the fitness 
+The :file:`population.csv` and :file:`fitness.csv` files contain the design samples and results, respectively.
+This information is stored for every design sample in every generation.
+The design sample on line :math:`j` in :file:`population.csv` corresponds to the fitness
 on line :math:`j` in :file:`fitness.csv`.
+
+.. _lab:ssresultcolumns:
+
+Both files start with a line holding the column names.
+In :file:`population.csv`, these are the design variable names as defined in :file:`design_space.csv`.
+In :file:`fitness.csv`, they are the objective names.
+For a robust design optimization, every quantity of interest contributes two columns,
+:py:data:`<name>_mean` and :py:data:`<name>_std`, in that order.
+For a deterministic design optimization, the names are taken from the optional :py:data:`'objective names'` item;
+when it is not provided, the objectives are numbered :py:data:`objective_1`, :py:data:`objective_2`, and so on.
+The :file:`population_final_sorted.csv` and :file:`fitness_final_sorted.csv` files carry the same column names.
+
+Result directories written before the column names were introduced have no such line.
+They are still read, and their sorted files are written without column names as well,
+so an existing result directory keeps the format it already has.
+
 Plotting the results can be performed as follows:
 
 .. code-block:: python

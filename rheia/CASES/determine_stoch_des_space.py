@@ -27,6 +27,41 @@ def custom_formatwarning(msg, *args, **kwargs):
 
 
 
+def is_header_line(line):
+    """
+    Evaluate if a line of a result file holds column names instead of
+    numbers.
+
+    Result files written before the column names were introduced have no
+    header, so both forms are read.
+
+    Parameters
+    ----------
+    line : string
+        A line of the result file.
+
+    Returns
+    -------
+    bool
+        True when the line holds at least one value that is not a number.
+
+    """
+
+    fields = [field.strip() for field in line.strip().split(',')
+              if field.strip() != '']
+
+    if not fields:
+        return False
+
+    for field in fields:
+        try:
+            float(field)
+        except ValueError:
+            return True
+
+    return False
+
+
 def check_dictionary(run_dict, uq_bool=False):
     """
 
@@ -65,8 +100,11 @@ def check_dictionary(run_dict, uq_bool=False):
                          'draw pdf cdf': [False]})
     else:
         required.update({'objectives', 'stop', 'population size'})
+        # "objective names" is required for a robust design optimization and
+        # optional for a deterministic one, where it names the columns of
+        # the fitness file.
         allowed.update({'objectives', 'stop', 'population size', 'x0',
-                        'cx prob', 'mut prob', 'eta'})
+                        'cx prob', 'mut prob', 'eta', 'objective names'})
         defaults.update({'x0': ('AUTO', 'LHS'),
                          'cx prob': 0.9,
                          'mut prob': 0.1,
@@ -146,6 +184,20 @@ def check_dictionary(run_dict, uq_bool=False):
             raise TypeError('The weights should be equal to 1 or -1.')
         if not all(abs(weight) == 1 for weight in weights):
             raise ValueError('The weights should be equal to 1 or -1.')
+
+        if not rob and 'objective names' in run_dict:
+            names = run_dict['objective names']
+            if (not isinstance(names, list) or
+                    not all(isinstance(name, str) for name in names)):
+                raise TypeError(
+                    'The value of the key "objective names" should be a '
+                    'list with the names of the objectives in string '
+                    'format.')
+            if len(names) != len(weights):
+                raise ValueError(
+                    'The value of the key "objective names" should contain '
+                    'one name per objective, i.e. %i instead of %i.'
+                    % (len(weights), len(names)))
 
         if not isinstance(run_dict['stop'], tuple):
             raise TypeError(

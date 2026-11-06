@@ -6,6 +6,7 @@ optimization and uncertainty quantification results.
 import os
 import numpy as np
 import pandas as pd
+from rheia.CASES.determine_stoch_des_space import is_header_line
 
 
 class PostProcessOpt:
@@ -41,20 +42,36 @@ class PostProcessOpt:
         self.n_gen = 0
         self._fitness_generations = []
         self._population_generations = []
+        self._fitness_header = None
+        self._population_header = None
 
     @staticmethod
     def _read_generation_file(filename):
         """
         Read a generation-separated CSV file into one array per generation.
+
+        Returns the column names together with the generations. Files
+        written before the column names were introduced have no header, in
+        which case the names are None.
         """
         generations = []
         current = []
+        header = None
+        first = True
 
         with open(filename, 'r') as file:
             for line in file:
                 line = line.strip()
                 if not line:
                     continue
+
+                if first:
+                    first = False
+                    if is_header_line(line):
+                        header = [name.strip()
+                                  for name in line.split(',')
+                                  if name.strip() != '']
+                        continue
 
                 if line == '-':
                     if current:
@@ -68,7 +85,7 @@ class PostProcessOpt:
         if current:
             generations.append(np.asarray(current, dtype=float))
 
-        return generations
+        return header, generations
 
     def determine_pop_gen(self):
         """
@@ -78,9 +95,10 @@ class PostProcessOpt:
 
         """
 
-        self._fitness_generations = self._read_generation_file(self.fitness_file)
-        self._population_generations = self._read_generation_file(
-            self.population_file)
+        self._fitness_header, self._fitness_generations = (
+            self._read_generation_file(self.fitness_file))
+        self._population_header, self._population_generations = (
+            self._read_generation_file(self.population_file))
 
         self.n_gen = len(self._fitness_generations)
         if self.n_gen == 0:
@@ -152,6 +170,11 @@ class PostProcessOpt:
         and fitness files. The population and fitness are sorted
         based on the first objective.
 
+        The column names are taken from the fitness and population files,
+        so that the sorted files carry the same ones. When those files
+        have no header, i.e. when they were written before the column names
+        were introduced, the sorted files have none either.
+
         Parameters
         ----------
         y_val : ndarray
@@ -161,12 +184,19 @@ class PostProcessOpt:
 
         """
 
-        pd.DataFrame(y_val).to_csv(
-            self.fitness_file[:-4] + "_final_sorted.csv",
-            header=False, index=False, lineterminator='\n')
-        pd.DataFrame(x_val).to_csv(
-            self.population_file[:-4] + "_final_sorted.csv",
-            header=False, index=False, lineterminator='\n')
+        for values, header, source in (
+                (y_val, self._fitness_header, self.fitness_file),
+                (x_val, self._population_header, self.population_file)):
+
+            frame = pd.DataFrame(values)
+            write_header = (header is not None and
+                            len(header) == frame.shape[1])
+            if write_header:
+                frame.columns = header
+
+            frame.to_csv(source[:-4] + "_final_sorted.csv",
+                         header=write_header, index=False,
+                         lineterminator='\n')
 
     def get_fitness_population(self, result_dir, gen=0):
         """

@@ -12,9 +12,10 @@ import shutil
 import pytest
 
 import rheia.OPT.optimization as rheia_opt
+import rheia.POST_PROCESS.post_process as rheia_pp
 import rheia.UQ.uncertainty_quantification as rheia_uq
 from rheia.CASES.determine_stoch_des_space import (
-    StochasticDesignSpace, check_dictionary)
+    StochasticDesignSpace, check_dictionary, is_header_line)
 from rheia.OPT.genetic_algorithms import NSGA2
 
 PACKAGE_ROOT = os.path.abspath(
@@ -318,3 +319,138 @@ def test_appending_to_a_reordered_samples_file_is_refused():
     finally:
         _wipe_dir(os.path.join(UQ_RESULTS, reference))
         _wipe_dir(os.path.join(UQ_RESULTS, swapped))
+
+
+# --------------------------------------------------------------------------
+# The optimization result files carry column names.
+#
+# population.csv, fitness.csv and the sorted files had no header, so the
+# design variables and objectives could only be identified by position.
+# Files written before the names were introduced must still be readable.
+# --------------------------------------------------------------------------
+
+DET_RESULTS = os.path.join(PACKAGE_ROOT, 'RESULTS', 'FOUR_BAR_TRUSS', 'DET')
+
+
+def _run_small_det(results_dir, objective_names=None):
+    run_dict = {'case': 'FOUR_BAR_TRUSS',
+                'objectives': {'DET': (-1, -1)},
+                'stop': ('BUDGET', 24),
+                'population size': 8,
+                'n jobs': 1,
+                'results dir': results_dir,
+                'seed': 3}
+    if objective_names is not None:
+        run_dict['objective names'] = objective_names
+
+    doe_file = os.path.join(PACKAGE_ROOT, 'OPT', 'INPUTS', 'FOUR_BAR_TRUSS',
+                            '4D', 'DOE_n8.csv')
+    doe_existed = os.path.isfile(doe_file)
+    rheia_opt.run_opt(run_dict)
+    return doe_file, doe_existed
+
+
+def test_population_and_fitness_files_have_column_names():
+    results_dir = 'pytest_header_det'
+    path = os.path.join(DET_RESULTS, results_dir)
+    _wipe_dir(path)
+    doe_file, doe_existed = None, True
+
+    try:
+        doe_file, doe_existed = _run_small_det(
+            results_dir, objective_names=['volume', 'displacement'])
+
+        with open(os.path.join(path, 'population.csv')) as file:
+            assert file.readline().strip() == 'A_1,A_2,A_3,A_4'
+        with open(os.path.join(path, 'fitness.csv')) as file:
+            assert file.readline().strip() == 'volume,displacement'
+
+        # the sorted files inherit the same names
+        post = rheia_pp.PostProcessOpt('FOUR_BAR_TRUSS', 'DET')
+        post.get_fitness_population(results_dir)
+
+        with open(os.path.join(path, 'population_final_sorted.csv')) as file:
+            assert file.readline().strip() == 'A_1,A_2,A_3,A_4'
+        with open(os.path.join(path, 'fitness_final_sorted.csv')) as file:
+            assert file.readline().strip() == 'volume,displacement'
+    finally:
+        _wipe_dir(path)
+        if doe_file and not doe_existed and os.path.isfile(doe_file):
+            os.remove(doe_file)
+
+
+def test_fitness_names_are_numbered_without_objective_names():
+    """'objective names' is optional for a deterministic run."""
+    results_dir = 'pytest_header_noname'
+    path = os.path.join(DET_RESULTS, results_dir)
+    _wipe_dir(path)
+    doe_file, doe_existed = None, True
+
+    try:
+        doe_file, doe_existed = _run_small_det(results_dir)
+        with open(os.path.join(path, 'fitness.csv')) as file:
+            assert file.readline().strip() == 'objective_1,objective_2'
+    finally:
+        _wipe_dir(path)
+        if doe_file and not doe_existed and os.path.isfile(doe_file):
+            os.remove(doe_file)
+
+
+def test_post_processing_reads_files_without_column_names():
+    """Result directories written by earlier versions have no header and
+    must still post-process, and their sorted files stay headerless."""
+    results_dir = 'pytest_header_legacy'
+    path = os.path.join(DET_RESULTS, results_dir)
+    _wipe_dir(path)
+    doe_file, doe_existed = None, True
+
+    try:
+        doe_file, doe_existed = _run_small_det(results_dir)
+
+        # strip the header lines, reproducing an older result directory
+        for name in ('population.csv', 'fitness.csv'):
+            full = os.path.join(path, name)
+            with open(full) as file:
+                lines = file.readlines()
+            assert is_header_line(lines[0])
+            with open(full, 'w') as file:
+                file.writelines(lines[1:])
+
+        post = rheia_pp.PostProcessOpt('FOUR_BAR_TRUSS', 'DET')
+        y_gen, x_gen = post.get_fitness_population(results_dir)
+
+        assert y_gen.shape[1] == 8
+        assert x_gen.shape[0] == 4
+
+        with open(os.path.join(path, 'fitness_final_sorted.csv')) as file:
+            assert not is_header_line(file.readline())
+    finally:
+        _wipe_dir(path)
+        if doe_file and not doe_existed and os.path.isfile(doe_file):
+            os.remove(doe_file)
+
+
+def test_objective_names_length_is_validated_for_det():
+    run_dict = _base_opt_dict()
+    run_dict['objective names'] = ['only_one']   # two weights are given
+
+    with pytest.raises(ValueError, match='one name per objective'):
+        check_dictionary(run_dict)
+
+
+def test_read_doe_accepts_a_starting_population_with_column_names(
+        nsga2_four_bar, tmp_path):
+    """A custom x0 file may carry the design variable names."""
+    optimizer, space_obj = nsga2_four_bar
+    path = os.path.join(str(tmp_path), 'doe_named.csv')
+    interior = [(low + up) / 2. for low, up in zip(space_obj.l_b,
+                                                   space_obj.u_b)]
+    with open(path, 'w') as file:
+        file.write('A_1, A_2, A_3, A_4, \n')
+        file.write(''.join('%.8f, ' % value for value in interior) + '\n')
+
+    doe = optimizer.read_doe(path)
+
+    assert len(doe) == 1
+    for value, original in zip(doe[0], interior):
+        assert value == pytest.approx(original + 2e-8, abs=1e-15)
