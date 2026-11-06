@@ -5,6 +5,32 @@ This page contains a description of the latest updates of RHEIA.
 What's new
 ==========
 
+v2.3.3.
+-------
+
+- The modified Leave-One-Out error is reported next to the Leave-One-Out
+  error, everywhere the latter is reported: in the printed summary, in the
+  PCE result file, and through the new
+  :py:meth:`PostProcessUQ.get_modified_loo` method. It is the LOO error
+  multiplied by the correction factor of Sudret (2014) for the limited size
+  of the experimental design, and is therefore always the larger of the
+  two. The same two quantities are reported by UQLab as :py:data:`LOO` and
+  :py:data:`ModifiedLOO`. See
+  :ref:`the modified LOO error <lab:ssmodifiedloo>` and
+  :ref:`lab:ssloodetails`.
+- The sparse basis is still selected on the LOO error, not on the modified
+  one, so the selected basis and all existing results are unchanged.
+- The PCE result file stored its values with a fixed number of decimals,
+  which wrote an accurate result away entirely: a LOO error of
+  :math:`1.6 \cdot 10^{-9}` was stored as :code:`0.000000` and read back as
+  zero. The values are now stored with their significant digits, so the
+  mean, standard deviation and both errors keep their precision.
+- The documentation notes that the LOO error of a full and a sparse PCE is
+  only comparable when both are trained on the same number of samples. A
+  full PCE is always trained on twice the number of basis terms, which
+  makes its LOO error larger for reasons unrelated to the accuracy of the
+  expansion.
+
 v2.3.2.
 -------
 

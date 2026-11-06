@@ -9,6 +9,7 @@ import csv
 import os
 import shutil
 
+import numpy as np
 import pytest
 
 import rheia.OPT.optimization as rheia_opt
@@ -454,3 +455,126 @@ def test_read_doe_accepts_a_starting_population_with_column_names(
     assert len(doe) == 1
     for value, original in zip(doe[0], interior):
         assert value == pytest.approx(original + 2e-8, abs=1e-15)
+
+
+# --------------------------------------------------------------------------
+# Both the LOO error and the modified LOO error are reported.
+#
+# The modified LOO error is the LOO error times the correction factor of
+# Sudret (2014), Eq.(44), for the limited size of the experimental design.
+# It is reported next to the LOO error, as UQLab does.
+#
+# The summary file also used a fixed number of decimals, so an accurate
+# PCE with a LOO error of e.g. 1.6e-09 was stored as 0.000000.
+# --------------------------------------------------------------------------
+
+def _uq_with_loo(results_dir, order, method='full', n_samples=None):
+    run_dict = {'case': 'FOUR_BAR_TRUSS',
+                'pol order': order,
+                'uq method': method,
+                'objective names': ['volume', 'displacement'],
+                'objective of interest': 'displacement',
+                'sampling method': 'SOBOL',
+                'n jobs': 1,
+                'results dir': results_dir,
+                'draw pdf cdf': [False],
+                'seed': 7}
+    if n_samples:
+        run_dict['n samples'] = n_samples
+    rheia_uq.run_uq(run_dict, design_space='design_space_uq.csv')
+
+
+def test_modified_loo_is_reported_and_larger_than_the_loo():
+    results_dir = 'pytest_mloo'
+    path = os.path.join(UQ_RESULTS, results_dir)
+    _wipe_dir(path)
+
+    try:
+        _uq_with_loo(results_dir, 2)
+
+        post = rheia_pp.PostProcessUQ('FOUR_BAR_TRUSS', 2, method='full')
+        loo = post.get_loo(results_dir, 'displacement')
+        modified = post.get_modified_loo(results_dir, 'displacement')
+
+        assert loo > 0.
+        # the correction factor is always larger than one
+        assert modified > loo
+    finally:
+        _wipe_dir(path)
+
+
+def test_modified_loo_matches_the_correction_factor():
+    """Check the reported value against Sudret (2014), Eq.(44), computed
+    independently from the experimental matrix."""
+    from rheia.CASES.determine_stoch_des_space import load_case
+    import rheia.UQ.pce as uq
+
+    run_dict = {'case': 'FOUR_BAR_TRUSS',
+                'pol order': 2,
+                'uq method': 'full',
+                'objective names': ['volume', 'displacement'],
+                'objective of interest': 'displacement',
+                'sampling method': 'SOBOL',
+                'n jobs': 1,
+                'results dir': 'pytest_mloo_factor',
+                'draw pdf cdf': [False],
+                'seed': 7}
+    path = os.path.join(UQ_RESULTS, run_dict['results dir'])
+    _wipe_dir(path)
+
+    try:
+        space_obj, eval_func, params = load_case(
+            run_dict, 'design_space_uq.csv', uq_bool=True)
+        data = uq.Data(run_dict, space_obj)
+        data.read_stoch_parameters()
+        data.create_samples_file()
+        experiment = uq.RandomExperiment(data, 1)
+        experiment.create_distributions()
+        experiment.n_terms()
+        experiment.read_previous_samples(False)
+        experiment.evaluate(eval_func, params)
+
+        pce = uq.PCE(experiment)
+        pce.run('full')
+        pce.calc_loo()
+
+        a_matrix = pce.a_matrix
+        n_samples, n_terms = a_matrix.shape
+        expected = pce.loo * (n_samples / (n_samples - n_terms) *
+                              (1. + np.trace(np.linalg.pinv(
+                                  a_matrix.T @ a_matrix))))
+
+        assert pce.modified_loo == pytest.approx(expected)
+    finally:
+        _wipe_dir(path)
+
+
+def test_summary_file_keeps_the_precision_of_a_small_loo():
+    """A fixed number of decimals stored an accurate LOO error as zero."""
+    results_dir = 'pytest_mloo_precision'
+    path = os.path.join(UQ_RESULTS, results_dir)
+    _wipe_dir(path)
+
+    try:
+        _uq_with_loo(results_dir, 3)
+
+        post = rheia_pp.PostProcessUQ('FOUR_BAR_TRUSS', 3, method='full')
+        loo = post.get_loo(results_dir, 'displacement')
+        modified = post.get_modified_loo(results_dir, 'displacement')
+
+        # both are far below the 1e-6 that six decimals could represent
+        assert 0. < loo < 1e-6
+        assert 0. < modified < 1e-6
+    finally:
+        _wipe_dir(path)
+
+
+def test_get_modified_loo_explains_an_older_summary_file():
+    """Result files written before the modified LOO was reported should
+    say so rather than raise a bare KeyError."""
+    post = rheia_pp.PostProcessUQ('H2_FUEL', 2, method='full')
+
+    # the shipped tutorial result predates the modified LOO
+    assert post.get_loo('opt_design_tutorial', 'lcoh') > 0.
+    with pytest.raises(ValueError, match='modified loo'):
+        post.get_modified_loo('opt_design_tutorial', 'lcoh')

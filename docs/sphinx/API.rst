@@ -212,6 +212,7 @@ The uncertainty quantification results are extracted with the methods in :py:cla
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_pdf
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_cdf
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_loo
+   rheia.POST_PROCESS.post_process.PostProcessUQ.get_modified_loo
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_mean_std
    rheia.POST_PROCESS.post_process.PostProcessUQ.get_max_sobol
    

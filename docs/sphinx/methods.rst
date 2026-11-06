@@ -91,6 +91,44 @@ error over the truncation sweep.
    order. For high-stakes decisions, reserve independent model evaluations for
    validation.
 
+.. _lab:ssloodetails:
+
+The leave-one-out error
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The leave-one-out (LOO) error estimates how well the expansion predicts a
+sample that was not used to fit it. Refitting the expansion once per sample is
+not needed: for a least-squares fit the predicted residual follows analytically
+:cite:`Sudret2014`, which gives
+
+:math:`\epsilon_{LOO} = \dfrac{1}{N} \sum_{i=1}^{N} \left( \dfrac{\mathcal{M}(\pmb{x}^{(i)}) - \mathcal{M}^{PC}(\pmb{x}^{(i)})}{1 - h_i} \right)^2 \Bigg/ \mathrm{Var}\left[ \mathcal{Y} \right]`,
+
+where :math:`h_i` is the :math:`i`-th diagonal entry of
+:math:`\pmb{A} (\pmb{A}^{\mathsf{T}} \pmb{A})^{-1} \pmb{A}^{\mathsf{T}}`.
+
+This estimate still underestimates the generalization error when the
+experimental design is small. A correction factor for the limited size of the
+design is therefore also applied, which yields the modified LOO error:
+
+:math:`\epsilon_{LOO}^{*} = \epsilon_{LOO} \, T(P,N)`,
+
+:math:`T(P,N) = \dfrac{N}{N-P} \left( 1 + \mathrm{tr}\left( (\pmb{A}^{\mathsf{T}} \pmb{A})^{-1} \right) \right)`,
+
+with :math:`P` the number of terms in the basis. Both errors are reported.
+
+The factor is always larger than one and grows as :math:`P` approaches
+:math:`N`. A full PCE is trained on :math:`N = 2P` samples, so its factor is
+always at least two, whereas a sparse PCE of the same polynomial order is
+usually trained with more samples per term and sits closer to one. The LOO
+error of a full and a sparse PCE is therefore only comparable when both are
+trained on the same number of samples.
+
+The sparse basis is selected on the LOO error rather than on the modified one,
+so that the selected basis does not depend on the correction factor. Note that
+this selection minimizes the LOO error over the candidate bases, which makes
+the reported value for a sparse PCE an optimistic estimate of the predictive
+error.
+
 
 Next to these statistical moments, the contribution of each stochastic parameter to the variance of the model outputs provides valuable information on the model behavior under uncertainties. 
 Generally, this contribution is quantified through Sobol' indices. 

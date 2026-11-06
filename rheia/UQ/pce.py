@@ -712,6 +712,7 @@ class PCE(RandomExperiment):
         self.order = self.my_experiment.my_data.inputs['pol order']
         self.a_matrix = 0.0
         self.loo = 0.0
+        self.modified_loo = 0.0
         self.basis = dict()
         self.coefficients = dict()
         self.sensitivity = dict()
@@ -1212,7 +1213,24 @@ class PCE(RandomExperiment):
     def calc_loo(self, warn=True):
         '''
         This method evaluates the Leave-One-Out (LOO) error for the
-        constructed PCE. The formula is adopted from Sudret et al. [1].
+        constructed PCE. The formula is adopted from Sudret et al. [1],
+        Eq.(43).
+
+        In addition, the modified LOO error is quantified, i.e. the LOO
+        error multiplied by the correction factor of Sudret et al. [1],
+        Eq.(44):
+
+            T(P,N) = N / (N - P) * (1 + trace((A^T A)^-1))
+
+        where N is the number of samples and P the number of basis terms.
+        The factor accounts for the limited size of the experimental
+        design, for which the LOO error underestimates the generalization
+        error, and tends to 1 as the experimental design grows. It is
+        therefore always larger than the LOO error itself. The same two
+        quantities are reported by UQLab as LOO and ModifiedLOO.
+
+        The sparse basis is selected on the LOO error, not on the modified
+        one, so that the selected basis does not depend on the correction.
 
         [1] Sudret, B. (2014). Polynomial chaos expansions and stochastic
         finite-element methods. In Risk and Reliability in Geotechnical
@@ -1236,6 +1254,17 @@ class PCE(RandomExperiment):
         # quantify the LOO error
         delta = (y_res[:, 0] - y_hat[:, 0]) / (1. - d_matrix)
         self.loo = np.mean(delta**2.) / y_var
+
+        # quantify the modified LOO error. b_matrix is already the inverse
+        # of A^T A, so its trace is the trace term of the correction factor.
+        n_samples, n_terms = self.a_matrix.shape
+        if n_samples > n_terms:
+            correction = (n_samples / (n_samples - n_terms) *
+                          (1. + np.trace(b_matrix)))
+            self.modified_loo = self.loo * correction
+        else:
+            # the correction is not defined without degrees of freedom
+            self.modified_loo = float('inf')
 
         if warn and self.loo > 1.:
             warnings.warn("The LOO error is higher than 1. "
@@ -1282,7 +1311,9 @@ class PCE(RandomExperiment):
 
         print(' Full model evaluation ::'.ljust(30) +
               '%d' % self.my_experiment.size)
-        print(' Leave-one-out error ::'.ljust(30) + '%s' % self.loo + '\n')
+        print(' Leave-one-out error ::'.ljust(30) + '%s' % self.loo)
+        print(' Modified LOO error ::'.ljust(30) +
+              '%s' % self.modified_loo + '\n')
 
         print(' Mean value ::'.ljust(30) + '%s' % mean)
         print(' Std. deviation ::'.ljust(30) + '%s' % np.sqrt(var))
@@ -1299,14 +1330,19 @@ class PCE(RandomExperiment):
         # write statistics in the result file
         with open(os.path.join(self.my_experiment.my_data.path_res,
                                filename_res), "w") as file:
-            file.write('%25s %25f \n' % ('LOO', self.loo))
+            # %g rather than %f: an accurate PCE has a small LOO error, and
+            # a fixed number of decimals writes it away entirely, e.g.
+            # 1.6e-09 would be stored as 0.000000 and read back as zero.
+            file.write('%25s %25.10g \n' % ('LOO', self.loo))
+            file.write('%25s %25.10g \n' % ('modified LOO',
+                                            self.modified_loo))
             file.write(
-                '%25s %25f \n' %
+                '%25s %25.10g \n' %
                 ('sparse basis', len(
                     self.basis['multi-indices'])))
-            file.write('%25s %25f \n' % ('mean', mean))
+            file.write('%25s %25.10g \n' % ('mean', mean))
             file.write(
-                '%25s %25f \n' % ('std. dev.', np.sqrt(var)))
+                '%25s %25.10g \n' % ('std. dev.', np.sqrt(var)))
                 
         # write sobol indices in the corresponding result file
         with open(os.path.join(self.my_experiment.my_data.path_res,

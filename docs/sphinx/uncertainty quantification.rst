@@ -135,9 +135,12 @@ when :py:data:`'uq method'` is :py:data:`'sparse'` and ignored for a full PCE. T
 
 The value of :py:data:`'n samples'` is a user-defined budget. RHEIA does not
 increase it automatically until a target error is reached. After fitting the
-sparse basis, RHEIA reports the LOO error in the result summary. Treat this
-error as a diagnostic and repeat the run with a larger sample budget or
-polynomial order when the LOO error, moments or Sobol' indices are not stable.
+sparse basis, RHEIA reports the LOO error and the modified LOO error in the
+result summary (see :ref:`the modified LOO error <lab:ssmodifiedloo>`). Treat
+these errors as a diagnostic and repeat the run with a larger sample budget or
+polynomial order when they, the moments or the Sobol' indices are not stable.
+Note that the LOO error of a sparse PCE should not be compared directly with
+that of a full PCE, since the two are trained on a different number of samples.
 
 .. tip::
 
@@ -363,7 +366,8 @@ The second file and third file are named based on the selected maximum polynomia
 (e.g. :file:`full_pce_order_2_output_2.txt` and :file:`full_pce_order_2_output_2_Sobol_indices.csv` for a full polynomial order 2 PCE for the quantity of interest `output_2`).
 For a sparse PCE, the number of training samples is also included in the filename
 (e.g. :file:`sparse_pce_order_2_output_2_n_samples_80.txt` and :file:`sparse_pce_order_2_output_2_n_samples_80_Sobol_indices.csv`).
-These files respectively include the PCE information (LOO error, mean and standard deviation) and the Sobol indices (first order and total order).
+These files respectively include the PCE information (LOO error, modified LOO error, basis size, mean and standard deviation) and the Sobol indices (first order and total order).
+The difference between the two LOO errors is described in :ref:`the modified LOO error <lab:ssmodifiedloo>`.
 
 The Sobol' indices can be represented in a bar chart:
 
@@ -395,12 +399,41 @@ to create the result files::
    my_post_process_uq = rheia_pp.PostProcessUQ(
        case, pol_order, method='sparse', samples=80)
 
-The LOO-error can be extracted:
+.. _lab:ssmodifiedloo:
+
+The LOO-error can be extracted, together with the modified LOO error:
 
 .. code-block:: python
    :lineno-start: 18
 
    loo = my_post_process_uq.get_loo(result_dir, objective)
+   modified_loo = my_post_process_uq.get_modified_loo(result_dir, objective)
+
+The modified LOO error is the LOO error multiplied by a correction factor
+that accounts for the limited size of the experimental design
+:cite:`Sudret2014`:
+
+:math:`T(P,N) = \dfrac{N}{N-P} \left( 1 + \mathrm{tr}\left( (\pmb{A}^{\mathsf{T}} \pmb{A})^{-1} \right) \right)`,
+
+where :math:`N` is the number of samples, :math:`P` the number of terms in
+the basis and :math:`\pmb{A}` the matrix of basis functions evaluated at the
+samples.
+The LOO error underestimates the generalization error when the experimental
+design is small, and the factor corrects for this.
+It is always larger than one and tends to one as the experimental design grows,
+so the modified LOO error is always the more conservative of the two.
+The same two quantities are reported by UQLab as :py:data:`LOO` and
+:py:data:`ModifiedLOO`.
+
+.. note::
+	The correction factor grows as the number of terms :math:`P` approaches the number of samples :math:`N`.
+	A full PCE is trained on :math:`N = 2P` samples, so its factor is always at least two,
+	while a sparse PCE with the same polynomial order usually sits closer to one.
+	Comparing the LOO error of a full and a sparse PCE is therefore only meaningful
+	when both are trained on the same number of samples.
+
+The sparse basis is selected on the LOO error, not on the modified one,
+so the selected basis does not depend on the correction factor.
 	
 If the data for the Probability Density Function (PDF) and Cumulative Distribution Function (CDF) was generated, both functions can be plotted as follows:
 

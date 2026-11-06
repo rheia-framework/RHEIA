@@ -596,6 +596,9 @@ class PostProcessUQ:
         Reads the Leave-One-Out error from the corresponding
         file in the result directory.
 
+        The modified Leave-One-Out error is available through
+        :py:meth:`get_modified_loo`.
+
         Parameters
         ----------
         result_dir : str
@@ -615,6 +618,43 @@ class PostProcessUQ:
         loo = self._summary_value(summary, 'loo', summary_file)
 
         return loo
+
+    def get_modified_loo(self, result_dir, objective):
+        """
+
+        Reads the modified Leave-One-Out error from the corresponding
+        file in the result directory.
+
+        The modified error is the Leave-One-Out error multiplied by a
+        correction factor for the limited size of the experimental design,
+        and is therefore always the larger of the two. See
+        :py:meth:`rheia.UQ.pce.PCE.calc_loo`.
+
+        Parameters
+        ----------
+        result_dir : str
+            The result directory.
+        objective : str
+            The name of the quantity of interest.
+
+        Returns
+        -------
+        modified_loo : float
+            The modified Leave-One-Out error.
+
+        """
+
+        summary_file = self._pce_file(result_dir, objective, '.txt')
+        summary = self._read_pce_summary(summary_file)
+
+        if 'modified loo' not in summary:
+            raise ValueError(
+                "PCE summary file %s misses 'modified loo'. It was written "
+                "before the modified Leave-One-Out error was reported; run "
+                "the uncertainty quantification again to obtain it."
+                % summary_file)
+
+        return summary['modified loo']
 
     def get_mean_std(self, result_dir, objective):
         """
